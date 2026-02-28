@@ -1,0 +1,12 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyc
+
+# macOS
+.DS_Store
+
+# Old report files in root (we use docs/index.html now)
+report-*.html
+reports/

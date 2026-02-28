@@ -1,0 +1,444 @@
+# ============================================================
+# Brick Squad Sports Cards — Report Generator Config
+# ============================================================
+# Update this file each month with your current player tiers,
+# card selections, and budget levels. The script reads this
+# config + your 30-day CSV to generate the full report.
+# ============================================================
+
+# --- PSA Grading Costs (update when PSA changes pricing) ---
+psa_pricing:
+  collectors_club: 149.00       # Annual membership fee
+  value_bulk: 24.99            # Requires Collectors Club, 5-card min
+  value: 32.99                 # No membership required
+  value_plus: 49.99            # ~45 biz days
+  value_max: 64.99             # ~35 biz days
+  regular: 79.99               # ~25 biz days
+
+psa_turnaround:
+  value_bulk: "65-95 biz days"
+  value: "55-75 biz days"
+  value_plus: "~45 biz days"
+  value_max: "~35 biz days"
+  regular: "~25 biz days"
+
+psa_back_by:
+  value_bulk: "Jun-Aug"
+  value: "Jun-Jul"
+  value_plus: "May-Jun"
+  value_max: "Apr-May"
+  regular: "Apr"
+
+# --- Max Bid Formula ---
+# FMV = (avg_30d * fmv_avg_weight) + (last_sale * fmv_last_weight)
+# trend_pct = (last_sale - avg_30d) / avg_30d
+# multiplier: UP (> up_threshold) | FLAT (between) | DOWN (< down_threshold)
+# max_bid = FMV * multiplier
+max_bid_formula:
+  fmv_avg_weight: 0.60
+  fmv_last_weight: 0.40
+  up_threshold: 0.10           # +10% = trending up
+  down_threshold: -0.10        # -10% = trending down
+  up_multiplier: 0.95          # Aggressive — buy near FMV
+  flat_multiplier: 0.85        # Standard discount
+  down_multiplier: 0.75        # Defensive — demand discount
+
+# --- Gem Rate Calculation ---
+# Sales gem rate is inflated (PSA 10s sell more often due to higher value).
+# We don't apply a correction factor here — the raw sales distribution
+# is used directly since it represents what the market actually produces.
+# PSA 8 value is estimated as a fraction of PSA 9 value.
+gem_rate:
+  psa8_value_fraction: 0.40    # PSA 8 estimated at 40% of PSA 9 value
+
+# --- Player Definitions ---
+# Tier S = highest conviction, Tier A = strong, Tier B = speculative
+# color = hex color for UI badges
+players:
+  Cade:
+    full_name: "Cade Cunningham"
+    tier: S
+    color: "#2563eb"
+    catalysts:
+      - "Pistons #1 seed, MVP candidate"
+      - "42-14 record, 25.3/9.8/5.8"
+  SGA:
+    full_name: "Shai Gilgeous-Alexander"
+    tier: S
+    color: "#7c3aed"
+    catalysts:
+      - "Reigning MVP, back-to-back candidate"
+      - "31.8 PPG, injury risk (65-game threshold)"
+  Ant:
+    full_name: "Anthony Edwards"
+    tier: S
+    color: "#dc2626"
+    catalysts:
+      - "Career-best 29 PPG on 50/40/80"
+      - "Wolves playoff contender"
+  Wemby:
+    full_name: "Victor Wembanyama"
+    tier: S
+    color: "#059669"
+    catalysts:
+      - "First playoff run, DPOY candidate"
+      - "24.2/11.3/2.9, Spurs 9-game win streak"
+  Luka:
+    full_name: "Luka Doncic"
+    tier: A
+    color: "#0891b2"
+    catalysts:
+      - "Leading NBA in scoring (33+ PPG)"
+      - "Lakers playoff push"
+  LeBron:
+    full_name: "LeBron James"
+    tier: B
+    color: "#ca8a04"
+    catalysts:
+      - "Retirement narrative = price catalyst"
+      - "Up 143% YoY on Silver"
+  Kobe:
+    full_name: "Kobe Bryant"
+    tier: A
+    color: "#9333ea"
+    catalysts:
+      - "Mamba Day (Aug 24) annual spike"
+      - "Heritage/nostalgia play"
+  Castle:
+    full_name: "Stephon Castle"
+    tier: A
+    color: "#64748b"
+    catalysts:
+      - "Spurs playoff run with Wemby"
+      - "Rookie year upside"
+
+# --- Cards to Track ---
+# Each card needs:
+#   csv_name: exact string match from your CSV "Card" column
+#   player: must match a key in players above
+#   tier: S, A, or B (can override player tier per card)
+#   category: grading | psa10buy | psa10dip | rawbuy
+#   rec_grading_tier: value_bulk | value | value_plus | value_max | regular
+#                     (only for category: grading)
+#   sell_window: when to sell
+#   psa10_csv_name: (optional) the CSV name for the PSA 10 version, for ROI calc
+#   psa9_value_override: (optional) manually set PSA 9 value if not in CSV
+cards:
+  # ─── CADE CUNNINGHAM ───
+  - csv_name: "Cade Cunningham 2021 Prizm #282 Base"
+    player: Cade
+    tier: S
+    category: grading
+    rec_grading_tier: value_bulk
+    sell_window: "Apr-Jun (Playoffs)"
+    psa9_value_override: 35.00
+
+  - csv_name: "Cade Cunningham 2021 Prizm #282 Silver"
+    player: Cade
+    tier: S
+    category: grading
+    rec_grading_tier: value_max
+    sell_window: "May-Jun (Finals/MVP)"
+    psa9_value_override: 116.98
+
+  - csv_name: "Cade Cunningham 2021 Prizm #282 Base"
+    grade_override: "PSA 10"
+    player: Cade
+    tier: S
+    category: psa10buy
+    sell_window: "Jun (MVP Award)"
+
+  - csv_name: "Cade Cunningham 2021 Prizm #282 Silver"
+    grade_override: "PSA 10"
+    player: Cade
+    tier: S
+    category: psa10buy
+    sell_window: "Jun (MVP/Finals)"
+
+  - csv_name: "Cade Cunningham 2021 Prizm #282 Green"
+    player: Cade
+    tier: A
+    category: grading
+    rec_grading_tier: value_plus
+    sell_window: "May-Jun"
+    psa9_value_override: 37.86
+
+  - csv_name: "Cade Cunningham 2021 Optic #161 Holo"
+    player: Cade
+    tier: A
+    category: rawbuy
+    sell_window: "Apr-May (Playoffs)"
+
+  - csv_name: "Cade Cunningham 2021 Optic #161 Blue Velocity"
+    player: Cade
+    tier: B
+    category: rawbuy
+    sell_window: "Apr-May"
+
+  # ─── SGA ───
+  - csv_name: "Shai Gilgeous-Alexander 2018 Prizm #184 Base"
+    player: SGA
+    tier: S
+    category: grading
+    rec_grading_tier: value_plus
+    sell_window: "Jun (MVP Award)"
+    psa9_value_override: 40.75
+
+  - csv_name: "Shai Gilgeous-Alexander 2018 Prizm #184 Base"
+    grade_override: "PSA 10"
+    player: SGA
+    tier: S
+    category: psa10buy
+    sell_window: "Jun (MVP Award)"
+
+  - csv_name: "Shai Gilgeous-Alexander 2018 Prizm #184 Silver"
+    player: SGA
+    tier: S
+    category: grading
+    rec_grading_tier: value_max
+    sell_window: "Jun (MVP)"
+    psa9_value_override: 302.67
+
+  - csv_name: "Shai Gilgeous-Alexander 2018 Optic #162 Base"
+    player: SGA
+    tier: B
+    category: rawbuy
+    sell_window: "Apr-Jun"
+
+  # ─── ANT EDWARDS ───
+  - csv_name: "Anthony Edwards 2020 Prizm #258 Base"
+    player: Ant
+    tier: S
+    category: grading
+    rec_grading_tier: value_bulk
+    sell_window: "May-Jun (Playoffs)"
+    psa9_value_override: 25.65
+
+  - csv_name: "Anthony Edwards 2020 Prizm #258 Base"
+    grade_override: "PSA 10"
+    player: Ant
+    tier: S
+    category: psa10buy
+    sell_window: "May-Jun (Playoffs)"
+
+  - csv_name: "Anthony Edwards 2020 Prizm #258 Silver"
+    player: Ant
+    tier: S
+    category: grading
+    rec_grading_tier: value_max
+    sell_window: "Jun (All-NBA/Playoffs)"
+    psa9_value_override: 193.53
+
+  - csv_name: "Anthony Edwards 2020 Optic #151 Base"
+    grade_override: "PSA 10"
+    player: Ant
+    tier: A
+    category: psa10buy
+    sell_window: "Apr-Jun"
+
+  # ─── WEMBANYAMA ───
+  - csv_name: "Victor Wembanyama 2023 Prizm #136 Base"
+    player: Wemby
+    tier: S
+    category: grading
+    rec_grading_tier: value_bulk
+    sell_window: "Apr-Jun (Playoffs!)"
+    psa9_value_override: 39.99
+
+  - csv_name: "Victor Wembanyama 2023 Prizm #136 Base"
+    grade_override: "PSA 10"
+    player: Wemby
+    tier: S
+    category: psa10buy
+    sell_window: "Apr-Jun (First Playoff Run)"
+
+  - csv_name: "Victor Wembanyama 2023 Optic #225 Base"
+    player: Wemby
+    tier: A
+    category: grading
+    rec_grading_tier: value_bulk
+    sell_window: "Apr-May"
+    psa9_value_override: 23.15
+
+  - csv_name: "Victor Wembanyama 2023 Select #87 Concourse Blue Retail"
+    grade_override: "PSA 10"
+    player: Wemby
+    tier: A
+    category: psa10buy
+    sell_window: "Apr-Jun"
+
+  - csv_name: "Victor Wembanyama 2023 Prizm #3 Instant Impact"
+    grade_override: "PSA 10"
+    player: Wemby
+    tier: A
+    category: psa10buy
+    sell_window: "Apr-Jun"
+
+  - csv_name: "Victor Wembanyama 2023 Prizm #12 Emergent"
+    player: Wemby
+    tier: B
+    category: rawbuy
+    sell_window: "Apr-May"
+
+  - csv_name: "Victor Wembanyama 2023 Select #87 Concourse Blue Cracked Ice"
+    grade_override: "PSA 10"
+    player: Wemby
+    tier: A
+    category: psa10dip
+    sell_window: "Apr-Jun (Playoffs)"
+
+  - csv_name: "Victor Wembanyama 2023 Prizm #136 Pink Ice"
+    grade_override: "PSA 10"
+    player: Wemby
+    tier: A
+    category: psa10buy
+    sell_window: "May-Jun (Deep playoff run)"
+
+  # ─── LUKA ───
+  - csv_name: "Luka Doncic 2018 Prizm #280 Base"
+    player: Luka
+    tier: A
+    category: grading
+    rec_grading_tier: value_plus
+    sell_window: "May-Jun (Lakers Playoffs)"
+    psa9_value_override: 79.13
+
+  - csv_name: "Luka Doncic 2018 Prizm #280 Base"
+    grade_override: "PSA 10"
+    player: Luka
+    tier: A
+    category: psa10buy
+    sell_window: "May-Jun (Lakers Run)"
+
+  - csv_name: "Luka Doncic 2019 Prizm #75 Base"
+    grade_override: "PSA 10"
+    player: Luka
+    tier: B
+    category: psa10dip
+    sell_window: "Apr-Jun"
+
+  # ─── LEBRON ───
+  - csv_name: "LeBron James 2020 Prizm #1 Silver"
+    player: LeBron
+    tier: A
+    category: rawbuy
+    sell_window: "Apr-Jun or Retirement"
+
+  - csv_name: "LeBron James 2020 Prizm #1 Base"
+    player: LeBron
+    tier: B
+    category: grading
+    rec_grading_tier: value_bulk
+    sell_window: "Apr-Jun or Retirement"
+    psa9_value_override: 26.01
+
+  - csv_name: "LeBron James 2019 Prizm #129 Base"
+    grade_override: "PSA 10"
+    player: LeBron
+    tier: B
+    category: psa10buy
+    sell_window: "Apr-Jun"
+
+  # ─── KOBE ───
+  - csv_name: "Kobe Bryant 2019 Prizm #8 Base"
+    grade_override: "PSA 10"
+    player: Kobe
+    tier: A
+    category: psa10buy
+    sell_window: "Aug 24 (Mamba Day)"
+
+  - csv_name: "Kobe Bryant 2012 Prizm #24 Base"
+    player: Kobe
+    tier: A
+    category: rawbuy
+    sell_window: "Aug 24 (Mamba Day)"
+
+  # ─── CASTLE ───
+  - csv_name: "Stephon Castle 2024 Prizm #234 Silver"
+    player: Castle
+    tier: A
+    category: grading
+    rec_grading_tier: value_max
+    sell_window: "Apr-Jun (Spurs Playoffs)"
+    psa9_value_override: 49.39
+
+  - csv_name: "Stephon Castle 2024 Optic #254 Holo"
+    player: Castle
+    tier: B
+    category: rawbuy
+    sell_window: "Apr-May"
+
+# --- Budget Portfolios ---
+# Define which budget levels to generate.
+# The script auto-selects cards ranked by EV ROI%.
+# You can override specific allocations per budget.
+budgets:
+  - amount: 500
+    title: "$500 Budget — Grading & Flip"
+    strategy_focus: "value_bulk"     # Prioritize Value Bulk grading plays
+    include_psa10_holds: false       # No PSA 10 purchases at this budget
+    max_grading_cards: 15
+    include_collectors_club: true
+
+  - amount: 1000
+    title: "$1,000 Budget — Split Grading + Holds"
+    strategy_focus: "mixed"
+    include_psa10_holds: true
+    max_grading_cards: 16
+    max_psa10_holds: 2
+    include_collectors_club: true
+
+  - amount: 1500
+    title: "$1,500 Budget — Diversified EV"
+    strategy_focus: "mixed"
+    include_psa10_holds: true
+    max_grading_cards: 18
+    max_psa10_holds: 4
+    include_collectors_club: true
+
+  - amount: 2000
+    title: "$2,000 Budget — Maximum EV Conviction"
+    strategy_focus: "premium"
+    include_psa10_holds: true
+    max_grading_cards: 22
+    max_psa10_holds: 5
+    include_collectors_club: true
+
+# --- Sell Timing Calendar ---
+# Update these dates each season
+sell_calendar:
+  - date: "NOW → Mar"
+    label: "🟢 BUY ZONE"
+    action: "BUY + SUBMIT"
+    note: "Accumulate at max bid prices. Submit PSA orders ASAP."
+    current: true
+
+  - date: "Apr 12 → May"
+    label: "🏀 Playoffs Begin"
+    action: "SELL B / HOLD S+A"
+    note: "Sell Tier B raws after Round 1. Hold flagships. Value Max returns arrive."
+
+  - date: "May → Jun"
+    label: "🏆 Conf Finals / Finals"
+    action: "SELL PSA 10s"
+    note: "Sell PSA 10s of players still alive. Peak demand."
+
+  - date: "Jun"
+    label: "🏅 NBA Awards"
+    action: "SELL WINNERS"
+    note: "Sell INTO announcements, not after. Value Bulk returns start arriving."
+
+  - date: "Jul-Aug"
+    label: "📉 Offseason"
+    action: "HOLD / BUY"
+    note: "Prices dip 10-20%. Don't sell. Next buy window."
+
+  - date: "Aug 24"
+    label: "💜 Mamba Day"
+    action: "SELL KOBE"
+    note: "Sell all Kobe cards. List 3-5 days before."
+
+  - date: "Oct"
+    label: "🏀 New Season"
+    action: "HOLD"
+    note: "Panini scarcity builds. Topps takes over."
