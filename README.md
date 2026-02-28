@@ -155,6 +155,74 @@ EV tells you the average profit per card submission accounting for probability. 
 ### Budget Portfolios
 Cards are ranked by **EV ROI%** (EV ÷ all-in cost). The script allocates budget to the highest EV ROI% cards first, then adds PSA 10 holds for guaranteed playoff inventory.
 
+## Update Workflow — When to Use What
+
+There are two layers to this system: **data** (automated) and **strategy** (requires analysis). Different tools for each.
+
+### Claude Code — Monthly Data Refresh (Routine)
+
+Use Claude Code for the standard monthly cycle:
+
+1. Export fresh 30-day CSV from 130point.com
+2. Drop it in `data/`
+3. Run: `python generate_report.py --csv data/your-new-file.csv`
+4. Open the HTML
+
+**Claude Code can also handle simple config edits:**
+- "Add Zach Edey as a Tier B player with his Prizm Base"
+- "Change Castle from Tier A to Tier B"
+- "Update PSA Value Bulk to $27.99"
+- "Remove Kobe from the config"
+
+These are mechanical changes that don't require market analysis.
+
+### Claude Chat — Strategic Refresh (Quarterly / Major Events)
+
+Come back to the original Claude chat (or start a new one referencing it) when the **strategy** needs to change. This includes:
+
+**Seasonal inflection points (~3-4x/year):**
+- Trade deadline (Feb) — player movement reshuffles tiers
+- Playoff brackets set (Apr) — update sell windows, recalibrate tiers
+- Offseason (Jul) — new product releases, Panini → Topps transition, reset buy targets
+- Pre-season (Oct) — full config rebuild for new season
+
+**Reactive events (as they happen):**
+- Major injury to a Tier S player (e.g., Cade ACL → drop to Tier B, adjust sell windows)
+- MVP/award winner announced (update catalysts, shift sell timing)
+- PSA announces pricing or turnaround changes (recalculate all grading math thresholds)
+- New product release (e.g., 2025-26 Topps drops → add new cards to config)
+- Breakout player (someone not in your config is suddenly relevant)
+- Market-wide shift (e.g., hobby crash, Panini license ends, major auction results)
+
+**What Claude Chat provides that Claude Code doesn't:**
+- Tier assignments based on current team records, stats, and narrative
+- Player catalyst analysis (MVP odds, playoff seeding, injury status)
+- Sell calendar timing based on actual NBA schedule
+- PSA 9 value estimates when data is thin
+- Portfolio construction logic (which cards to prioritize at each budget)
+- "Should I sell now or hold?" judgment calls
+
+### What Lives Where
+
+| Element | Lives In | Updated By | How Often |
+|---------|----------|------------|-----------|
+| Max bids, gem rates, EV, trends | Auto-calculated from CSV | Script | Every run |
+| Player tiers (S/A/B) | config.yaml | Claude Chat | Quarterly |
+| Card selections | config.yaml | Claude Chat / Claude Code | As needed |
+| Sell windows | config.yaml | Claude Chat | Quarterly |
+| Player catalysts | config.yaml | Claude Chat | Quarterly |
+| PSA pricing | config.yaml | Claude Code | When PSA changes |
+| Sell calendar | config.yaml | Claude Chat | Seasonal |
+| Budget allocations | config.yaml | Claude Chat | Quarterly |
+| PSA 9 value overrides | config.yaml | Claude Chat | Quarterly |
+| The formulas themselves | generate_report.py | Claude Chat | Rarely |
+
+### TL;DR
+
+- **Monthly:** Claude Code runs the script with fresh CSV. Done in 30 seconds.
+- **Quarterly:** Bring the config to Claude Chat for a strategic refresh. Takes 5-10 minutes.
+- **Breaking news:** Quick Claude Chat session to adjust tiers or sell timing.
+
 ## For Claude Code
 
 If you're using Claude Code to help maintain this:
@@ -174,9 +242,11 @@ If you're using Claude Code to help maintain this:
 brick-squad-report/
 ├── generate_report.py    # Main script (reads CSV + config → HTML)
 ├── config.yaml           # Your players, cards, budgets, PSA pricing
+├── update.sh             # Monthly update convenience script
 ├── data/                 # Drop your CSVs here
 │   └── top-players-last-30-days.csv
-├── reports/              # Generated reports land here
-│   └── report-2026-02-28.html
+├── docs/
+│   └── index.html        # Live report — served by GitHub Pages
+├── .venv/                # Python virtualenv (gitignored)
 └── README.md
 ```
