@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brick Squad — Football Graded Buy Opportunities Mar 2026</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, sans-serif; max-width: 1080px; margin: 0 auto; padding: 12px 16px; color: #1a1a2e; background: #fff; }
+
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; color: white; }
+.header h1 { font-size: 19px; font-weight: 700; }
+.header p { opacity: 0.8; font-size: 12px; margin-top: 6px; }
+.nav-link { font-size: 11px; opacity: 0.65; color: white; text-decoration: none; }
+.nav-link:hover { opacity: 1; }
+
+.stats-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.stat-card { flex: 1; min-width: 130px; border-radius: 8px; padding: 10px 14px; text-align: center; }
+.stat-card .num { font-size: 22px; font-weight: 800; }
+.stat-card .lbl { font-size: 10px; color: #64748b; font-weight: 600; margin-top: 2px; }
+.stat-blue   { background: #eff6ff; border: 1px solid #93c5fd; }
+.stat-green  { background: #f0fdf4; border: 1px solid #86efac; }
+.stat-amber  { background: #fffbeb; border: 1px solid #fde68a; }
+.stat-purple { background: #faf5ff; border: 1px solid #d8b4fe; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
+.tab { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; background: #f1f5f9; color: #475569; }
+.tab.active { background: #1a1a2e; color: white; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.section-header { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.section-sub { font-size: 12px; color: #64748b; margin-bottom: 12px; line-height: 1.5; }
+
+.tbl-wrap { overflow-x: auto; margin-bottom: 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { background: #1a1a2e; color: white; }
+thead th { padding: 8px 10px; text-align: left; font-weight: 600; white-space: nowrap; font-size: 11px; }
+tbody tr { border-bottom: 1px solid #f1f5f9; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f8fafc; }
+td { padding: 7px 10px; white-space: nowrap; vertical-align: middle; }
+td.card-name { font-weight: 600; white-space: normal; min-width: 200px; }
+td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
+.num-col { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.profit-pos { color: #16a34a; font-weight: 700; }
+.profit-neg { color: #dc2626; font-weight: 700; }
+.color-gray { color: #64748b; }
+
+.ev-cell { background: #eff6ff; font-weight: 800; color: #1d4ed8; text-align: right; border-radius: 4px; padding: 3px 8px; display: inline-block; }
+
+.badge { border-radius: 3px; padding: 2px 7px; font-size: 10px; font-weight: 700; display: inline-block; white-space: nowrap; }
+.badge-safe    { background: #dcfce7; color: #15803d; }
+.badge-risky   { background: #fee2e2; color: #b91c1c; }
+.badge-watch   { background: #eff6ff; color: #1d4ed8; }
+.badge-amber   { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.badge-ext     { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+.badge-rev     { background: #dcfce7; color: #15803d; }
+.badge-tier1   { background: #16a34a; color: white; }
+.badge-tier2   { background: #d97706; color: white; }
+.badge-tier3   { background: #dc2626; color: white; }
+.badge-psa9    { background: #f3e8ff; color: #7c3aed; font-size: 10px; }
+.badge-psa10   { background: #e0f2fe; color: #0369a1; font-size: 10px; }
+
+.rec-section { margin-bottom: 20px; }
+.rec-tier { border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; }
+.tier1-bg { background: #f0fdf4; border: 1px solid #86efac; border-left: 4px solid #16a34a; }
+.tier2-bg { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; }
+.tier3-bg { background: #fef2f2; border: 1px solid #fca5a5; border-left: 4px solid #dc2626; }
+.tier-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+
+.callout { border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 12px; line-height: 1.6; }
+.callout-blue  { background: #eff6ff; border: 1px solid #93c5fd; }
+.callout-amber { background: #fffbeb; border: 1px solid #fde68a; }
+.callout-red   { background: #fef2f2; border: 1px solid #fca5a5; }
+.callout-green { background: #f0fdf4; border: 1px solid #86efac; }
+.callout strong { display: block; margin-bottom: 4px; }
+
+.budget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.budget-card { border-radius: 8px; padding: 14px 16px; border: 1px solid #e2e8f0; }
+.budget-card .budget-label { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.budget-card ul { padding-left: 16px; font-size: 12px; line-height: 1.9; color: #374151; }
+.budget-card ul li span { font-weight: 700; }
+
+.rank-badge { background: #1a1a2e; color: white; border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 700; display: inline-block; }
+
+.footer { margin-top: 16px; padding: 10px 14px; background: #f1f5f9; border-radius: 8px; font-size: 10px; color: #94a3b8; }
+
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-8 { gap: 8px; }
+.fw-700 { font-weight: 700; }
+.mt-12 { margin-top: 12px; }
+.text-12 { font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="flex items-center gap-8" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div class="flex items-center gap-8">
+      <span style="font-size:24px">💰</span>
+      <div>
+        <h1>Brick Squad — Football Graded Buy Opportunities</h1>
+        <p>PSA 9 &amp; PSA 10 cards under $500 · Momentum, Recovery, Value &amp; Growth plays · March 2026</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <a href="index.html" class="nav-link">← Buy List</a>
+      <a href="grading-analysis.html" class="nav-link">🏀 BB Grading →</a>
+      <a href="football-analysis.html" class="nav-link">🏈 FB Grading →</a>
+    </div>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card stat-green"><div class="num">22</div><div class="lbl" style="color:#15803d;">Momentum Plays</div></div>
+  <div class="stat-card stat-amber"><div class="num">75</div><div class="lbl" style="color:#92400e;">Recovery Plays</div></div>
+  <div class="stat-card stat-blue"><div class="num">41</div><div class="lbl">Value Plays</div></div>
+  <div class="stat-card stat-purple"><div class="num">65</div><div class="lbl" style="color:#7c3aed;">Consistent Growers</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('recs')">Top Picks</button>
+  <button class="tab" onclick="showTab('momentum')">Momentum</button>
+  <button class="tab" onclick="showTab('recovery')">Recovery</button>
+  <button class="tab" onclick="showTab('value')">Value</button>
+  <button class="tab" onclick="showTab('growers')">Consistent Growers</button>
+</div>
+
+<!-- TOP PICKS -->
+<div id="tab-recs" class="tab-content active">
+  <div class="callout callout-green">
+    <strong>Strategy overview — March 2026</strong>
+    203 total opportunities identified across 4 play types. Focus on Tier 1 for highest conviction.
+    Drake Maye and JSN are the clearest trending buys. Jayden Daniels and JJ McCarthy offer the biggest recovery upside.
+  </div>
+
+  <div class="section-header">Top 10 Buys</div>
+  <div class="section-sub">Ranked by conviction across all play types — momentum, recovery, value, and trend strength.</div>
+
+  <div class="rec-tier tier1-bg rec-section">
+    <div class="tier-title"><span class="badge badge-tier1">TIER 1</span>&nbsp; High Conviction Buys</div>
+    <div class="tbl-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>#</th><th>Card</th><th>Grade</th><th style="text-align:right;">Avg $</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-badge">1</span></td>
+            <td class="card-name">Drake Maye 2024 Donruss #379 Base</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$111</td>
+            <td class="text-12 color-gray">+522% trend (180d), 382 sales liquidity, QB1 upside</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">2</span></td>
+            <td class="card-name">Jayden Daniels 2024 Prizm #347 Base</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$60</td>
+            <td class="text-12 color-gray">ROY, down 54% from highs, +155% upside to recover</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">3</span></td>
+            <td class="card-name">Jaxon Smith-Njigba 2023 Prizm #390 Silver</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$182</td>
+            <td class="text-12 color-gray">WR1 breakout, +749% in 180d, still running</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">4</span></td>
+            <td class="card-name">Trevor Lawrence 2021 Mosaic #241 NFL Debut</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$24</td>
+            <td class="text-12 color-gray">Cheap entry, +250% trend (180d), proven QB</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">5</span></td>
+            <td class="card-name">Joe Burrow 2020 Prizm #307 Lazer</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$316</td>
+            <td class="text-12 color-gray">Elite QB, 15% above 180d low, accumulation zone</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rec-tier tier2-bg rec-section">
+    <div class="tier-title"><span class="badge badge-tier2">TIER 2</span>&nbsp; Value Accumulation</div>
+    <div class="tbl-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>#</th><th>Card</th><th>Grade</th><th style="text-align:right;">Avg $</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-badge">6</span></td>
+            <td class="card-name">Caleb Williams 2024 Donruss #327 Base</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$45</td>
+            <td class="text-12 color-gray">Cheapest Caleb Williams entry, +88% trend (180d)</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">7</span></td>
+            <td class="card-name">Bo Nix 2024 Prizm #309 Red White Blue</td>
+            <td><span class="badge badge-psa10">PSA 10</span></td>
+            <td class="num-col">$187</td>
+            <td class="text-12 color-gray">Near 180d low, 15% above floor, emerging star</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">8</span></td>
+            <td class="card-name">Brock Purdy 2022 Optic #277 Base</td>
+            <td><span class="badge badge-psa9">PSA 9</span></td>
+            <td class="num-col">$19</td>
+            <td class="text-12 color-gray">Super cheap SB QB, +50% trend (180d), +77% in 30d</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">9</span></td>
+            <td class="card-name">Lamar Jackson 2024 Optic #1 Downtown</td>
+            <td><span class="badge badge-psa9">PSA 9</span></td>
+            <td class="num-col">$432</td>
+            <td class="text-12 color-gray">MVP candidate, near 180d low, premium insert</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge">10</span></td>
+            <td class="card-name">Justin Herbert 2020 Donruss #303 Base</td>
+            <td><span class="badge badge-psa9">PSA 9</span></td>
+            <td class="num-col">$18</td>
+            <td class="text-12 color-gray">Recovery play, +61% trend (180d), cheap entry</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rec-tier tier3-bg rec-section">
+    <div class="tier-title"><span class="badge badge-tier3">TIER 3</span>&nbsp; Speculative / High Risk-Reward</div>
+    <div class="tbl-wrap" style="border:none;">
+      <table>
+        <thead><tr><th>Card</th><th>Grade</th><th style="text-align:right;">Avg $</th><th>Risk</th><th style="text-align:right;">Upside</th></tr></thead>
+        <tbody>
+          <tr><td class="card-name">JJ McCarthy 2024 Prizm #400 Disco</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$84</td><td class="text-12 color-gray">No game tape yet</td><td class="num-col profit-pos">+121%</td></tr>
+          <tr><td class="card-name">Michael Penix Jr. 2024 Donruss Optic Preview Pink</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$41</td><td class="text-12 color-gray">Backup QB situation</td><td class="num-col profit-pos">+373%</td></tr>
+          <tr><td class="card-name">Anthony Richardson 2023 Optic #5 Rookie Kings</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$67</td><td class="text-12 color-gray">Injury prone</td><td class="num-col profit-pos">+94%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-header mt-12">Budget Portfolios</div>
+  <div class="section-sub" style="margin-bottom:10px;">Pre-built buys by budget. All cards under $500.</div>
+  <div class="budget-grid">
+    <div class="budget-card" style="border-left:4px solid #16a34a;">
+      <div class="budget-label">$100 Budget</div>
+      <ul>
+        <li><span>Option A:</span> Drake Maye Donruss PSA 10 — $111</li>
+        <li><span>Option B (diversified):</span></li>
+        <li>Trevor Lawrence Mosaic PSA 10 — $24</li>
+        <li>Brock Purdy Optic PSA 9 — $19</li>
+        <li>Caleb Williams Donruss PSA 10 — $45 <span style="color:#64748b">= $88 total</span></li>
+      </ul>
+    </div>
+    <div class="budget-card" style="border-left:4px solid #d97706;">
+      <div class="budget-label">$250 Budget</div>
+      <ul>
+        <li>JSN 2023 Prizm Silver PSA 10 — $182</li>
+        <li>Trevor Lawrence Mosaic PSA 10 — $24</li>
+        <li>Caleb Williams Donruss PSA 10 — $45</li>
+        <li style="color:#64748b">= $251 total</li>
+      </ul>
+    </div>
+    <div class="budget-card" style="border-left:4px solid #7c3aed;">
+      <div class="budget-label">$500 Budget</div>
+      <ul>
+        <li>Joe Burrow Prizm Lazer PSA 10 — $316</li>
+        <li>Jayden Daniels Prizm Base PSA 10 — $60</li>
+        <li>Drake Maye Donruss PSA 10 — $111</li>
+        <li style="color:#64748b">= $487 total</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MOMENTUM -->
+<div id="tab-momentum" class="tab-content">
+  <div class="section-header">Momentum Plays — Hot Right Now</div>
+  <div class="section-sub">Cards surging in the last 30 days. Either buy quickly before they run further, or wait for a pullback entry.</div>
+  <div class="callout callout-blue">
+    <strong>Action key</strong>
+    <span class="badge badge-ext">⚠️ Extended</span> May be overbought — wait for pullback &nbsp;·&nbsp;
+    <span class="badge badge-watch">👀 Watch</span> Strong momentum, entry timing matters &nbsp;·&nbsp;
+    <span class="badge badge-rev">✓ Reversal</span> Recovering after a dip — good entry signal
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Card</th><th>Grade</th>
+        <th style="text-align:right;">Avg $</th>
+        <th style="text-align:right;">30d</th>
+        <th style="text-align:right;">60d</th>
+        <th style="text-align:right;">180d</th>
+        <th style="text-align:right;">Vol</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="card-name">Trevor Lawrence 2021 Mosaic #241 NFL Debut</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$24</td><td class="num-col profit-pos">+133%</td><td class="num-col profit-pos">+28%</td><td class="num-col profit-pos">+250%</td><td class="num-col">10</td><td><span class="badge badge-ext">⚠️ Extended</span></td></tr>
+        <tr><td class="card-name">Joe Milton III 2024 Prizm #354 Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$15</td><td class="num-col profit-pos">+100%</td><td class="num-col profit-pos">+48%</td><td class="num-col profit-pos">+28%</td><td class="num-col">9</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">JJ McCarthy 2024 Prizm #400 Lazer</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$23</td><td class="num-col profit-pos">+100%</td><td class="num-col profit-pos">+19%</td><td class="num-col profit-neg">-19%</td><td class="num-col">14</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Ladd McConkey 2024 Prizm #365 Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$16</td><td class="num-col profit-pos">+100%</td><td class="num-col profit-neg">-16%</td><td class="num-col profit-neg">-10%</td><td class="num-col">8</td><td><span class="badge badge-rev">✓ Reversal</span></td></tr>
+        <tr><td class="card-name">JJ McCarthy 2024 Prizm #400 Disco</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$84</td><td class="num-col profit-pos">+97%</td><td class="num-col profit-pos">+22%</td><td class="num-col profit-neg">-43%</td><td class="num-col">9</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Jaxon Smith-Njigba 2023 Prizm #390 Silver</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$182</td><td class="num-col profit-pos">+92%</td><td class="num-col profit-pos">+106%</td><td class="num-col profit-pos">+749%</td><td class="num-col">14</td><td><span class="badge badge-ext">⚠️ Extended</span></td></tr>
+        <tr><td class="card-name">Michael Penix Jr. 2024 Donruss Optic Preview</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$71</td><td class="num-col profit-pos">+91%</td><td class="num-col profit-pos">+91%</td><td class="num-col profit-neg">-34%</td><td class="num-col">11</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Prizm #24 Fireworks Green Wave</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$41</td><td class="num-col profit-pos">+83%</td><td class="num-col profit-pos">+17%</td><td class="num-col profit-pos">+29%</td><td class="num-col">8</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Brock Purdy 2022 Prizm #353 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$21</td><td class="num-col profit-pos">+79%</td><td class="num-col profit-neg">-26%</td><td class="num-col profit-pos">+8%</td><td class="num-col">9</td><td><span class="badge badge-rev">✓ Reversal</span></td></tr>
+        <tr><td class="card-name">Brock Purdy 2022 Optic #277 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$19</td><td class="num-col profit-pos">+77%</td><td class="num-col profit-pos">+87%</td><td class="num-col profit-pos">+50%</td><td class="num-col">10</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Michael Penix Jr. 2024 Donruss Optic Preview (alt)</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$41</td><td class="num-col profit-pos">+73%</td><td class="num-col profit-pos">+23%</td><td class="num-col profit-pos">+8%</td><td class="num-col">12</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">CJ Stroud 2023 Prizm #339 Lazer</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$28</td><td class="num-col profit-pos">+70%</td><td class="num-col profit-neg">-17%</td><td class="num-col profit-neg">-1%</td><td class="num-col">8</td><td><span class="badge badge-rev">✓ Reversal</span></td></tr>
+        <tr><td class="card-name">JJ McCarthy 2024 Optic #235 Purple Shock</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$22</td><td class="num-col profit-pos">+70%</td><td class="num-col profit-pos">+127%</td><td class="num-col color-gray">N/A</td><td class="num-col">8</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Topps Now #23 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$22</td><td class="num-col profit-pos">+67%</td><td class="num-col profit-pos">+46%</td><td class="num-col profit-pos">+14%</td><td class="num-col">10</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+        <tr><td class="card-name">Saquon Barkley 2018 Donruss #306 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$34</td><td class="num-col profit-pos">+65%</td><td class="num-col profit-pos">+16%</td><td class="num-col profit-neg">-11%</td><td class="num-col">10</td><td><span class="badge badge-watch">👀 Watch</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-green" style="margin-top:4px;">
+    <strong>Best buys in this category</strong>
+    <strong>Trevor Lawrence Mosaic NFL Debut PSA 10</strong> ($24) — +133% in 30d, +250% in 180d. Cheap entry, high momentum.<br>
+    <strong>JSN 2023 Prizm Silver PSA 10</strong> ($182) — +92% in 30d, +749% in 180d. WR1 breakout, still running.<br>
+    <strong>Brock Purdy Optic Base PSA 9</strong> ($19) — +77% in 30d. Super cheap entry on a proven SB QB.
+  </div>
+  <div class="callout callout-amber" style="margin-top:4px;">
+    <strong>Caution</strong>
+    JJ McCarthy cards are highly volatile (-43% to +100% swings). Michael Penix Jr. showing recovery but still well below 360d highs.
+  </div>
+</div>
+
+<!-- RECOVERY -->
+<div id="tab-recovery" class="tab-content">
+  <div class="section-header">Recovery Plays — Beaten Down But Rebounding</div>
+  <div class="section-sub">Down significantly from 360-day highs but showing 30-day recovery. Upside = % gain needed to return to prior high.</div>
+  <div class="callout callout-blue">
+    <strong>Risk key</strong>
+    <span class="badge badge-safe">Lower</span> Modest drop, safer recovery &nbsp;·&nbsp;
+    <span class="badge badge-amber">Medium</span> Large drop, recovery uncertain &nbsp;·&nbsp;
+    <span class="badge badge-risky">High</span> Massive drop (&gt;50%), speculative
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Card</th><th>Grade</th>
+        <th style="text-align:right;">Avg $</th>
+        <th style="text-align:right;">30d</th>
+        <th style="text-align:right;">360d</th>
+        <th style="text-align:right;">Upside</th>
+        <th style="text-align:right;">Vol</th>
+        <th>Risk</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="card-name">Joe Milton III 2024 Prizm #354 Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$15</td><td class="num-col profit-pos">+100%</td><td class="num-col profit-neg">-56%</td><td class="num-col profit-pos">+199%</td><td class="num-col">52</td><td><span class="badge badge-risky">High</span></td></tr>
+        <tr><td class="card-name">JJ McCarthy 2024 Prizm #400 Lazer</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$23</td><td class="num-col profit-pos">+100%</td><td class="num-col profit-neg">-36%</td><td class="num-col profit-pos">+52%</td><td class="num-col">107</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">Ladd McConkey 2024 Prizm #365 Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$16</td><td class="num-col profit-pos">+100%</td><td class="num-col profit-neg">-50%</td><td class="num-col profit-pos">+63%</td><td class="num-col">51</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">JJ McCarthy 2024 Prizm #400 Disco</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$84</td><td class="num-col profit-pos">+97%</td><td class="num-col profit-neg">-67%</td><td class="num-col profit-pos">+121%</td><td class="num-col">78</td><td><span class="badge badge-amber">Medium</span></td></tr>
+        <tr><td class="card-name">Michael Penix Jr. 2024 Donruss Optic Preview</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$71</td><td class="num-col profit-pos">+91%</td><td class="num-col profit-neg">-58%</td><td class="num-col profit-pos">+126%</td><td class="num-col">84</td><td><span class="badge badge-amber">Medium</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Prizm #24 Fireworks Green Wave</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$41</td><td class="num-col profit-pos">+83%</td><td class="num-col profit-neg">-34%</td><td class="num-col profit-pos">+134%</td><td class="num-col">60</td><td><span class="badge badge-amber">Medium</span></td></tr>
+        <tr><td class="card-name">Michael Penix Jr. 2024 Donruss Optic Preview Pink</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$41</td><td class="num-col profit-pos">+73%</td><td class="num-col profit-neg">-76%</td><td class="num-col profit-pos">+373%</td><td class="num-col">174</td><td><span class="badge badge-risky">High</span></td></tr>
+        <tr><td class="card-name">CJ Stroud 2023 Prizm #339 Lazer</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$28</td><td class="num-col profit-pos">+70%</td><td class="num-col profit-neg">-43%</td><td class="num-col profit-pos">+56%</td><td class="num-col">61</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">JJ McCarthy 2024 Optic #235 Purple Shock</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$22</td><td class="num-col profit-pos">+70%</td><td class="num-col profit-neg">-75%</td><td class="num-col profit-pos">+352%</td><td class="num-col">85</td><td><span class="badge badge-risky">High</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Topps Now #23 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$22</td><td class="num-col profit-pos">+67%</td><td class="num-col profit-neg">-25%</td><td class="num-col profit-pos">+80%</td><td class="num-col">113</td><td><span class="badge badge-amber">Medium</span></td></tr>
+        <tr><td class="card-name">Saquon Barkley 2018 Donruss #306 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$34</td><td class="num-col profit-pos">+65%</td><td class="num-col profit-neg">-18%</td><td class="num-col profit-pos">+31%</td><td class="num-col">83</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">CJ Stroud 2023 Prizm #339 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$12</td><td class="num-col profit-pos">+63%</td><td class="num-col profit-neg">-31%</td><td class="num-col profit-pos">+25%</td><td class="num-col">192</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">Bo Nix 2024 Donruss #369 Optic Preview Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$24</td><td class="num-col profit-pos">+56%</td><td class="num-col profit-neg">-12%</td><td class="num-col profit-pos">+80%</td><td class="num-col">86</td><td><span class="badge badge-amber">Medium</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Donruss Optic Preview Red</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$39</td><td class="num-col profit-pos">+56%</td><td class="num-col profit-neg">-60%</td><td class="num-col profit-pos">+222%</td><td class="num-col">74</td><td><span class="badge badge-risky">High</span></td></tr>
+        <tr><td class="card-name">Lamar Jackson 2018 Prizm #212 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$52</td><td class="num-col profit-pos">+52%</td><td class="num-col profit-neg">-29%</td><td class="num-col profit-pos">+10%</td><td class="num-col">99</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Prizm #1 Prizm Flashback</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$129</td><td class="num-col profit-pos">+50%</td><td class="num-col profit-neg">-20%</td><td class="num-col profit-pos">+55%</td><td class="num-col">59</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Prizm #3 Prizmatic Green Ice</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$53</td><td class="num-col profit-pos">+45%</td><td class="num-col profit-neg">-46%</td><td class="num-col profit-pos">+165%</td><td class="num-col">42</td><td><span class="badge badge-risky">High</span></td></tr>
+        <tr><td class="card-name">CJ Stroud 2023 Absolute #102 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$19</td><td class="num-col profit-pos">+43%</td><td class="num-col profit-neg">-41%</td><td class="num-col profit-pos">+46%</td><td class="num-col">96</td><td><span class="badge badge-safe">Lower</span></td></tr>
+        <tr><td class="card-name">Jayden Daniels 2024 Prizm #347 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$60</td><td class="num-col profit-pos">+41%</td><td class="num-col profit-neg">-54%</td><td class="num-col profit-pos">+155%</td><td class="num-col">550</td><td><span class="badge badge-risky">High</span></td></tr>
+        <tr><td class="card-name">Michael Penix Jr. 2024 Optic #279 Purple Shock</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$43</td><td class="num-col profit-pos">+39%</td><td class="num-col profit-neg">-52%</td><td class="num-col profit-pos">+147%</td><td class="num-col">58</td><td><span class="badge badge-amber">Medium</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-green" style="margin-top:4px;">
+    <strong>Best recovery buys (high upside + strong 30d momentum)</strong>
+    <strong>JJ McCarthy 2024 Prizm Disco PSA 10</strong> ($84) — Down 67% from highs, now +97% in 30d. +121% upside to recover.<br>
+    <strong>Michael Penix Jr. Optic Preview Pink PSA 10</strong> ($41) — Down 76%, now +73% in 30d. +373% upside if recovers.<br>
+    <strong>Jayden Daniels 2024 Prizm Base PSA 10</strong> ($60) — Down 54%, +41% recovery. +155% upside. ROY hype returning.
+  </div>
+</div>
+
+<!-- VALUE -->
+<div id="tab-value" class="tab-content">
+  <div class="section-header">Value Plays — Near 180-Day Lows</div>
+  <div class="section-sub">Trading within 20% of 180-day lows. Accumulation zone — set alerts at or below the current min price.</div>
+  <div class="callout callout-amber">
+    <strong>Strategy</strong>
+    These cards haven't broken out yet — they're cheap relative to recent history.
+    Set price alerts at or below the Min $ column. Downtown PSA 9 inserts in the $350–450 range are the most interesting for potential bounces.
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Card</th><th>Grade</th>
+        <th style="text-align:right;">Avg $</th>
+        <th style="text-align:right;">180d Low</th>
+        <th style="text-align:right;">180d High</th>
+        <th style="text-align:right;">% Above Low</th>
+        <th style="text-align:right;">Vol</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="card-name">Michael Vick 2024 Optic #25 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$389</td><td class="num-col">$350</td><td class="num-col">$450</td><td class="num-col profit-pos">+11%</td><td class="num-col">26</td></tr>
+        <tr><td class="card-name">Dan Marino 2023 Optic #D-8 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$422</td><td class="num-col">$375</td><td class="num-col">$652</td><td class="num-col profit-pos">+12%</td><td class="num-col">15</td></tr>
+        <tr><td class="card-name">Maxx Crosby 2024 Optic #23 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$390</td><td class="num-col">$345</td><td class="num-col">$544</td><td class="num-col profit-pos">+13%</td><td class="num-col">21</td></tr>
+        <tr><td class="card-name">Jerry Rice 2023 Optic #D-20 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$424</td><td class="num-col">$375</td><td class="num-col">$573</td><td class="num-col profit-pos">+13%</td><td class="num-col">18</td></tr>
+        <tr><td class="card-name">Matthew Stafford 2023 Optic International Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$446</td><td class="num-col">$394</td><td class="num-col">$620</td><td class="num-col profit-pos">+13%</td><td class="num-col">20</td></tr>
+        <tr><td class="card-name">Drake London 2022 Donruss #DT-DL Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$410</td><td class="num-col">$360</td><td class="num-col">$460</td><td class="num-col profit-pos">+14%</td><td class="num-col">20</td></tr>
+        <tr><td class="card-name">Lamar Jackson 2024 Optic #1 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$432</td><td class="num-col">$380</td><td class="num-col">$577</td><td class="num-col profit-pos">+14%</td><td class="num-col">30</td></tr>
+        <tr><td class="card-name">Marshall Faulk 2023 Optic Super Bowl Downtown</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$490</td><td class="num-col">$430</td><td class="num-col">$565</td><td class="num-col profit-pos">+14%</td><td class="num-col">29</td></tr>
+        <tr><td class="card-name">Bo Nix 2024 Absolute #EX-BNX Explosive</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$281</td><td class="num-col">$246</td><td class="num-col">$360</td><td class="num-col profit-pos">+14%</td><td class="num-col">17</td></tr>
+        <tr><td class="card-name">Kyle Pitts 2021 Optic #DT-13 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$338</td><td class="num-col">$295</td><td class="num-col">$383</td><td class="num-col profit-pos">+15%</td><td class="num-col">15</td></tr>
+        <tr><td class="card-name">Joe Burrow 2020 Prizm #307 Lazer</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$316</td><td class="num-col">$275</td><td class="num-col">$405</td><td class="num-col profit-pos">+15%</td><td class="num-col">21</td></tr>
+        <tr><td class="card-name">Christian Okoye 2024 Optic Downtown Legends</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$373</td><td class="num-col">$324</td><td class="num-col">$467</td><td class="num-col profit-pos">+15%</td><td class="num-col">23</td></tr>
+        <tr><td class="card-name">Bo Nix 2024 Prizm #309 Red White Blue</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$187</td><td class="num-col">$162</td><td class="num-col">$250</td><td class="num-col profit-pos">+15%</td><td class="num-col">20</td></tr>
+        <tr><td class="card-name">Terry Bradshaw 2024 Optic #10 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$231</td><td class="num-col">$200</td><td class="num-col">$306</td><td class="num-col profit-pos">+15%</td><td class="num-col">26</td></tr>
+        <tr><td class="card-name">Terrell Owens 2024 Optic #8 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$254</td><td class="num-col">$220</td><td class="num-col">$316</td><td class="num-col profit-pos">+15%</td><td class="num-col">22</td></tr>
+        <tr><td class="card-name">Josh Jacobs 2023 Optic #D-12 Downtown</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$411</td><td class="num-col">$355</td><td class="num-col">$598</td><td class="num-col profit-pos">+16%</td><td class="num-col">20</td></tr>
+        <tr><td class="card-name">Rome Odunze 2024 Absolute Kaboom! Horizontal</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$455</td><td class="num-col">$393</td><td class="num-col">$630</td><td class="num-col profit-pos">+16%</td><td class="num-col">49</td></tr>
+        <tr><td class="card-name">Cooper Kupp 2022 Optic #DT-CK Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$348</td><td class="num-col">$300</td><td class="num-col">$393</td><td class="num-col profit-pos">+16%</td><td class="num-col">16</td></tr>
+        <tr><td class="card-name">Rome Odunze 2024 Optic #15 Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$354</td><td class="num-col">$305</td><td class="num-col">$390</td><td class="num-col profit-pos">+16%</td><td class="num-col">26</td></tr>
+        <tr><td class="card-name">Derrick Henry 2023 Optic International Downtown</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$402</td><td class="num-col">$345</td><td class="num-col">$470</td><td class="num-col profit-pos">+17%</td><td class="num-col">23</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-green" style="margin-top:4px;">
+    <strong>Best value accumulation picks</strong>
+    <strong>Lamar Jackson 2024 Optic Downtown PSA 9</strong> ($432) — Only 14% above 180d low, 30 sales. MVP candidate.<br>
+    <strong>Joe Burrow 2020 Prizm Lazer PSA 10</strong> ($316) — 15% above low. Elite QB, depressed prices.<br>
+    <strong>Bo Nix 2024 Prizm RWB PSA 10</strong> ($187) — 15% above low. Emerging star with clear upside.
+  </div>
+</div>
+
+<!-- CONSISTENT GROWERS -->
+<div id="tab-growers" class="tab-content">
+  <div class="section-header">Consistent Growers — Up Across All Timeframes</div>
+  <div class="section-sub">Positive momentum in 30d, 60d, AND 180d. The trend is your friend. Strongest long-term holds in the dataset.</div>
+  <div class="callout callout-blue">
+    <strong>Why this matters</strong>
+    Cards that are up across all three timeframes show sustained demand — not a short-term pop.
+    JSN Prizm Silver (+749% in 180d), Sam Darnold Select (+525%), and Drake Maye Donruss (+522%) are the three standout long-term trend plays.
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Card</th><th>Grade</th>
+        <th style="text-align:right;">Avg $</th>
+        <th style="text-align:right;">30d</th>
+        <th style="text-align:right;">60d</th>
+        <th style="text-align:right;">180d</th>
+        <th style="text-align:right;">Vol</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="card-name">Jaxon Smith-Njigba 2023 Prizm #390 Silver</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$182</td><td class="num-col profit-pos">+92%</td><td class="num-col profit-pos">+106%</td><td class="num-col profit-pos">+749%</td><td class="num-col">76</td></tr>
+        <tr><td class="card-name">Sam Darnold 2018 Select Premier Level Silver</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$106</td><td class="num-col profit-pos">+34%</td><td class="num-col profit-pos">+182%</td><td class="num-col profit-pos">+525%</td><td class="num-col">29</td></tr>
+        <tr><td class="card-name">Drake Maye 2024 Donruss #379 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$111</td><td class="num-col profit-pos">+15%</td><td class="num-col profit-pos">+45%</td><td class="num-col profit-pos">+522%</td><td class="num-col">382</td></tr>
+        <tr><td class="card-name">Trevor Lawrence 2021 Mosaic #241 NFL Debut</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$24</td><td class="num-col profit-pos">+133%</td><td class="num-col profit-pos">+28%</td><td class="num-col profit-pos">+250%</td><td class="num-col">53</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Select Premier Level Silver</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$107</td><td class="num-col profit-pos">+35%</td><td class="num-col profit-pos">+75%</td><td class="num-col profit-pos">+250%</td><td class="num-col">63</td></tr>
+        <tr><td class="card-name">Deshaun Watson 2017 Prizm #279 Silver</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$24</td><td class="num-col profit-pos">+9%</td><td class="num-col profit-pos">+33%</td><td class="num-col profit-pos">+223%</td><td class="num-col">48</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Topps Now Draft #D-1 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$36</td><td class="num-col profit-pos">+12%</td><td class="num-col profit-pos">+18%</td><td class="num-col profit-pos">+184%</td><td class="num-col">128</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Prizm #301 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$87</td><td class="num-col profit-pos">+35%</td><td class="num-col profit-pos">+59%</td><td class="num-col profit-pos">+140%</td><td class="num-col">199</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Prizm #301 Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$92</td><td class="num-col profit-pos">+1%</td><td class="num-col profit-pos">+35%</td><td class="num-col profit-pos">+94%</td><td class="num-col">461</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Donruss Optic Preview Red</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$80</td><td class="num-col profit-pos">+38%</td><td class="num-col profit-pos">+7%</td><td class="num-col profit-pos">+90%</td><td class="num-col">70</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Donruss #327 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$45</td><td class="num-col profit-pos">+39%</td><td class="num-col profit-pos">+12%</td><td class="num-col profit-pos">+88%</td><td class="num-col">254</td></tr>
+        <tr><td class="card-name">Justin Herbert 2020 Optic #153 Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$52</td><td class="num-col profit-pos">+18%</td><td class="num-col profit-pos">+8%</td><td class="num-col profit-pos">+76%</td><td class="num-col">48</td></tr>
+        <tr><td class="card-name">Bo Nix 2024 Optic #209 Purple Shock</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$73</td><td class="num-col profit-pos">+13%</td><td class="num-col profit-pos">+59%</td><td class="num-col profit-pos">+71%</td><td class="num-col">171</td></tr>
+        <tr><td class="card-name">Caleb Williams 2024 Optic #201 Purple Shock</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$26</td><td class="num-col profit-pos">+5%</td><td class="num-col profit-pos">+16%</td><td class="num-col profit-pos">+65%</td><td class="num-col">153</td></tr>
+        <tr><td class="card-name">Bo Nix 2024 Donruss #369 Optic Preview Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$24</td><td class="num-col profit-pos">+56%</td><td class="num-col profit-pos">+26%</td><td class="num-col profit-pos">+62%</td><td class="num-col">86</td></tr>
+        <tr><td class="card-name">Justin Herbert 2020 Donruss #303 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$18</td><td class="num-col profit-pos">+22%</td><td class="num-col profit-pos">+51%</td><td class="num-col profit-pos">+61%</td><td class="num-col">72</td></tr>
+        <tr><td class="card-name">Michael Penix Jr. 2024 Prizm #378 Green Wave</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$15</td><td class="num-col profit-pos">+11%</td><td class="num-col profit-pos">+27%</td><td class="num-col profit-pos">+52%</td><td class="num-col">42</td></tr>
+        <tr><td class="card-name">Brock Purdy 2022 Optic #277 Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td class="num-col">$19</td><td class="num-col profit-pos">+77%</td><td class="num-col profit-pos">+87%</td><td class="num-col profit-pos">+50%</td><td class="num-col">74</td></tr>
+        <tr><td class="card-name">Anthony Richardson 2023 Optic #5 Rookie Kings</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$67</td><td class="num-col profit-pos">+37%</td><td class="num-col profit-pos">+145%</td><td class="num-col profit-pos">+49%</td><td class="num-col">25</td></tr>
+        <tr><td class="card-name">Bryce Young 2023 Prizm #311 Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td class="num-col">$26</td><td class="num-col profit-pos">+6%</td><td class="num-col profit-pos">+22%</td><td class="num-col profit-pos">+45%</td><td class="num-col">61</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-green" style="margin-top:4px;">
+    <strong>Caleb Williams — multiple cards in sustained uptrend</strong>
+    Prizm Base PSA 10 ($87) +140% in 180d &nbsp;·&nbsp; Select Premier Silver PSA 10 ($107) +250% &nbsp;·&nbsp; Donruss Base PSA 10 ($45) +88% — most affordable entry.<br>
+    <strong>Justin Herbert recovery:</strong> Optic Pink PSA 9 ($52) +76% · Donruss Base PSA 9 ($18) +61% — market reassessing after injury concerns.
+  </div>
+</div>
+
+<div class="footer">
+  Brick Squad Sports Cards · Football Graded Buy Opportunities · March 2026 · PSA 9 &amp; PSA 10 under $500 · Data from 130point.com &amp; eBay sold listings
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
