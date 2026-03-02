@@ -23,7 +23,6 @@ body { font-family: system-ui, -apple-system, sans-serif; max-width: 1080px; mar
 .stat-blue  { background: #eff6ff; border: 1px solid #93c5fd; }
 .stat-green { background: #f0fdf4; border: 1px solid #86efac; }
 .stat-red   { background: #fef2f2; border: 1px solid #fca5a5; }
-.stat-amber { background: #fffbeb; border: 1px solid #fde68a; }
 
 /* Tabs */
 .tabs { display: flex; gap: 4px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
@@ -52,35 +51,25 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
 /* Profit color cells */
 .profit-pos { color: #16a34a; font-weight: 700; }
 .profit-neg { color: #dc2626; font-weight: 700; }
-.profit-zero { color: #64748b; font-weight: 600; }
 
 /* EV highlight */
-.ev-cell { background: #eff6ff; font-weight: 800; color: #1d4ed8; text-align: right; border-radius: 4px; padding: 3px 8px; }
+.ev-cell { background: #eff6ff; font-weight: 800; color: #1d4ed8; text-align: right; border-radius: 4px; padding: 3px 8px; display: inline-block; }
 
 /* Badges */
 .badge { border-radius: 3px; padding: 2px 7px; font-size: 10px; font-weight: 700; display: inline-block; white-space: nowrap; }
-.badge-safe   { background: #dcfce7; color: #15803d; }
-.badge-risky  { background: #fee2e2; color: #b91c1c; }
-.badge-gem    { background: #eff6ff; color: #1d4ed8; }
-.badge-pct   { background: #fef3c7; color: #92400e; }
-.badge-est    { background: #f3e8ff; color: #7c3aed; font-size: 9px; }
-.badge-tier1  { background: #16a34a; color: white; }
-.badge-tier2  { background: #d97706; color: white; }
-.badge-tier3  { background: #dc2626; color: white; }
+.badge-safe  { background: #dcfce7; color: #15803d; }
+.badge-risky { background: #fee2e2; color: #b91c1c; }
+.badge-est   { background: #f3e8ff; color: #7c3aed; font-size: 9px; }
+.badge-tier1 { background: #16a34a; color: white; }
+.badge-tier2 { background: #d97706; color: white; }
+.badge-tier3 { background: #dc2626; color: white; }
 
-/* Gem % bar */
-.gem-bar-wrap { display: flex; align-items: center; gap: 6px; }
-.gem-bar-bg { width: 50px; height: 6px; background: #e2e8f0; border-radius: 3px; flex-shrink: 0; }
-.gem-bar-fill { height: 6px; border-radius: 3px; background: #2563eb; }
-.gem-bar-fill.high { background: #16a34a; }
-.gem-bar-fill.low  { background: #dc2626; }
-
-/* Recommendation cards */
+/* Recommendation tiers */
 .rec-section { margin-bottom: 20px; }
 .rec-tier { border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; }
-.tier1-bg { background: #f0fdf4; border-left: 4px solid #16a34a; border: 1px solid #86efac; border-left: 4px solid #16a34a; }
-.tier2-bg { background: #fffbeb; border-left: 4px solid #d97706; border: 1px solid #fde68a; border-left: 4px solid #d97706; }
-.tier3-bg { background: #fef2f2; border-left: 4px solid #dc2626; border: 1px solid #fca5a5; border-left: 4px solid #dc2626; }
+.tier1-bg { background: #f0fdf4; border: 1px solid #86efac; border-left: 4px solid #16a34a; }
+.tier2-bg { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; }
+.tier3-bg { background: #fef2f2; border: 1px solid #fca5a5; border-left: 4px solid #dc2626; }
 .tier-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
 
 /* Decision framework */
@@ -92,10 +81,9 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
 
 /* Methodology box */
 .method-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; font-size: 12px; line-height: 1.7; }
-.method-box code { background: #1a1a2e; color: #e2e8f0; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
 .method-box pre { background: #1a1a2e; color: #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-top: 8px; font-size: 11px; line-height: 1.8; overflow-x: auto; }
 
-/* Callout box */
+/* Callouts */
 .callout { border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 12px; line-height: 1.6; }
 .callout-blue  { background: #eff6ff; border: 1px solid #93c5fd; }
 .callout-amber { background: #fffbeb; border: 1px solid #fde68a; }
@@ -103,13 +91,13 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
 .callout-green { background: #f0fdf4; border: 1px solid #86efac; }
 .callout strong { display: block; margin-bottom: 4px; }
 
-/* Momentum rank badge */
+/* Momentum */
 .rank-badge { background: #1a1a2e; color: white; border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 700; display: inline-block; }
 
-/* Player summary */
-.safe-ratio { font-size: 11px; }
+/* Safe grade ratio colors */
 .safe-good { color: #16a34a; font-weight: 700; }
 .safe-bad  { color: #dc2626; font-weight: 700; }
+.safe-zero { color: #94a3b8; font-weight: 700; }
 
 /* Footer */
 .footer { margin-top: 16px; padding: 10px 14px; background: #f1f5f9; border-radius: 8px; font-size: 10px; color: #94a3b8; }
@@ -118,10 +106,8 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
 .flex { display: flex; }
 .items-center { align-items: center; }
 .gap-8 { gap: 8px; }
-.gap-4 { gap: 4px; }
 .fw-700 { font-weight: 700; }
 .mt-12 { margin-top: 12px; }
-.mb-4 { margin-bottom: 4px; }
 .text-12 { font-size: 12px; }
 .color-gray { color: #64748b; }
 </style>
@@ -134,34 +120,20 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
       <span style="font-size:24px">📊</span>
       <div>
         <h1>Brick Squad — Grading Analysis</h1>
-        <p>PSA 9 profitability · Gem rates · EV by card · March 2026</p>
+        <p>PSA 9 profitability · Gem rates · EV by card · March 2026 · $35 grading cost</p>
       </div>
     </div>
     <a href="index.html" class="nav-link">← Back to Buy List &amp; Max Bids</a>
   </div>
 </div>
 
-<!-- Summary stats -->
 <div class="stats-row">
-  <div class="stat-card stat-blue">
-    <div class="num">84</div>
-    <div class="lbl">Cards Analyzed</div>
-  </div>
-  <div class="stat-card stat-blue">
-    <div class="num">66</div>
-    <div class="lbl">With Actual PSA 9 Data</div>
-  </div>
-  <div class="stat-card stat-green">
-    <div class="num">24</div>
-    <div class="lbl" style="color:#15803d;">Safe Grades (PSA 9 Profitable)</div>
-  </div>
-  <div class="stat-card stat-red">
-    <div class="num">60</div>
-    <div class="lbl" style="color:#b91c1c;">Need the 10 to Profit</div>
-  </div>
+  <div class="stat-card stat-blue"><div class="num">84</div><div class="lbl">Cards Analyzed</div></div>
+  <div class="stat-card stat-blue"><div class="num">66</div><div class="lbl">With Actual PSA 9 Data</div></div>
+  <div class="stat-card stat-green"><div class="num">11</div><div class="lbl" style="color:#15803d;">Safe Grades (PSA 9 Profitable)</div></div>
+  <div class="stat-card stat-red"><div class="num">73</div><div class="lbl" style="color:#b91c1c;">Need the 10 to Profit</div></div>
 </div>
 
-<!-- Tabs -->
 <div class="tabs">
   <button class="tab active" onclick="showTab('recs')">Recommendations</button>
   <button class="tab" onclick="showTab('top25')">Top 25 by EV</button>
@@ -172,21 +144,17 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
   <button class="tab" onclick="showTab('byplayer')">By Player</button>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 1: RECOMMENDATIONS -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- RECOMMENDATIONS -->
 <div id="tab-recs" class="tab-content active">
-
-  <div class="callout callout-blue" style="margin-bottom:16px;">
-    <strong>The harsh reality</strong>
-    Most cards are only profitable if you hit the PSA 10. Only <strong>29% of cards</strong> remain profitable with a PSA 9 result. Grade selectively — condition matters more than you think.
+  <div class="callout callout-red" style="margin-bottom:16px;">
+    <strong>At $35 grading cost, only 13% of cards remain profitable with a PSA 9. Be very selective.</strong>
+    Cards that were safe at $25 are no longer safe. Only 11 cards survive the PSA 9 profitability test — down from 24. Cherry-pick condition harder than ever.
   </div>
 
   <div class="section-header">Grading Decision Framework</div>
   <div class="section-sub" style="margin-bottom:10px;">Run every card through this before submitting.</div>
-
   <div class="framework">
-    <div><span class="fw-q">Step 1 →</span> Is PSA 9 <strong>profitable</strong>?</div>
+    <div><span class="fw-q">Step 1 →</span> Is PSA 9 <strong>profitable</strong>? (at $35 cost)</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fw-yes">YES</span> <span class="fw-arrow">→</span> Safe to grade (Tier 1). Submit.</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fw-no">NO</span>  <span class="fw-arrow">→</span> Continue to Step 2.</div>
     <div>&nbsp;</div>
@@ -200,54 +168,41 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
   </div>
 
   <div class="section-header mt-12">Investment Tiers</div>
-  <div class="section-sub">Based on EV, PSA 9 profitability, and gem rate.</div>
+  <div class="section-sub">Based on EV, PSA 9 profitability, and gem rate at $35 grading cost.</div>
 
-  <!-- Tier 1 -->
   <div class="rec-tier tier1-bg rec-section">
     <div class="tier-title"><span class="badge badge-tier1">TIER 1</span>&nbsp; Grade Now — Safe + High EV</div>
-    <div style="font-size:11px;color:#166534;margin-bottom:10px;">PSA 9 profitable · Submit immediately · No condition cherry-picking needed</div>
+    <div style="font-size:11px;color:#166534;margin-bottom:10px;">PSA 9 profitable · Submit immediately</div>
     <div class="tbl-wrap" style="border:none;">
       <table>
-        <thead><tr>
-          <th>Card</th>
-          <th style="text-align:right;">EV</th>
-          <th style="text-align:right;">Profit if 9</th>
-          <th>Why</th>
-        </tr></thead>
+        <thead><tr><th>Card</th><th style="text-align:right;">EV</th><th style="text-align:right;">Profit if 9</th><th>Why</th></tr></thead>
         <tbody>
-          <tr><td class="player">Nikola Jokic — 2015 Donruss Base</td><td><span class="ev-cell">$432</span></td><td class="num-col profit-pos">+$320</td><td class="text-12 color-gray">Even a 9 is a massive win</td></tr>
-          <tr><td class="player">Luka Doncic — 2018 Prizm Pink Ice</td><td><span class="ev-cell">$327</span></td><td class="num-col profit-pos">+$21</td><td class="text-12 color-gray">59% gem rate, safe floor</td></tr>
-          <tr><td class="player">SGA — 2018 Prizm Pink Ice</td><td><span class="ev-cell">$135</span></td><td class="num-col profit-pos">+$13</td><td class="text-12 color-gray">MVP momentum, slight safety margin</td></tr>
-          <tr><td class="player">LeBron James — 2012 Prizm Base</td><td><span class="ev-cell">$131</span></td><td class="num-col profit-pos">+$22</td><td class="text-12 color-gray">Iconic card, safe either way</td></tr>
-          <tr><td class="player">Kobe Bryant — 2012 Prizm Base</td><td><span class="ev-cell">$119</span></td><td class="num-col profit-pos">+$19</td><td class="text-12 color-gray">Legacy demand, safe floor</td></tr>
+          <tr><td class="player">Nikola Jokic — 2015 Donruss Base</td><td><span class="ev-cell">$422</span></td><td class="num-col profit-pos">+$310</td><td class="text-12 color-gray">Even a 9 is a massive win</td></tr>
+          <tr><td class="player">Luka Doncic — 2018 Prizm Pink Ice</td><td><span class="ev-cell">$317</span></td><td class="num-col profit-pos">+$11</td><td class="text-12 color-gray">59% gem rate, safe floor</td></tr>
+          <tr><td class="player">SGA — 2018 Prizm Pink Ice</td><td><span class="ev-cell">$125</span></td><td class="num-col profit-pos">+$3</td><td class="text-12 color-gray">MVP momentum, slim but safe</td></tr>
+          <tr><td class="player">LeBron James — 2012 Prizm Base</td><td><span class="ev-cell">$121</span></td><td class="num-col profit-pos">+$12</td><td class="text-12 color-gray">Iconic card, safe either way</td></tr>
+          <tr><td class="player">Kobe Bryant — 2012 Prizm Base</td><td><span class="ev-cell">$109</span></td><td class="num-col profit-pos">+$9</td><td class="text-12 color-gray">Legacy demand, safe floor</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Tier 2 -->
   <div class="rec-tier tier2-bg rec-section">
     <div class="tier-title"><span class="badge badge-tier2">TIER 2</span>&nbsp; Grade Selectively — High EV but Risky</div>
-    <div style="font-size:11px;color:#92400e;margin-bottom:10px;">PSA 9 = loss · Only submit exceptionally clean copies · You need the 10</div>
+    <div style="font-size:11px;color:#92400e;margin-bottom:10px;">PSA 9 = loss · Only submit exceptionally clean copies</div>
     <div class="tbl-wrap" style="border:none;">
       <table>
-        <thead><tr>
-          <th>Card</th>
-          <th style="text-align:right;">EV</th>
-          <th style="text-align:right;">Loss if 9</th>
-          <th>Strategy</th>
-        </tr></thead>
+        <thead><tr><th>Card</th><th style="text-align:right;">EV</th><th style="text-align:right;">Loss if 9</th><th>Strategy</th></tr></thead>
         <tbody>
-          <tr><td class="player">Wemby — 2023 Prizm Ice / Red Ice / Orange Ice</td><td><span class="ev-cell">$145–158</span></td><td class="num-col profit-neg">-$26 to -$36</td><td class="text-12 color-gray">Cherry-pick only, need the 10</td></tr>
-          <tr><td class="player">Ant Edwards — 2020 Prizm Parallels</td><td><span class="ev-cell">$65–97</span></td><td class="num-col profit-neg">-$0 to -$11</td><td class="text-12 color-gray">Borderline — assess each card individually</td></tr>
-          <tr><td class="player">Stephon Castle — 2024 Prizm Variations</td><td><span class="ev-cell">$50–67</span></td><td class="num-col profit-neg">-$4 to -$16</td><td class="text-12 color-gray">Only grade flawless copies</td></tr>
-          <tr><td class="player">Cade Cunningham — 2021 Prizm Orange Ice</td><td><span class="ev-cell">$66</span></td><td class="num-col profit-neg">-$8</td><td class="text-12 color-gray">63% gem rate helps but still risky</td></tr>
+          <tr><td class="player">Wemby — 2023 Prizm Ice / Red Ice / Orange Ice</td><td><span class="ev-cell">$135–148</span></td><td class="num-col profit-neg">-$36 to -$46</td><td class="text-12 color-gray">Cherry-pick only, need the 10</td></tr>
+          <tr><td class="player">Ant Edwards — 2020 Prizm Orange Ice</td><td><span class="ev-cell">$87</span></td><td class="num-col profit-neg">-$10</td><td class="text-12 color-gray">Borderline — assess condition carefully</td></tr>
+          <tr><td class="player">Ant Edwards — 2020 Prizm Pink Ice</td><td><span class="ev-cell">$82</span></td><td class="num-col profit-neg">-$21</td><td class="text-12 color-gray">Only grade flawless copies</td></tr>
+          <tr><td class="player">Stephon Castle — 2024 Prizm Variations</td><td><span class="ev-cell">$46–57</span></td><td class="num-col profit-neg">-$14 to -$26</td><td class="text-12 color-gray">Only grade flawless copies</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Tier 3 -->
   <div class="rec-tier tier3-bg rec-section">
     <div class="tier-title"><span class="badge badge-tier3">TIER 3</span>&nbsp; Avoid Grading</div>
     <div class="tbl-wrap" style="border:none;">
@@ -257,247 +212,187 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
           <tr><td class="player">Low gem rate (&lt;30%) + low EV (&lt;$40)</td><td class="text-12 color-gray">Math doesn't work at any price point</td></tr>
           <tr><td class="player">Cards where PSA 9 loss &gt; $30</td><td class="text-12 color-gray">Too much downside to justify the risk</td></tr>
           <tr><td class="player">High-pop base cards with thin PSA 10 premium</td><td class="text-12 color-gray">Grading cost not justified by spread</td></tr>
+          <tr><td class="player">Brandon Miller cards (negative total EV)</td><td class="text-12 color-gray">Math is negative at $35 — skip entirely</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 2: TOP 25 BY EV -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TOP 25 BY EV -->
 <div id="tab-top25" class="tab-content">
-
   <div class="section-header">Top 25 by Expected Value</div>
-  <div class="section-sub">Full grading economics: Raw → PSA 9 → PSA 10 profit at each outcome. EV is the weighted average based on gem rate.</div>
-
+  <div class="section-sub">Full grading economics at $35 cost: Raw → PSA 9 → PSA 10 profit at each outcome.</div>
   <div class="callout callout-blue">
     <strong>Legend</strong>
-    * = PSA 9 price estimated (no sales data, using 60% of PSA 10) &nbsp;·&nbsp;
-    <span class="badge badge-safe">✓ Safe</span> PSA 9 still profitable after $35 grading cost &nbsp;·&nbsp;
-    <span class="badge badge-risky">✗ Risky</span> PSA 9 results in a loss
+    * = PSA 9 price estimated (60% of PSA 10) &nbsp;·&nbsp;
+    <span class="badge badge-safe">✓ Safe</span> PSA 9 profitable after $35 &nbsp;·&nbsp;
+    <span class="badge badge-risky">✗ Risky</span> PSA 9 = loss
   </div>
-
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>#</th>
-        <th>Player</th>
-        <th>Year · Set / Parallel</th>
-        <th style="text-align:right;">Gem%</th>
-        <th style="text-align:right;">Raw $</th>
-        <th style="text-align:right;">PSA 9 $</th>
-        <th style="text-align:right;">PSA 10 $</th>
-        <th style="text-align:right;">If 9</th>
-        <th style="text-align:right;">If 10</th>
-        <th style="text-align:right;">EV</th>
-        <th>9 OK?</th>
+        <th>#</th><th>Player</th><th>Year · Set / Parallel</th>
+        <th style="text-align:right;">Gem%</th><th style="text-align:right;">Raw $</th>
+        <th style="text-align:right;">PSA 9 $</th><th style="text-align:right;">PSA 10 $</th>
+        <th style="text-align:right;">If 9</th><th style="text-align:right;">If 10</th>
+        <th style="text-align:right;">EV</th><th>9 OK?</th>
       </tr></thead>
       <tbody>
-        <tr><td class="num-col color-gray">1</td><td class="player">Nikola Jokic</td><td class="card-set">2015 · Donruss Base</td><td class="num-col">33%</td><td class="num-col">$165</td><td class="num-col">$510 <span class="badge badge-est">est</span></td><td class="num-col">$850</td><td class="num-col profit-pos">+$320</td><td class="num-col profit-pos">+$660</td><td class="num-col"><span class="ev-cell">$432</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">2</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">59%</td><td class="num-col">$292</td><td class="num-col">$338</td><td class="num-col">$857</td><td class="num-col profit-pos">+$21</td><td class="num-col profit-pos">+$540</td><td class="num-col"><span class="ev-cell">$327</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">3</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Ice</td><td class="num-col">59%</td><td class="num-col">$195</td><td class="num-col">$194</td><td class="num-col">$506</td><td class="num-col profit-neg">-$26</td><td class="num-col profit-pos">+$286</td><td class="num-col"><span class="ev-cell">$158</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">4</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red Ice</td><td class="num-col">60%</td><td class="num-col">$188</td><td class="num-col">$181</td><td class="num-col">$492</td><td class="num-col profit-neg">-$33</td><td class="num-col profit-pos">+$279</td><td class="num-col"><span class="ev-cell">$154</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">5</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Orange Ice</td><td class="num-col">55%</td><td class="num-col">$202</td><td class="num-col">$192</td><td class="num-col">$520</td><td class="num-col profit-neg">-$36</td><td class="num-col profit-pos">+$293</td><td class="num-col"><span class="ev-cell">$145</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">6</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">35%</td><td class="num-col">$103</td><td class="num-col">$140</td><td class="num-col">$491</td><td class="num-col profit-pos">+$13</td><td class="num-col profit-pos">+$364</td><td class="num-col"><span class="ev-cell">$135</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">7</td><td class="player">LeBron James</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">32%</td><td class="num-col">$72</td><td class="num-col">$118</td><td class="num-col">$460</td><td class="num-col profit-pos">+$22</td><td class="num-col profit-pos">+$364</td><td class="num-col"><span class="ev-cell">$131</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">8</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$164</td><td class="num-col">$163</td><td class="num-col">$387</td><td class="num-col profit-neg">-$26</td><td class="num-col profit-pos">+$199</td><td class="num-col"><span class="ev-cell">$129</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">9</td><td class="player">Kobe Bryant</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">36%</td><td class="num-col">$60</td><td class="num-col">$103</td><td class="num-col">$383</td><td class="num-col profit-pos">+$19</td><td class="num-col profit-pos">+$298</td><td class="num-col"><span class="ev-cell">$119</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">10</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Orange Ice</td><td class="num-col">39%</td><td class="num-col">$90</td><td class="num-col">$114</td><td class="num-col">$363</td><td class="num-col profit-zero">-$0</td><td class="num-col profit-pos">+$248</td><td class="num-col"><span class="ev-cell">$97</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">11</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Pink Ice</td><td class="num-col">37%</td><td class="num-col">$77</td><td class="num-col">$92</td><td class="num-col">$369</td><td class="num-col profit-neg">-$11</td><td class="num-col profit-pos">+$267</td><td class="num-col"><span class="ev-cell">$92</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">12</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Ruby Wave</td><td class="num-col">36%</td><td class="num-col">$68</td><td class="num-col">$98</td><td class="num-col">$325</td><td class="num-col profit-pos">+$5</td><td class="num-col profit-pos">+$232</td><td class="num-col"><span class="ev-cell">$87</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">13</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Mosaic Base</td><td class="num-col">63%</td><td class="num-col">$81</td><td class="num-col">$101</td><td class="num-col">$238</td><td class="num-col profit-neg">-$5</td><td class="num-col profit-pos">+$132</td><td class="num-col"><span class="ev-cell">$81</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">14</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Ruby Wave</td><td class="num-col">17%</td><td class="num-col">$138</td><td class="num-col">$155</td><td class="num-col">$598</td><td class="num-col profit-neg">-$7</td><td class="num-col profit-pos">+$436</td><td class="num-col"><span class="ev-cell">$68</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">15</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm China Variation</td><td class="num-col">34%</td><td class="num-col">$25</td><td class="num-col">$34</td><td class="num-col">$278</td><td class="num-col profit-neg">-$16</td><td class="num-col profit-pos">+$228</td><td class="num-col"><span class="ev-cell">$67</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">16</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$28</td><td class="num-col">$44</td><td class="num-col">$163</td><td class="num-col profit-neg">-$8</td><td class="num-col profit-pos">+$110</td><td class="num-col"><span class="ev-cell">$66</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">17</td><td class="player">Caitlin Clark</td><td class="card-set">2024 · Prizm WNBA Blue Velocity</td><td class="num-col">35%</td><td class="num-col">$87</td><td class="num-col">$94</td><td class="num-col">$333</td><td class="num-col profit-neg">-$19</td><td class="num-col profit-pos">+$220</td><td class="num-col"><span class="ev-cell">$65</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">18</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Red Ice</td><td class="num-col">30%</td><td class="num-col">$72</td><td class="num-col">$95</td><td class="num-col">$318</td><td class="num-col profit-neg">-$2</td><td class="num-col profit-pos">+$221</td><td class="num-col"><span class="ev-cell">$65</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">19</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red White Blue</td><td class="num-col">23%</td><td class="num-col">$108</td><td class="num-col">$125</td><td class="num-col">$437</td><td class="num-col profit-neg">-$9</td><td class="num-col profit-pos">+$303</td><td class="num-col"><span class="ev-cell">$63</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">20</td><td class="player">Kobe Bryant</td><td class="card-set">2019 · Prizm Ruby Wave</td><td class="num-col">59%</td><td class="num-col">$51</td><td class="num-col">$80</td><td class="num-col">$179</td><td class="num-col profit-pos">+$4</td><td class="num-col profit-pos">+$104</td><td class="num-col"><span class="ev-cell">$63</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">21</td><td class="player">Giannis Antetokounmpo</td><td class="card-set">2013 · Hoops Base</td><td class="num-col">49%</td><td class="num-col">$43</td><td class="num-col">$59</td><td class="num-col">$203</td><td class="num-col profit-neg">-$9</td><td class="num-col profit-pos">+$135</td><td class="num-col"><span class="ev-cell">$61</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">22</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm Green Ice</td><td class="num-col">44%</td><td class="num-col">$23</td><td class="num-col">$44</td><td class="num-col">$180</td><td class="num-col profit-neg">-$4</td><td class="num-col profit-pos">+$132</td><td class="num-col"><span class="ev-cell">$56</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">23</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Base</td><td class="num-col">52%</td><td class="num-col">$65</td><td class="num-col">$80</td><td class="num-col">$201</td><td class="num-col profit-neg">-$10</td><td class="num-col profit-pos">+$111</td><td class="num-col"><span class="ev-cell">$53</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
-        <tr><td class="num-col color-gray">24</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Deca Base</td><td class="num-col">68%</td><td class="num-col">$17</td><td class="num-col">$65 <span class="badge badge-est">est</span></td><td class="num-col">$108</td><td class="num-col profit-pos">+$23</td><td class="num-col profit-pos">+$66</td><td class="num-col"><span class="ev-cell">$53</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
-        <tr><td class="num-col color-gray">25</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Draft Picks Red Ice</td><td class="num-col">65%</td><td class="num-col">$29</td><td class="num-col">$72 <span class="badge badge-est">est</span></td><td class="num-col">$121</td><td class="num-col profit-pos">+$19</td><td class="num-col profit-pos">+$67</td><td class="num-col"><span class="ev-cell">$50</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">1</td><td class="player">Nikola Jokic</td><td class="card-set">2015 · Donruss Base</td><td class="num-col">33%</td><td class="num-col">$165</td><td class="num-col">$510 <span class="badge badge-est">est</span></td><td class="num-col">$850</td><td class="num-col profit-pos">+$310</td><td class="num-col profit-pos">+$650</td><td class="num-col"><span class="ev-cell">$422</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">2</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">59%</td><td class="num-col">$292</td><td class="num-col">$338</td><td class="num-col">$857</td><td class="num-col profit-pos">+$11</td><td class="num-col profit-pos">+$530</td><td class="num-col"><span class="ev-cell">$317</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">3</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Ice</td><td class="num-col">59%</td><td class="num-col">$195</td><td class="num-col">$194</td><td class="num-col">$506</td><td class="num-col profit-neg">-$36</td><td class="num-col profit-pos">+$276</td><td class="num-col"><span class="ev-cell">$148</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">4</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red Ice</td><td class="num-col">60%</td><td class="num-col">$188</td><td class="num-col">$181</td><td class="num-col">$492</td><td class="num-col profit-neg">-$43</td><td class="num-col profit-pos">+$269</td><td class="num-col"><span class="ev-cell">$144</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">5</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Orange Ice</td><td class="num-col">55%</td><td class="num-col">$202</td><td class="num-col">$192</td><td class="num-col">$520</td><td class="num-col profit-neg">-$46</td><td class="num-col profit-pos">+$283</td><td class="num-col"><span class="ev-cell">$135</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">6</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">35%</td><td class="num-col">$103</td><td class="num-col">$140</td><td class="num-col">$491</td><td class="num-col profit-pos">+$3</td><td class="num-col profit-pos">+$354</td><td class="num-col"><span class="ev-cell">$125</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">7</td><td class="player">LeBron James</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">32%</td><td class="num-col">$72</td><td class="num-col">$118</td><td class="num-col">$460</td><td class="num-col profit-pos">+$12</td><td class="num-col profit-pos">+$354</td><td class="num-col"><span class="ev-cell">$121</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">8</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$164</td><td class="num-col">$163</td><td class="num-col">$387</td><td class="num-col profit-neg">-$36</td><td class="num-col profit-pos">+$189</td><td class="num-col"><span class="ev-cell">$119</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">9</td><td class="player">Kobe Bryant</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">36%</td><td class="num-col">$60</td><td class="num-col">$103</td><td class="num-col">$383</td><td class="num-col profit-pos">+$9</td><td class="num-col profit-pos">+$288</td><td class="num-col"><span class="ev-cell">$109</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">10</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Orange Ice</td><td class="num-col">39%</td><td class="num-col">$90</td><td class="num-col">$114</td><td class="num-col">$363</td><td class="num-col profit-neg">-$10</td><td class="num-col profit-pos">+$238</td><td class="num-col"><span class="ev-cell">$87</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">11</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Pink Ice</td><td class="num-col">37%</td><td class="num-col">$77</td><td class="num-col">$92</td><td class="num-col">$369</td><td class="num-col profit-neg">-$21</td><td class="num-col profit-pos">+$257</td><td class="num-col"><span class="ev-cell">$82</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">12</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Ruby Wave</td><td class="num-col">36%</td><td class="num-col">$68</td><td class="num-col">$98</td><td class="num-col">$325</td><td class="num-col profit-neg">-$5</td><td class="num-col profit-pos">+$222</td><td class="num-col"><span class="ev-cell">$77</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">13</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Mosaic Base</td><td class="num-col">63%</td><td class="num-col">$81</td><td class="num-col">$101</td><td class="num-col">$238</td><td class="num-col profit-neg">-$15</td><td class="num-col profit-pos">+$122</td><td class="num-col"><span class="ev-cell">$71</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">14</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Ruby Wave</td><td class="num-col">17%</td><td class="num-col">$138</td><td class="num-col">$155</td><td class="num-col">$598</td><td class="num-col profit-neg">-$17</td><td class="num-col profit-pos">+$426</td><td class="num-col"><span class="ev-cell">$58</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">15</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm China Variation</td><td class="num-col">34%</td><td class="num-col">$25</td><td class="num-col">$34</td><td class="num-col">$278</td><td class="num-col profit-neg">-$26</td><td class="num-col profit-pos">+$218</td><td class="num-col"><span class="ev-cell">$57</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">16</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$28</td><td class="num-col">$44</td><td class="num-col">$163</td><td class="num-col profit-neg">-$18</td><td class="num-col profit-pos">+$100</td><td class="num-col"><span class="ev-cell">$56</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">17</td><td class="player">Caitlin Clark</td><td class="card-set">2024 · Prizm WNBA Blue Velocity</td><td class="num-col">35%</td><td class="num-col">$87</td><td class="num-col">$94</td><td class="num-col">$333</td><td class="num-col profit-neg">-$29</td><td class="num-col profit-pos">+$210</td><td class="num-col"><span class="ev-cell">$55</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">18</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Red Ice</td><td class="num-col">30%</td><td class="num-col">$72</td><td class="num-col">$95</td><td class="num-col">$318</td><td class="num-col profit-neg">-$12</td><td class="num-col profit-pos">+$211</td><td class="num-col"><span class="ev-cell">$55</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">19</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red White Blue</td><td class="num-col">23%</td><td class="num-col">$108</td><td class="num-col">$125</td><td class="num-col">$437</td><td class="num-col profit-neg">-$19</td><td class="num-col profit-pos">+$293</td><td class="num-col"><span class="ev-cell">$53</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">20</td><td class="player">Kobe Bryant</td><td class="card-set">2019 · Prizm Ruby Wave</td><td class="num-col">59%</td><td class="num-col">$51</td><td class="num-col">$80</td><td class="num-col">$179</td><td class="num-col profit-neg">-$6</td><td class="num-col profit-pos">+$94</td><td class="num-col"><span class="ev-cell">$53</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">21</td><td class="player">Giannis Antetokounmpo</td><td class="card-set">2013 · Hoops Base</td><td class="num-col">49%</td><td class="num-col">$43</td><td class="num-col">$59</td><td class="num-col">$203</td><td class="num-col profit-neg">-$19</td><td class="num-col profit-pos">+$125</td><td class="num-col"><span class="ev-cell">$51</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">22</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm Green Ice</td><td class="num-col">44%</td><td class="num-col">$23</td><td class="num-col">$44</td><td class="num-col">$180</td><td class="num-col profit-neg">-$14</td><td class="num-col profit-pos">+$122</td><td class="num-col"><span class="ev-cell">$46</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">23</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Base</td><td class="num-col">52%</td><td class="num-col">$65</td><td class="num-col">$80</td><td class="num-col">$201</td><td class="num-col profit-neg">-$20</td><td class="num-col profit-pos">+$101</td><td class="num-col"><span class="ev-cell">$43</span></td><td><span class="badge badge-risky">✗ Risky</span></td></tr>
+        <tr><td class="num-col color-gray">24</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Deca Base</td><td class="num-col">68%</td><td class="num-col">$17</td><td class="num-col">$65 <span class="badge badge-est">est</span></td><td class="num-col">$108</td><td class="num-col profit-pos">+$13</td><td class="num-col profit-pos">+$56</td><td class="num-col"><span class="ev-cell">$43</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
+        <tr><td class="num-col color-gray">25</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Draft Picks Red Ice</td><td class="num-col">65%</td><td class="num-col">$29</td><td class="num-col">$72 <span class="badge badge-est">est</span></td><td class="num-col">$121</td><td class="num-col profit-pos">+$9</td><td class="num-col profit-pos">+$57</td><td class="num-col"><span class="ev-cell">$40</span></td><td><span class="badge badge-safe">✓ Safe</span></td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 3: SAFE GRADES -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SAFE GRADES -->
 <div id="tab-safe" class="tab-content">
-
   <div class="section-header">Safe Grades — Profitable Even with PSA 9</div>
-  <div class="section-sub">These cards make money regardless of whether you hit a 9 or 10. Lower risk, submit without cherry-picking.</div>
-
+  <div class="section-sub">Only 11 cards survive the PSA 9 profitability test at $35 — down from 24 at $25.</div>
   <div class="callout callout-green">
     <strong>Key takeaways</strong>
-    <strong>Nikola Jokic 2015 Donruss</strong> is the standout: +$320 profit even with a PSA 9.<br>
-    <strong>Luka Doncic 2018 Prizm Pink Ice</strong>: safe floor at +$21 if 9, massive +$540 if 10.
+    <strong>Nikola Jokic 2015 Donruss</strong>: +$310 profit even with a PSA 9 — the standout play.<br>
+    <strong>Luka Doncic 2018 Prizm Pink Ice</strong>: still safe at +$11 if 9, massive +$530 if 10.<br>
+    <strong>SGA 2018 Prizm Pink Ice</strong>: only +$3 margin — grade clean copies only.
   </div>
-
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>#</th>
-        <th>Player</th>
-        <th>Year · Set / Parallel</th>
-        <th style="text-align:right;">Gem%</th>
-        <th style="text-align:right;">Raw $</th>
-        <th style="text-align:right;">PSA 9 $</th>
-        <th style="text-align:right;">PSA 10 $</th>
-        <th style="text-align:right;">Profit if 9</th>
-        <th style="text-align:right;">Profit if 10</th>
-        <th style="text-align:right;">EV</th>
+        <th>#</th><th>Player</th><th>Year · Set / Parallel</th>
+        <th style="text-align:right;">Gem%</th><th style="text-align:right;">Raw $</th>
+        <th style="text-align:right;">PSA 9 $</th><th style="text-align:right;">PSA 10 $</th>
+        <th style="text-align:right;">Profit if 9</th><th style="text-align:right;">Profit if 10</th><th style="text-align:right;">EV</th>
       </tr></thead>
       <tbody>
-        <tr><td class="num-col color-gray">1</td><td class="player">Nikola Jokic</td><td class="card-set">2015 · Donruss Base</td><td class="num-col">33%</td><td class="num-col">$165</td><td class="num-col">$510 <span class="badge badge-est">est</span></td><td class="num-col">$850</td><td class="num-col profit-pos">+$320</td><td class="num-col profit-pos">+$660</td><td class="num-col"><span class="ev-cell">$432</span></td></tr>
-        <tr><td class="num-col color-gray">2</td><td class="player">Jalen Brunson</td><td class="card-set">2018 · Prizm Base</td><td class="num-col">24%</td><td class="num-col">$7</td><td class="num-col">$64 <span class="badge badge-est">est</span></td><td class="num-col">$107</td><td class="num-col profit-pos">+$33</td><td class="num-col profit-pos">+$76</td><td class="num-col"><span class="ev-cell">$43</span></td></tr>
-        <tr><td class="num-col color-gray">3</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Deca Base</td><td class="num-col">68%</td><td class="num-col">$17</td><td class="num-col">$65 <span class="badge badge-est">est</span></td><td class="num-col">$108</td><td class="num-col profit-pos">+$23</td><td class="num-col profit-pos">+$66</td><td class="num-col"><span class="ev-cell">$53</span></td></tr>
-        <tr><td class="num-col color-gray">4</td><td class="player">LeBron James</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">32%</td><td class="num-col">$72</td><td class="num-col">$118</td><td class="num-col">$460</td><td class="num-col profit-pos">+$22</td><td class="num-col profit-pos">+$364</td><td class="num-col"><span class="ev-cell">$131</span></td></tr>
-        <tr><td class="num-col color-gray">5</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">59%</td><td class="num-col">$292</td><td class="num-col">$338</td><td class="num-col">$857</td><td class="num-col profit-pos">+$21</td><td class="num-col profit-pos">+$540</td><td class="num-col"><span class="ev-cell">$327</span></td></tr>
-        <tr><td class="num-col color-gray">6</td><td class="player">Kobe Bryant</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">36%</td><td class="num-col">$60</td><td class="num-col">$103</td><td class="num-col">$383</td><td class="num-col profit-pos">+$19</td><td class="num-col profit-pos">+$298</td><td class="num-col"><span class="ev-cell">$119</span></td></tr>
-        <tr><td class="num-col color-gray">7</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Draft Picks Red Ice</td><td class="num-col">65%</td><td class="num-col">$29</td><td class="num-col">$72 <span class="badge badge-est">est</span></td><td class="num-col">$121</td><td class="num-col profit-pos">+$19</td><td class="num-col profit-pos">+$67</td><td class="num-col"><span class="ev-cell">$50</span></td></tr>
-        <tr><td class="num-col color-gray">8</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Hoops Base</td><td class="num-col">66%</td><td class="num-col">$12</td><td class="num-col">$52 <span class="badge badge-est">est</span></td><td class="num-col">$87</td><td class="num-col profit-pos">+$16</td><td class="num-col profit-pos">+$51</td><td class="num-col"><span class="ev-cell">$39</span></td></tr>
-        <tr><td class="num-col color-gray">9</td><td class="player">Tyrese Maxey</td><td class="card-set">2020 · Prizm Base</td><td class="num-col">30%</td><td class="num-col">$3</td><td class="num-col">$44 <span class="badge badge-est">est</span></td><td class="num-col">$74</td><td class="num-col profit-pos">+$16</td><td class="num-col profit-pos">+$45</td><td class="num-col"><span class="ev-cell">$25</span></td></tr>
-        <tr><td class="num-col color-gray">10</td><td class="player">Jalen Brunson</td><td class="card-set">2018 · Donruss Base</td><td class="num-col">52%</td><td class="num-col">$4</td><td class="num-col">$43 <span class="badge badge-est">est</span></td><td class="num-col">$72</td><td class="num-col profit-pos">+$14</td><td class="num-col profit-pos">+$43</td><td class="num-col"><span class="ev-cell">$29</span></td></tr>
-        <tr><td class="num-col color-gray">11</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">35%</td><td class="num-col">$103</td><td class="num-col">$140</td><td class="num-col">$491</td><td class="num-col profit-pos">+$13</td><td class="num-col profit-pos">+$364</td><td class="num-col"><span class="ev-cell">$135</span></td></tr>
-        <tr><td class="num-col color-gray">12</td><td class="player">Giannis Antetokounmpo</td><td class="card-set">2013 · SP Authentic Base</td><td class="num-col">59%</td><td class="num-col">$19</td><td class="num-col">$53 <span class="badge badge-est">est</span></td><td class="num-col">$89</td><td class="num-col profit-pos">+$9</td><td class="num-col profit-pos">+$44</td><td class="num-col"><span class="ev-cell">$30</span></td></tr>
-        <tr><td class="num-col color-gray">13</td><td class="player">Jaylen Brown</td><td class="card-set">2016 · Prizm Base</td><td class="num-col">52%</td><td class="num-col">$17</td><td class="num-col">$50 <span class="badge badge-est">est</span></td><td class="num-col">$84</td><td class="num-col profit-pos">+$9</td><td class="num-col profit-pos">+$42</td><td class="num-col"><span class="ev-cell">$26</span></td></tr>
-        <tr><td class="num-col color-gray">14</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Ruby Wave</td><td class="num-col">36%</td><td class="num-col">$68</td><td class="num-col">$98</td><td class="num-col">$325</td><td class="num-col profit-pos">+$5</td><td class="num-col profit-pos">+$232</td><td class="num-col"><span class="ev-cell">$87</span></td></tr>
-        <tr><td class="num-col color-gray">15</td><td class="player">Kobe Bryant</td><td class="card-set">2019 · Prizm Ruby Wave</td><td class="num-col">59%</td><td class="num-col">$51</td><td class="num-col">$80</td><td class="num-col">$179</td><td class="num-col profit-pos">+$4</td><td class="num-col profit-pos">+$104</td><td class="num-col"><span class="ev-cell">$63</span></td></tr>
-        <tr><td class="num-col color-gray">16</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Mosaic Reactive Blue</td><td class="num-col">43%</td><td class="num-col">$22</td><td class="num-col">$50</td><td class="num-col">$122</td><td class="num-col profit-pos">+$4</td><td class="num-col profit-pos">+$75</td><td class="num-col"><span class="ev-cell">$35</span></td></tr>
-        <tr><td class="num-col color-gray">17</td><td class="player">Amen Thompson</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">70%</td><td class="num-col">$12</td><td class="num-col">$41 <span class="badge badge-est">est</span></td><td class="num-col">$68</td><td class="num-col profit-pos">+$3</td><td class="num-col profit-pos">+$30</td><td class="num-col"><span class="ev-cell">$22</span></td></tr>
-        <tr><td class="num-col color-gray">18</td><td class="player">Kobe Bryant</td><td class="card-set">2014 · Prizm Base</td><td class="num-col">33%</td><td class="num-col">$15</td><td class="num-col">$43</td><td class="num-col">$119</td><td class="num-col profit-pos">+$3</td><td class="num-col profit-pos">+$79</td><td class="num-col"><span class="ev-cell">$28</span></td></tr>
-        <tr><td class="num-col color-gray">19</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Donruss Base</td><td class="num-col">62%</td><td class="num-col">$3</td><td class="num-col">$31 <span class="badge badge-est">est</span></td><td class="num-col">$51</td><td class="num-col profit-pos">+$3</td><td class="num-col profit-pos">+$23</td><td class="num-col"><span class="ev-cell">$15</span></td></tr>
-        <tr><td class="num-col color-gray">20</td><td class="player">Brandon Miller</td><td class="card-set">2023 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$9</td><td class="num-col">$37 <span class="badge badge-est">est</span></td><td class="num-col">$61</td><td class="num-col profit-pos">+$3</td><td class="num-col profit-pos">+$27</td><td class="num-col"><span class="ev-cell">$18</span></td></tr>
+        <tr><td class="num-col color-gray">1</td><td class="player">Nikola Jokic</td><td class="card-set">2015 · Donruss Base</td><td class="num-col">33%</td><td class="num-col">$165</td><td class="num-col">$510 <span class="badge badge-est">est</span></td><td class="num-col">$850</td><td class="num-col profit-pos">+$310</td><td class="num-col profit-pos">+$650</td><td class="num-col"><span class="ev-cell">$422</span></td></tr>
+        <tr><td class="num-col color-gray">2</td><td class="player">Jalen Brunson</td><td class="card-set">2018 · Prizm Base</td><td class="num-col">24%</td><td class="num-col">$7</td><td class="num-col">$64 <span class="badge badge-est">est</span></td><td class="num-col">$107</td><td class="num-col profit-pos">+$23</td><td class="num-col profit-pos">+$66</td><td class="num-col"><span class="ev-cell">$33</span></td></tr>
+        <tr><td class="num-col color-gray">3</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Deca Base</td><td class="num-col">68%</td><td class="num-col">$17</td><td class="num-col">$65 <span class="badge badge-est">est</span></td><td class="num-col">$108</td><td class="num-col profit-pos">+$13</td><td class="num-col profit-pos">+$56</td><td class="num-col"><span class="ev-cell">$43</span></td></tr>
+        <tr><td class="num-col color-gray">4</td><td class="player">LeBron James</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">32%</td><td class="num-col">$72</td><td class="num-col">$118</td><td class="num-col">$460</td><td class="num-col profit-pos">+$12</td><td class="num-col profit-pos">+$354</td><td class="num-col"><span class="ev-cell">$121</span></td></tr>
+        <tr><td class="num-col color-gray">5</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">59%</td><td class="num-col">$292</td><td class="num-col">$338</td><td class="num-col">$857</td><td class="num-col profit-pos">+$11</td><td class="num-col profit-pos">+$530</td><td class="num-col"><span class="ev-cell">$317</span></td></tr>
+        <tr><td class="num-col color-gray">6</td><td class="player">Kobe Bryant</td><td class="card-set">2012 · Prizm Base</td><td class="num-col">36%</td><td class="num-col">$60</td><td class="num-col">$103</td><td class="num-col">$383</td><td class="num-col profit-pos">+$9</td><td class="num-col profit-pos">+$288</td><td class="num-col"><span class="ev-cell">$109</span></td></tr>
+        <tr><td class="num-col color-gray">7</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Draft Picks Red Ice</td><td class="num-col">65%</td><td class="num-col">$29</td><td class="num-col">$72 <span class="badge badge-est">est</span></td><td class="num-col">$121</td><td class="num-col profit-pos">+$9</td><td class="num-col profit-pos">+$57</td><td class="num-col"><span class="ev-cell">$40</span></td></tr>
+        <tr><td class="num-col color-gray">8</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Hoops Base</td><td class="num-col">66%</td><td class="num-col">$12</td><td class="num-col">$52 <span class="badge badge-est">est</span></td><td class="num-col">$87</td><td class="num-col profit-pos">+$6</td><td class="num-col profit-pos">+$41</td><td class="num-col"><span class="ev-cell">$29</span></td></tr>
+        <tr><td class="num-col color-gray">9</td><td class="player">Tyrese Maxey</td><td class="card-set">2020 · Prizm Base</td><td class="num-col">30%</td><td class="num-col">$3</td><td class="num-col">$44 <span class="badge badge-est">est</span></td><td class="num-col">$74</td><td class="num-col profit-pos">+$6</td><td class="num-col profit-pos">+$35</td><td class="num-col"><span class="ev-cell">$15</span></td></tr>
+        <tr><td class="num-col color-gray">10</td><td class="player">Jalen Brunson</td><td class="card-set">2018 · Donruss Base</td><td class="num-col">52%</td><td class="num-col">$4</td><td class="num-col">$43 <span class="badge badge-est">est</span></td><td class="num-col">$72</td><td class="num-col profit-pos">+$4</td><td class="num-col profit-pos">+$33</td><td class="num-col"><span class="ev-cell">$19</span></td></tr>
+        <tr><td class="num-col color-gray">11</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Pink Ice</td><td class="num-col">35%</td><td class="num-col">$103</td><td class="num-col">$140</td><td class="num-col">$491</td><td class="num-col profit-pos">+$3</td><td class="num-col profit-pos">+$354</td><td class="num-col"><span class="ev-cell">$125</span></td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 4: RISKY GRADES -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- RISKY GRADES -->
 <div id="tab-risky" class="tab-content">
-
   <div class="section-header">Risky Grades — Need the 10 to Profit</div>
-  <div class="section-sub">Positive expected value overall, but a PSA 9 result means a loss. Only submit clean, cherry-picked copies.</div>
-
+  <div class="section-sub">Positive EV overall, but a PSA 9 means a loss. Only submit clean, cherry-picked copies.</div>
   <div class="callout callout-red" style="margin-bottom:12px;">
-    <strong>Reality check</strong>
-    <strong>Wemby Prizm Ice parallels</strong> — Despite 55-69% gem rates, PSA 9s trade near raw prices. You're gambling on the 10.<br>
-    <strong>Ant Edwards Prizm parallels</strong> — 30-39% gem rates mean more 9s than 10s. Condition is everything.<br>
-    <strong>Stephon Castle Prizm</strong> — Huge PSA 10 premiums (11x+) but low gem rates. Only grade flawless copies.
+    <strong>Reality check at $35</strong>
+    <strong>Wemby Ice parallels</strong> — Losses of -$36 to -$46 on a PSA 9. High gem rates don't save you.<br>
+    <strong>Ant Edwards — all three parallels now risky</strong> — Ruby Wave was safe at $25, not anymore.<br>
+    <strong>Kobe Bryant Ruby Wave</strong> — Was safe at $25 (+$4). Now -$6 if PSA 9. Grade selectively.
   </div>
-
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>#</th>
-        <th>Player</th>
-        <th>Year · Set / Parallel</th>
-        <th style="text-align:right;">Gem%</th>
-        <th style="text-align:right;">Raw $</th>
-        <th style="text-align:right;">PSA 9 $</th>
-        <th style="text-align:right;">PSA 10 $</th>
-        <th style="text-align:right;">Loss if 9</th>
-        <th style="text-align:right;">Profit if 10</th>
-        <th style="text-align:right;">EV</th>
+        <th>#</th><th>Player</th><th>Year · Set / Parallel</th>
+        <th style="text-align:right;">Gem%</th><th style="text-align:right;">Raw $</th>
+        <th style="text-align:right;">PSA 9 $</th><th style="text-align:right;">PSA 10 $</th>
+        <th style="text-align:right;">Loss if 9</th><th style="text-align:right;">Profit if 10</th><th style="text-align:right;">EV</th>
       </tr></thead>
       <tbody>
-        <tr><td class="num-col color-gray">1</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Ice</td><td class="num-col">59%</td><td class="num-col">$195</td><td class="num-col">$194</td><td class="num-col">$506</td><td class="num-col profit-neg">-$26</td><td class="num-col profit-pos">+$286</td><td class="num-col"><span class="ev-cell">$158</span></td></tr>
-        <tr><td class="num-col color-gray">2</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red Ice</td><td class="num-col">60%</td><td class="num-col">$188</td><td class="num-col">$181</td><td class="num-col">$492</td><td class="num-col profit-neg">-$33</td><td class="num-col profit-pos">+$279</td><td class="num-col"><span class="ev-cell">$154</span></td></tr>
-        <tr><td class="num-col color-gray">3</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Orange Ice</td><td class="num-col">55%</td><td class="num-col">$202</td><td class="num-col">$192</td><td class="num-col">$520</td><td class="num-col profit-neg">-$36</td><td class="num-col profit-pos">+$293</td><td class="num-col"><span class="ev-cell">$145</span></td></tr>
-        <tr><td class="num-col color-gray">4</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$164</td><td class="num-col">$163</td><td class="num-col">$387</td><td class="num-col profit-neg">-$26</td><td class="num-col profit-pos">+$199</td><td class="num-col"><span class="ev-cell">$129</span></td></tr>
-        <tr><td class="num-col color-gray">5</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Orange Ice</td><td class="num-col">39%</td><td class="num-col">$90</td><td class="num-col">$114</td><td class="num-col">$363</td><td class="num-col profit-zero">-$0</td><td class="num-col profit-pos">+$248</td><td class="num-col"><span class="ev-cell">$97</span></td></tr>
-        <tr><td class="num-col color-gray">6</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Pink Ice</td><td class="num-col">37%</td><td class="num-col">$77</td><td class="num-col">$92</td><td class="num-col">$369</td><td class="num-col profit-neg">-$11</td><td class="num-col profit-pos">+$267</td><td class="num-col"><span class="ev-cell">$92</span></td></tr>
-        <tr><td class="num-col color-gray">7</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Mosaic Base</td><td class="num-col">63%</td><td class="num-col">$81</td><td class="num-col">$101</td><td class="num-col">$238</td><td class="num-col profit-neg">-$5</td><td class="num-col profit-pos">+$132</td><td class="num-col"><span class="ev-cell">$81</span></td></tr>
-        <tr><td class="num-col color-gray">8</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Ruby Wave</td><td class="num-col">17%</td><td class="num-col">$138</td><td class="num-col">$155</td><td class="num-col">$598</td><td class="num-col profit-neg">-$7</td><td class="num-col profit-pos">+$436</td><td class="num-col"><span class="ev-cell">$68</span></td></tr>
-        <tr><td class="num-col color-gray">9</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm China Variation</td><td class="num-col">34%</td><td class="num-col">$25</td><td class="num-col">$34</td><td class="num-col">$278</td><td class="num-col profit-neg">-$16</td><td class="num-col profit-pos">+$228</td><td class="num-col"><span class="ev-cell">$67</span></td></tr>
-        <tr><td class="num-col color-gray">10</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$28</td><td class="num-col">$44</td><td class="num-col">$163</td><td class="num-col profit-neg">-$8</td><td class="num-col profit-pos">+$110</td><td class="num-col"><span class="ev-cell">$66</span></td></tr>
-        <tr><td class="num-col color-gray">11</td><td class="player">Caitlin Clark</td><td class="card-set">2024 · Prizm WNBA Blue Velocity</td><td class="num-col">35%</td><td class="num-col">$87</td><td class="num-col">$94</td><td class="num-col">$333</td><td class="num-col profit-neg">-$19</td><td class="num-col profit-pos">+$220</td><td class="num-col"><span class="ev-cell">$65</span></td></tr>
-        <tr><td class="num-col color-gray">12</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Red Ice</td><td class="num-col">30%</td><td class="num-col">$72</td><td class="num-col">$95</td><td class="num-col">$318</td><td class="num-col profit-neg">-$2</td><td class="num-col profit-pos">+$221</td><td class="num-col"><span class="ev-cell">$65</span></td></tr>
-        <tr><td class="num-col color-gray">13</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red White Blue</td><td class="num-col">23%</td><td class="num-col">$108</td><td class="num-col">$125</td><td class="num-col">$437</td><td class="num-col profit-neg">-$9</td><td class="num-col profit-pos">+$303</td><td class="num-col"><span class="ev-cell">$63</span></td></tr>
-        <tr><td class="num-col color-gray">14</td><td class="player">Giannis Antetokounmpo</td><td class="card-set">2013 · Hoops Base</td><td class="num-col">49%</td><td class="num-col">$43</td><td class="num-col">$59</td><td class="num-col">$203</td><td class="num-col profit-neg">-$9</td><td class="num-col profit-pos">+$135</td><td class="num-col"><span class="ev-cell">$61</span></td></tr>
-        <tr><td class="num-col color-gray">15</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm Green Ice</td><td class="num-col">44%</td><td class="num-col">$23</td><td class="num-col">$44</td><td class="num-col">$180</td><td class="num-col profit-neg">-$4</td><td class="num-col profit-pos">+$132</td><td class="num-col"><span class="ev-cell">$56</span></td></tr>
-        <tr><td class="num-col color-gray">16</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Base</td><td class="num-col">52%</td><td class="num-col">$65</td><td class="num-col">$80</td><td class="num-col">$201</td><td class="num-col profit-neg">-$10</td><td class="num-col profit-pos">+$111</td><td class="num-col"><span class="ev-cell">$53</span></td></tr>
-        <tr><td class="num-col color-gray">17</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Purple Wave</td><td class="num-col">44%</td><td class="num-col">$31</td><td class="num-col">$45</td><td class="num-col">$174</td><td class="num-col profit-neg">-$11</td><td class="num-col profit-pos">+$118</td><td class="num-col"><span class="ev-cell">$46</span></td></tr>
-        <tr><td class="num-col color-gray">18</td><td class="player">Kobe Bryant</td><td class="card-set">2019 · Prizm Pink Ice</td><td class="num-col">29%</td><td class="num-col">$55</td><td class="num-col">$77</td><td class="num-col">$240</td><td class="num-col profit-neg">-$3</td><td class="num-col profit-pos">+$161</td><td class="num-col"><span class="ev-cell">$45</span></td></tr>
-        <tr><td class="num-col color-gray">19</td><td class="player">Caitlin Clark</td><td class="card-set">2024 · Prizm WNBA Ice</td><td class="num-col">16%</td><td class="num-col">$76</td><td class="num-col">$94</td><td class="num-col">$392</td><td class="num-col profit-neg">-$7</td><td class="num-col profit-pos">+$291</td><td class="num-col"><span class="ev-cell">$41</span></td></tr>
-        <tr><td class="num-col color-gray">20</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Donruss Base</td><td class="num-col">62%</td><td class="num-col">$20</td><td class="num-col">$40</td><td class="num-col">$113</td><td class="num-col profit-neg">-$5</td><td class="num-col profit-pos">+$68</td><td class="num-col"><span class="ev-cell">$40</span></td></tr>
+        <tr><td class="num-col color-gray">1</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Ice</td><td class="num-col">59%</td><td class="num-col">$195</td><td class="num-col">$194</td><td class="num-col">$506</td><td class="num-col profit-neg">-$36</td><td class="num-col profit-pos">+$276</td><td class="num-col"><span class="ev-cell">$148</span></td></tr>
+        <tr><td class="num-col color-gray">2</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red Ice</td><td class="num-col">60%</td><td class="num-col">$188</td><td class="num-col">$181</td><td class="num-col">$492</td><td class="num-col profit-neg">-$43</td><td class="num-col profit-pos">+$269</td><td class="num-col"><span class="ev-cell">$144</span></td></tr>
+        <tr><td class="num-col color-gray">3</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Orange Ice</td><td class="num-col">55%</td><td class="num-col">$202</td><td class="num-col">$192</td><td class="num-col">$520</td><td class="num-col profit-neg">-$46</td><td class="num-col profit-pos">+$283</td><td class="num-col"><span class="ev-cell">$135</span></td></tr>
+        <tr><td class="num-col color-gray">4</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$164</td><td class="num-col">$163</td><td class="num-col">$387</td><td class="num-col profit-neg">-$36</td><td class="num-col profit-pos">+$189</td><td class="num-col"><span class="ev-cell">$119</span></td></tr>
+        <tr><td class="num-col color-gray">5</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Orange Ice</td><td class="num-col">39%</td><td class="num-col">$90</td><td class="num-col">$114</td><td class="num-col">$363</td><td class="num-col profit-neg">-$10</td><td class="num-col profit-pos">+$238</td><td class="num-col"><span class="ev-cell">$87</span></td></tr>
+        <tr><td class="num-col color-gray">6</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Pink Ice</td><td class="num-col">37%</td><td class="num-col">$77</td><td class="num-col">$92</td><td class="num-col">$369</td><td class="num-col profit-neg">-$21</td><td class="num-col profit-pos">+$257</td><td class="num-col"><span class="ev-cell">$82</span></td></tr>
+        <tr><td class="num-col color-gray">7</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Ruby Wave</td><td class="num-col">36%</td><td class="num-col">$68</td><td class="num-col">$98</td><td class="num-col">$325</td><td class="num-col profit-neg">-$5</td><td class="num-col profit-pos">+$222</td><td class="num-col"><span class="ev-cell">$77</span></td></tr>
+        <tr><td class="num-col color-gray">8</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Mosaic Base</td><td class="num-col">63%</td><td class="num-col">$81</td><td class="num-col">$101</td><td class="num-col">$238</td><td class="num-col profit-neg">-$15</td><td class="num-col profit-pos">+$122</td><td class="num-col"><span class="ev-cell">$71</span></td></tr>
+        <tr><td class="num-col color-gray">9</td><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Ruby Wave</td><td class="num-col">17%</td><td class="num-col">$138</td><td class="num-col">$155</td><td class="num-col">$598</td><td class="num-col profit-neg">-$17</td><td class="num-col profit-pos">+$426</td><td class="num-col"><span class="ev-cell">$58</span></td></tr>
+        <tr><td class="num-col color-gray">10</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm China Variation</td><td class="num-col">34%</td><td class="num-col">$25</td><td class="num-col">$34</td><td class="num-col">$278</td><td class="num-col profit-neg">-$26</td><td class="num-col profit-pos">+$218</td><td class="num-col"><span class="ev-cell">$57</span></td></tr>
+        <tr><td class="num-col color-gray">11</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$28</td><td class="num-col">$44</td><td class="num-col">$163</td><td class="num-col profit-neg">-$18</td><td class="num-col profit-pos">+$100</td><td class="num-col"><span class="ev-cell">$56</span></td></tr>
+        <tr><td class="num-col color-gray">12</td><td class="player">Caitlin Clark</td><td class="card-set">2024 · Prizm WNBA Blue Velocity</td><td class="num-col">35%</td><td class="num-col">$87</td><td class="num-col">$94</td><td class="num-col">$333</td><td class="num-col profit-neg">-$29</td><td class="num-col profit-pos">+$210</td><td class="num-col"><span class="ev-cell">$55</span></td></tr>
+        <tr><td class="num-col color-gray">13</td><td class="player">Anthony Edwards</td><td class="card-set">2020 · Prizm Red Ice</td><td class="num-col">30%</td><td class="num-col">$72</td><td class="num-col">$95</td><td class="num-col">$318</td><td class="num-col profit-neg">-$12</td><td class="num-col profit-pos">+$211</td><td class="num-col"><span class="ev-cell">$55</span></td></tr>
+        <tr><td class="num-col color-gray">14</td><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Red White Blue</td><td class="num-col">23%</td><td class="num-col">$108</td><td class="num-col">$125</td><td class="num-col">$437</td><td class="num-col profit-neg">-$19</td><td class="num-col profit-pos">+$293</td><td class="num-col"><span class="ev-cell">$53</span></td></tr>
+        <tr><td class="num-col color-gray">15</td><td class="player">Kobe Bryant</td><td class="card-set">2019 · Prizm Ruby Wave</td><td class="num-col">59%</td><td class="num-col">$51</td><td class="num-col">$80</td><td class="num-col">$179</td><td class="num-col profit-neg">-$6</td><td class="num-col profit-pos">+$94</td><td class="num-col"><span class="ev-cell">$53</span></td></tr>
+        <tr><td class="num-col color-gray">16</td><td class="player">Giannis Antetokounmpo</td><td class="card-set">2013 · Hoops Base</td><td class="num-col">49%</td><td class="num-col">$43</td><td class="num-col">$59</td><td class="num-col">$203</td><td class="num-col profit-neg">-$19</td><td class="num-col profit-pos">+$125</td><td class="num-col"><span class="ev-cell">$51</span></td></tr>
+        <tr><td class="num-col color-gray">17</td><td class="player">Stephon Castle</td><td class="card-set">2024 · Prizm Green Ice</td><td class="num-col">44%</td><td class="num-col">$23</td><td class="num-col">$44</td><td class="num-col">$180</td><td class="num-col profit-neg">-$14</td><td class="num-col profit-pos">+$122</td><td class="num-col"><span class="ev-cell">$46</span></td></tr>
+        <tr><td class="num-col color-gray">18</td><td class="player">Luka Doncic</td><td class="card-set">2018 · Prizm Base</td><td class="num-col">52%</td><td class="num-col">$65</td><td class="num-col">$80</td><td class="num-col">$201</td><td class="num-col profit-neg">-$20</td><td class="num-col profit-pos">+$101</td><td class="num-col"><span class="ev-cell">$43</span></td></tr>
+        <tr><td class="num-col color-gray">19</td><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Purple Wave</td><td class="num-col">44%</td><td class="num-col">$31</td><td class="num-col">$45</td><td class="num-col">$174</td><td class="num-col profit-neg">-$21</td><td class="num-col profit-pos">+$108</td><td class="num-col"><span class="ev-cell">$36</span></td></tr>
+        <tr><td class="num-col color-gray">20</td><td class="player">Kobe Bryant</td><td class="card-set">2019 · Prizm Pink Ice</td><td class="num-col">29%</td><td class="num-col">$55</td><td class="num-col">$77</td><td class="num-col">$240</td><td class="num-col profit-neg">-$13</td><td class="num-col profit-pos">+$151</td><td class="num-col"><span class="ev-cell">$35</span></td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 5: HIGH GEM RATE -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- HIGH GEM RATE -->
 <div id="tab-gemrate" class="tab-content">
-
   <div class="section-header">High Gem Rate Cards (55%+)</div>
-  <div class="section-sub">Higher odds of hitting a 10 — but that doesn't mean PSA 9 is profitable. Check the last column.</div>
-
+  <div class="section-sub">At $35, even fewer high-gem-rate cards are PSA 9 profitable. Amen Thompson, Jayson Tatum, and Brandon Miller all flipped to losses.</div>
   <div class="callout callout-amber">
     <strong>Key insight</strong>
-    High gem rate ≠ safe grading. Many 60%+ gem rate cards still lose money on a PSA 9 because the 9 trades near raw value. Gem rate improves your odds of a 10 — it doesn't fix a bad PSA 9 market.
+    High gem rate ≠ safe grading. At $35, only 3 of 15 high-gem-rate cards remain PSA 9 profitable. High gem rate improves your odds of a 10 — it does not fix a bad PSA 9 market.
   </div>
-
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>Player</th>
-        <th>Year · Set / Parallel</th>
-        <th style="text-align:right;">Gem%</th>
-        <th style="text-align:right;">Raw $</th>
-        <th style="text-align:right;">PSA 9 $</th>
-        <th style="text-align:right;">PSA 10 $</th>
-        <th>PSA 9 Profitable?</th>
+        <th>Player</th><th>Year · Set / Parallel</th>
+        <th style="text-align:right;">Gem%</th><th style="text-align:right;">Raw $</th>
+        <th style="text-align:right;">PSA 9 $</th><th style="text-align:right;">PSA 10 $</th><th>PSA 9 Profitable?</th>
       </tr></thead>
       <tbody>
-        <tr><td class="player">LeBron James</td><td class="card-set">2019 · Mosaic Pink Camo</td><td class="num-col">81%</td><td class="num-col">$6</td><td class="num-col">$22</td><td class="num-col">$39</td><td><span class="badge badge-risky">✗ No (-$9)</span></td></tr>
-        <tr><td class="player">LeBron James</td><td class="card-set">2019 · Mosaic Reactive Orange</td><td class="num-col">78%</td><td class="num-col">$7</td><td class="num-col">$21</td><td class="num-col">$38</td><td><span class="badge badge-risky">✗ No (-$10)</span></td></tr>
-        <tr><td class="player">Luka Doncic</td><td class="card-set">2019 · Mosaic Pink Camo</td><td class="num-col">75%</td><td class="num-col">$4</td><td class="num-col">$27</td><td class="num-col">$36</td><td><span class="badge badge-risky">✗ No (-$1)</span></td></tr>
-        <tr><td class="player">Amen Thompson</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">70%</td><td class="num-col">$12</td><td class="num-col">$41 <span class="badge badge-est">est</span></td><td class="num-col">$68</td><td><span class="badge badge-safe">✓ Yes (+$3)</span></td></tr>
-        <tr><td class="player">Jayson Tatum</td><td class="card-set">2017 · Hoops Base</td><td class="num-col">70%</td><td class="num-col">$9</td><td class="num-col">$34 <span class="badge badge-est">est</span></td><td class="num-col">$56</td><td><span class="badge badge-safe">✓ Yes (+$0)</span></td></tr>
-        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$164</td><td class="num-col">$163</td><td class="num-col">$387</td><td><span class="badge badge-risky">✗ No (-$25)</span></td></tr>
-        <tr><td class="player">Brandon Miller</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$8</td><td class="num-col">$27 <span class="badge badge-est">est</span></td><td class="num-col">$45</td><td><span class="badge badge-risky">✗ No (-$6)</span></td></tr>
-        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Deca Base</td><td class="num-col">68%</td><td class="num-col">$17</td><td class="num-col">$65 <span class="badge badge-est">est</span></td><td class="num-col">$108</td><td><span class="badge badge-safe">✓ Yes (+$23)</span></td></tr>
-        <tr><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Hoops Base</td><td class="num-col">66%</td><td class="num-col">$12</td><td class="num-col">$52 <span class="badge badge-est">est</span></td><td class="num-col">$87</td><td><span class="badge badge-safe">✓ Yes (+$15)</span></td></tr>
-        <tr><td class="player">Brandon Miller</td><td class="card-set">2023 · Prizm Ice</td><td class="num-col">66%</td><td class="num-col">$9</td><td class="num-col">$35 <span class="badge badge-est">est</span></td><td class="num-col">$58</td><td><span class="badge badge-safe">✓ Yes (+$0)</span></td></tr>
-        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Haunted Hoops Base</td><td class="num-col">66%</td><td class="num-col">$4</td><td class="num-col">$25 <span class="badge badge-est">est</span></td><td class="num-col">$42</td><td><span class="badge badge-risky">✗ No (-$3)</span></td></tr>
-        <tr><td class="player">LeBron James</td><td class="card-set">2019 · Mosaic Base</td><td class="num-col">66%</td><td class="num-col">$5</td><td class="num-col">$13</td><td class="num-col">$24</td><td><span class="badge badge-risky">✗ No (-$16)</span></td></tr>
-        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Draft Picks Red Ice</td><td class="num-col">65%</td><td class="num-col">$29</td><td class="num-col">$72 <span class="badge badge-est">est</span></td><td class="num-col">$121</td><td><span class="badge badge-safe">✓ Yes (+$18)</span></td></tr>
-        <tr><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Mosaic Base</td><td class="num-col">63%</td><td class="num-col">$81</td><td class="num-col">$101</td><td class="num-col">$238</td><td><span class="badge badge-risky">✗ No (-$5)</span></td></tr>
-        <tr><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$28</td><td class="num-col">$44</td><td class="num-col">$163</td><td><span class="badge badge-risky">✗ No (-$8)</span></td></tr>
+        <tr><td class="player">LeBron James</td><td class="card-set">2019 · Mosaic Pink Camo</td><td class="num-col">81%</td><td class="num-col">$6</td><td class="num-col">$22</td><td class="num-col">$39</td><td><span class="badge badge-risky">✗ No (-$19)</span></td></tr>
+        <tr><td class="player">LeBron James</td><td class="card-set">2019 · Mosaic Reactive Orange</td><td class="num-col">78%</td><td class="num-col">$7</td><td class="num-col">$21</td><td class="num-col">$38</td><td><span class="badge badge-risky">✗ No (-$20)</span></td></tr>
+        <tr><td class="player">Luka Doncic</td><td class="card-set">2019 · Mosaic Pink Camo</td><td class="num-col">75%</td><td class="num-col">$4</td><td class="num-col">$27</td><td class="num-col">$36</td><td><span class="badge badge-risky">✗ No (-$11)</span></td></tr>
+        <tr><td class="player">Amen Thompson</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">70%</td><td class="num-col">$12</td><td class="num-col">$41 <span class="badge badge-est">est</span></td><td class="num-col">$68</td><td><span class="badge badge-risky">✗ No (-$6)</span></td></tr>
+        <tr><td class="player">Jayson Tatum</td><td class="card-set">2017 · Hoops Base</td><td class="num-col">70%</td><td class="num-col">$9</td><td class="num-col">$34 <span class="badge badge-est">est</span></td><td class="num-col">$56</td><td><span class="badge badge-risky">✗ No (-$9)</span></td></tr>
+        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$164</td><td class="num-col">$163</td><td class="num-col">$387</td><td><span class="badge badge-risky">✗ No (-$35)</span></td></tr>
+        <tr><td class="player">Brandon Miller</td><td class="card-set">2023 · Prizm Pink Ice</td><td class="num-col">69%</td><td class="num-col">$8</td><td class="num-col">$27 <span class="badge badge-est">est</span></td><td class="num-col">$45</td><td><span class="badge badge-risky">✗ No (-$16)</span></td></tr>
+        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Deca Base</td><td class="num-col">68%</td><td class="num-col">$17</td><td class="num-col">$65 <span class="badge badge-est">est</span></td><td class="num-col">$108</td><td><span class="badge badge-safe">✓ Yes (+$13)</span></td></tr>
+        <tr><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Hoops Base</td><td class="num-col">66%</td><td class="num-col">$12</td><td class="num-col">$52 <span class="badge badge-est">est</span></td><td class="num-col">$87</td><td><span class="badge badge-safe">✓ Yes (+$5)</span></td></tr>
+        <tr><td class="player">Brandon Miller</td><td class="card-set">2023 · Prizm Ice</td><td class="num-col">66%</td><td class="num-col">$9</td><td class="num-col">$35 <span class="badge badge-est">est</span></td><td class="num-col">$58</td><td><span class="badge badge-risky">✗ No (-$9)</span></td></tr>
+        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Haunted Hoops Base</td><td class="num-col">66%</td><td class="num-col">$4</td><td class="num-col">$25 <span class="badge badge-est">est</span></td><td class="num-col">$42</td><td><span class="badge badge-risky">✗ No (-$13)</span></td></tr>
+        <tr><td class="player">LeBron James</td><td class="card-set">2019 · Mosaic Base</td><td class="num-col">66%</td><td class="num-col">$5</td><td class="num-col">$13</td><td class="num-col">$24</td><td><span class="badge badge-risky">✗ No (-$26)</span></td></tr>
+        <tr><td class="player">Victor Wembanyama</td><td class="card-set">2023 · Prizm Draft Picks Red Ice</td><td class="num-col">65%</td><td class="num-col">$29</td><td class="num-col">$72 <span class="badge badge-est">est</span></td><td class="num-col">$121</td><td><span class="badge badge-safe">✓ Yes (+$8)</span></td></tr>
+        <tr><td class="player">Shai Gilgeous-Alexander</td><td class="card-set">2018 · Prizm Mosaic Base</td><td class="num-col">63%</td><td class="num-col">$81</td><td class="num-col">$101</td><td class="num-col">$238</td><td><span class="badge badge-risky">✗ No (-$15)</span></td></tr>
+        <tr><td class="player">Cade Cunningham</td><td class="card-set">2021 · Prizm Orange Ice</td><td class="num-col">63%</td><td class="num-col">$28</td><td class="num-col">$44</td><td class="num-col">$163</td><td><span class="badge badge-risky">✗ No (-$18)</span></td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 6: MOMENTUM -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MOMENTUM -->
 <div id="tab-momentum" class="tab-content">
-
   <div class="section-header">30-Day Momentum Leaders</div>
   <div class="section-sub">Based on 1,642 cards tracked. Filters: 5+ sales (gainers), 20+ sales (high volume).</div>
 
   <div style="font-size:13px;font-weight:700;margin-bottom:8px;margin-top:4px;">Top Raw Gainers <span class="color-gray" style="font-size:11px;font-weight:400;">(5+ sales, ranked by % change)</span></div>
   <div class="tbl-wrap">
     <table>
-      <thead><tr>
-        <th>#</th>
-        <th>Card</th>
-        <th>Grade</th>
-        <th style="text-align:right;">Avg $</th>
-        <th style="text-align:right;">Change %</th>
-        <th style="text-align:right;">Sales</th>
-      </tr></thead>
+      <thead><tr><th>#</th><th>Card</th><th>Grade</th><th style="text-align:right;">Avg $</th><th style="text-align:right;">Change %</th><th style="text-align:right;">Sales</th></tr></thead>
       <tbody>
         <tr><td><span class="rank-badge">1</span></td><td class="card-set" style="min-width:280px;">Zion Williamson 2019 Optic #158 Base</td><td>Raw</td><td class="num-col">$5.24</td><td class="num-col profit-pos">+1900%</td><td class="num-col">18</td></tr>
         <tr><td><span class="rank-badge">2</span></td><td class="card-set">Scoot Henderson 2023 Prizm #141 Ice</td><td>Raw</td><td class="num-col">$4.80</td><td class="num-col profit-pos">+1820%</td><td class="num-col">14</td></tr>
@@ -523,17 +418,10 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
     </table>
   </div>
 
-  <div style="font-size:13px;font-weight:700;margin-bottom:8px;margin-top:16px;">High Volume Movers <span class="color-gray" style="font-size:11px;font-weight:400;">(20+ sales — confirmed market interest, not noise)</span></div>
+  <div style="font-size:13px;font-weight:700;margin-bottom:8px;margin-top:16px;">High Volume Movers <span class="color-gray" style="font-size:11px;font-weight:400;">(20+ sales)</span></div>
   <div class="tbl-wrap">
     <table>
-      <thead><tr>
-        <th>#</th>
-        <th>Card</th>
-        <th>Grade</th>
-        <th style="text-align:right;">Avg $</th>
-        <th style="text-align:right;">Change %</th>
-        <th style="text-align:right;">Sales</th>
-      </tr></thead>
+      <thead><tr><th>#</th><th>Card</th><th>Grade</th><th style="text-align:right;">Avg $</th><th style="text-align:right;">Change %</th><th style="text-align:right;">Sales</th></tr></thead>
       <tbody>
         <tr><td><span class="rank-badge">1</span></td><td class="card-set" style="min-width:280px;">Keyonte George 2023 Prizm #127 Green</td><td>Raw</td><td class="num-col">$5.71</td><td class="num-col profit-pos">+860%</td><td class="num-col">22</td></tr>
         <tr><td><span class="rank-badge">2</span></td><td class="card-set">Cade Cunningham 2021 Select #11 Concourse Silver</td><td>Raw</td><td class="num-col">$6.64</td><td class="num-col profit-pos">+799%</td><td class="num-col">24</td></tr>
@@ -555,179 +443,35 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ -->
-<!-- TAB 7: BY PLAYER -->
-<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BY PLAYER -->
 <div id="tab-byplayer" class="tab-content">
-
   <div class="section-header">Player Grading Summary</div>
-  <div class="section-sub">Ranked by Total EV across all cards analyzed. Safe Grades = cards where PSA 9 is still profitable.</div>
-
+  <div class="section-sub">Ranked by Total EV at $35 grading cost. Safe Grades = cards where PSA 9 is still profitable.</div>
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>#</th>
-        <th>Player</th>
-        <th style="text-align:right;">Cards</th>
-        <th style="text-align:right;">Total EV</th>
-        <th>Best Card</th>
-        <th style="text-align:right;">Best EV</th>
-        <th style="text-align:right;">Safe Grades</th>
+        <th>#</th><th>Player</th><th style="text-align:right;">Cards</th>
+        <th style="text-align:right;">Total EV</th><th>Best Card</th>
+        <th style="text-align:right;">Best EV</th><th style="text-align:right;">Safe Grades</th>
       </tr></thead>
       <tbody>
-        <tr>
-          <td class="num-col color-gray">1</td>
-          <td class="player">Victor Wembanyama</td>
-          <td class="num-col">13</td>
-          <td class="num-col"><span class="ev-cell">$822</span></td>
-          <td class="card-set">2023 Prizm Ice</td>
-          <td class="num-col fw-700">$158</td>
-          <td class="num-col"><span class="safe-bad">2</span><span class="color-gray">/13</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">2</td>
-          <td class="player">Nikola Jokic</td>
-          <td class="num-col">1</td>
-          <td class="num-col"><span class="ev-cell">$432</span></td>
-          <td class="card-set">2015 Donruss Base</td>
-          <td class="num-col fw-700">$432</td>
-          <td class="num-col"><span class="safe-good">1</span><span class="color-gray">/1</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">3</td>
-          <td class="player">Luka Doncic</td>
-          <td class="num-col">7</td>
-          <td class="num-col"><span class="ev-cell">$415</span></td>
-          <td class="card-set">2018 Prizm Pink Ice</td>
-          <td class="num-col fw-700">$327</td>
-          <td class="num-col"><span class="safe-bad">1</span><span class="color-gray">/7</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">4</td>
-          <td class="player">Anthony Edwards</td>
-          <td class="num-col">10</td>
-          <td class="num-col"><span class="ev-cell">$402</span></td>
-          <td class="card-set">2020 Prizm Orange Ice</td>
-          <td class="num-col fw-700">$97</td>
-          <td class="num-col"><span class="safe-bad">2</span><span class="color-gray">/10</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">5</td>
-          <td class="player">Shai Gilgeous-Alexander</td>
-          <td class="num-col">6</td>
-          <td class="num-col"><span class="ev-cell">$390</span></td>
-          <td class="card-set">2018 Prizm Pink Ice</td>
-          <td class="num-col fw-700">$135</td>
-          <td class="num-col"><span class="safe-bad">2</span><span class="color-gray">/6</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">6</td>
-          <td class="player">Kobe Bryant</td>
-          <td class="num-col">8</td>
-          <td class="num-col"><span class="ev-cell">$341</span></td>
-          <td class="card-set">2012 Prizm Base</td>
-          <td class="num-col fw-700">$119</td>
-          <td class="num-col"><span class="safe-good">5</span><span class="color-gray">/8</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">7</td>
-          <td class="player">Cade Cunningham</td>
-          <td class="num-col">6</td>
-          <td class="num-col"><span class="ev-cell">$206</span></td>
-          <td class="card-set">2021 Prizm Orange Ice</td>
-          <td class="num-col fw-700">$66</td>
-          <td class="num-col"><span class="safe-bad">1</span><span class="color-gray">/6</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">8</td>
-          <td class="player">Stephon Castle</td>
-          <td class="num-col">7</td>
-          <td class="num-col"><span class="ev-cell">$204</span></td>
-          <td class="card-set">2024 Prizm China Variation</td>
-          <td class="num-col fw-700">$67</td>
-          <td class="num-col"><span class="safe-bad">0</span><span class="color-gray">/7</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">9</td>
-          <td class="player">Caitlin Clark</td>
-          <td class="num-col">5</td>
-          <td class="num-col"><span class="ev-cell">$152</span></td>
-          <td class="card-set">2024 Prizm WNBA Blue Velocity</td>
-          <td class="num-col fw-700">$65</td>
-          <td class="num-col"><span class="safe-bad">0</span><span class="color-gray">/5</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">10</td>
-          <td class="player">LeBron James</td>
-          <td class="num-col">7</td>
-          <td class="num-col"><span class="ev-cell">$128</span></td>
-          <td class="card-set">2012 Prizm Base</td>
-          <td class="num-col fw-700">$131</td>
-          <td class="num-col"><span class="safe-bad">1</span><span class="color-gray">/7</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">11</td>
-          <td class="player">Giannis Antetokounmpo</td>
-          <td class="num-col">2</td>
-          <td class="num-col"><span class="ev-cell">$91</span></td>
-          <td class="card-set">2013 Hoops Base</td>
-          <td class="num-col fw-700">$61</td>
-          <td class="num-col"><span class="safe-good">1</span><span class="color-gray">/2</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">12</td>
-          <td class="player">Jalen Brunson</td>
-          <td class="num-col">2</td>
-          <td class="num-col"><span class="ev-cell">$72</span></td>
-          <td class="card-set">2018 Prizm Base</td>
-          <td class="num-col fw-700">$43</td>
-          <td class="num-col"><span class="safe-good">2</span><span class="color-gray">/2</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">13</td>
-          <td class="player">Brandon Miller</td>
-          <td class="num-col">5</td>
-          <td class="num-col"><span class="ev-cell">$47</span></td>
-          <td class="card-set">2023 Prizm Orange Ice</td>
-          <td class="num-col fw-700">$18</td>
-          <td class="num-col"><span class="safe-bad">2</span><span class="color-gray">/5</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">14</td>
-          <td class="player">Jayson Tatum</td>
-          <td class="num-col">2</td>
-          <td class="num-col"><span class="ev-cell">$31</span></td>
-          <td class="card-set">2017 Hoops Base</td>
-          <td class="num-col fw-700">$16</td>
-          <td class="num-col"><span class="safe-good">1</span><span class="color-gray">/2</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">15</td>
-          <td class="player">Jaylen Brown</td>
-          <td class="num-col">1</td>
-          <td class="num-col"><span class="ev-cell">$26</span></td>
-          <td class="card-set">2016 Prizm Base</td>
-          <td class="num-col fw-700">$26</td>
-          <td class="num-col"><span class="safe-good">1</span><span class="color-gray">/1</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">16</td>
-          <td class="player">Tyrese Maxey</td>
-          <td class="num-col">1</td>
-          <td class="num-col"><span class="ev-cell">$25</span></td>
-          <td class="card-set">2020 Prizm Base</td>
-          <td class="num-col fw-700">$25</td>
-          <td class="num-col"><span class="safe-good">1</span><span class="color-gray">/1</span></td>
-        </tr>
-        <tr>
-          <td class="num-col color-gray">17</td>
-          <td class="player">Amen Thompson</td>
-          <td class="num-col">1</td>
-          <td class="num-col"><span class="ev-cell">$22</span></td>
-          <td class="card-set">2023 Prizm Pink Ice</td>
-          <td class="num-col fw-700">$22</td>
-          <td class="num-col"><span class="safe-good">1</span><span class="color-gray">/1</span></td>
-        </tr>
+        <tr><td class="num-col color-gray">1</td><td class="player">Victor Wembanyama</td><td class="num-col">13</td><td class="num-col"><span class="ev-cell">$692</span></td><td class="card-set">2023 Prizm Ice</td><td class="num-col fw-700">$148</td><td class="num-col"><span class="safe-bad">2</span><span class="color-gray">/13</span></td></tr>
+        <tr><td class="num-col color-gray">2</td><td class="player">Nikola Jokic</td><td class="num-col">1</td><td class="num-col"><span class="ev-cell">$422</span></td><td class="card-set">2015 Donruss Base</td><td class="num-col fw-700">$422</td><td class="num-col"><span class="safe-good">1</span><span class="color-gray">/1</span></td></tr>
+        <tr><td class="num-col color-gray">3</td><td class="player">Luka Doncic</td><td class="num-col">7</td><td class="num-col"><span class="ev-cell">$345</span></td><td class="card-set">2018 Prizm Pink Ice</td><td class="num-col fw-700">$317</td><td class="num-col"><span class="safe-bad">1</span><span class="color-gray">/7</span></td></tr>
+        <tr><td class="num-col color-gray">4</td><td class="player">Shai Gilgeous-Alexander</td><td class="num-col">6</td><td class="num-col"><span class="ev-cell">$330</span></td><td class="card-set">2018 Prizm Pink Ice</td><td class="num-col fw-700">$125</td><td class="num-col"><span class="safe-bad">2</span><span class="color-gray">/6</span></td></tr>
+        <tr><td class="num-col color-gray">5</td><td class="player">Anthony Edwards</td><td class="num-col">10</td><td class="num-col"><span class="ev-cell">$302</span></td><td class="card-set">2020 Prizm Orange Ice</td><td class="num-col fw-700">$87</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/10</span></td></tr>
+        <tr><td class="num-col color-gray">6</td><td class="player">Kobe Bryant</td><td class="num-col">8</td><td class="num-col"><span class="ev-cell">$261</span></td><td class="card-set">2012 Prizm Base</td><td class="num-col fw-700">$109</td><td class="num-col"><span class="safe-bad">1</span><span class="color-gray">/8</span></td></tr>
+        <tr><td class="num-col color-gray">7</td><td class="player">Cade Cunningham</td><td class="num-col">6</td><td class="num-col"><span class="ev-cell">$146</span></td><td class="card-set">2021 Prizm Orange Ice</td><td class="num-col fw-700">$56</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/6</span></td></tr>
+        <tr><td class="num-col color-gray">8</td><td class="player">Stephon Castle</td><td class="num-col">7</td><td class="num-col"><span class="ev-cell">$134</span></td><td class="card-set">2024 Prizm China Variation</td><td class="num-col fw-700">$57</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/7</span></td></tr>
+        <tr><td class="num-col color-gray">9</td><td class="player">Caitlin Clark</td><td class="num-col">5</td><td class="num-col"><span class="ev-cell">$102</span></td><td class="card-set">2024 Prizm WNBA Blue Velocity</td><td class="num-col fw-700">$55</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/5</span></td></tr>
+        <tr><td class="num-col color-gray">10</td><td class="player">Giannis Antetokounmpo</td><td class="num-col">2</td><td class="num-col"><span class="ev-cell">$71</span></td><td class="card-set">2013 Hoops Base</td><td class="num-col fw-700">$51</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/2</span></td></tr>
+        <tr><td class="num-col color-gray">11</td><td class="player">LeBron James</td><td class="num-col">7</td><td class="num-col"><span class="ev-cell">$58</span></td><td class="card-set">2012 Prizm Base</td><td class="num-col fw-700">$121</td><td class="num-col"><span class="safe-bad">1</span><span class="color-gray">/7</span></td></tr>
+        <tr><td class="num-col color-gray">12</td><td class="player">Jalen Brunson</td><td class="num-col">2</td><td class="num-col"><span class="ev-cell">$52</span></td><td class="card-set">2018 Prizm Base</td><td class="num-col fw-700">$33</td><td class="num-col"><span class="safe-good">2</span><span class="color-gray">/2</span></td></tr>
+        <tr><td class="num-col color-gray">13</td><td class="player">Jaylen Brown</td><td class="num-col">1</td><td class="num-col"><span class="ev-cell">$16</span></td><td class="card-set">2016 Prizm Base</td><td class="num-col fw-700">$16</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/1</span></td></tr>
+        <tr><td class="num-col color-gray">14</td><td class="player">Tyrese Maxey</td><td class="num-col">1</td><td class="num-col"><span class="ev-cell">$15</span></td><td class="card-set">2020 Prizm Base</td><td class="num-col fw-700">$15</td><td class="num-col"><span class="safe-good">1</span><span class="color-gray">/1</span></td></tr>
+        <tr><td class="num-col color-gray">15</td><td class="player">Amen Thompson</td><td class="num-col">1</td><td class="num-col"><span class="ev-cell">$12</span></td><td class="card-set">2023 Prizm Pink Ice</td><td class="num-col fw-700">$12</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/1</span></td></tr>
+        <tr><td class="num-col color-gray">16</td><td class="player">Jayson Tatum</td><td class="num-col">2</td><td class="num-col"><span class="ev-cell">$11</span></td><td class="card-set">2017 Hoops Base</td><td class="num-col fw-700">$6</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/2</span></td></tr>
+        <tr><td class="num-col color-gray">17</td><td class="player">Brandon Miller</td><td class="num-col">5</td><td class="num-col" style="color:#dc2626;font-weight:800;">-$3</td><td class="card-set">2023 Prizm Orange Ice</td><td class="num-col fw-700">$8</td><td class="num-col"><span class="safe-zero">0</span><span class="color-gray">/5</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -745,7 +489,7 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
 </div>
 
 <div class="footer">
-  Brick Squad Sports Cards · Grading Analysis · March 2026 · Data from 130point.com &amp; eBay sold listings
+  Brick Squad Sports Cards · Grading Analysis · March 2026 · $35 grading cost · Data from 130point.com &amp; eBay sold listings
 </div>
 
 <script>
