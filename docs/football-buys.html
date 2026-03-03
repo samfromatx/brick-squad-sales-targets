@@ -93,6 +93,11 @@ td.card-set { color: #64748b; white-space: normal; min-width: 160px; }
 .fw-700 { font-weight: 700; }
 .mt-12 { margin-top: 12px; }
 .text-12 { font-size: 12px; }
+/* Sortable tables */
+thead th { cursor: pointer; user-select: none; }
+thead th:hover { background: #2d3a4e; }
+thead th.sort-asc::after { content: ' ▲'; opacity: 0.7; font-size: 9px; }
+thead th.sort-desc::after { content: ' ▼'; opacity: 0.7; font-size: 9px; }
 </style>
 </head>
 <body>
@@ -498,6 +503,42 @@ function showTab(id) {
   document.getElementById('tab-' + id).classList.add('active');
   event.target.classList.add('active');
 }
+
+// Sortable tables
+(function() {
+  function parseVal(t) {
+    if (!t || t === 'N/A' || t === '—') return null;
+    const n = parseFloat(t.replace(/[~$,%×]/g, '').replace(/,/g, '').trim());
+    return isNaN(n) ? null : n;
+  }
+  function sortTbl(table, col, dir) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      const at = ((a.querySelectorAll('td')[col] || {}).textContent || '').trim();
+      const bt = ((b.querySelectorAll('td')[col] || {}).textContent || '').trim();
+      const av = parseVal(at), bv = parseVal(bt);
+      if (av === null && bv === null) return at.localeCompare(bt) * (dir === 'asc' ? 1 : -1);
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return (av - bv) * (dir === 'asc' ? 1 : -1);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+  document.querySelectorAll('table').forEach(table => {
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, i) => {
+      let dir = 'desc';
+      th.addEventListener('click', function() {
+        ths.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add('sort-' + dir);
+        sortTbl(table, i, dir);
+        dir = dir === 'asc' ? 'desc' : 'asc';
+      });
+    });
+  });
+})();
 </script>
 </body>
 </html>

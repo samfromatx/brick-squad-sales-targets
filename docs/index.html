@@ -79,6 +79,11 @@ body { font-family: system-ui, -apple-system, sans-serif; max-width: 960px; marg
 .collapsible { cursor: pointer; }
 .collapse-content { display: none; }
 .collapse-content.open { display: block; }
+/* Sortable tables */
+thead th { cursor: pointer; user-select: none; }
+thead th:hover { background: #2d3a4e; }
+thead th.sort-asc::after { content: ' ▲'; opacity: 0.7; font-size: 9px; }
+thead th.sort-desc::after { content: ' ▼'; opacity: 0.7; font-size: 9px; }
 </style>
 </head>
 <body>
@@ -1822,6 +1827,51 @@ renderBudgets();
 renderBuyList();
 renderGrading();
 renderTiming();
+
+// Sortable tables
+(function() {
+  function parseVal(t) {
+    if (!t || t === 'N/A' || t === '—') return null;
+    const n = parseFloat(t.replace(/[~$,%×]/g, '').replace(/,/g, '').trim());
+    return isNaN(n) ? null : n;
+  }
+  function sortTbl(table, col, dir) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      const at = ((a.querySelectorAll('td')[col] || {}).textContent || '').trim();
+      const bt = ((b.querySelectorAll('td')[col] || {}).textContent || '').trim();
+      const av = parseVal(at), bv = parseVal(bt);
+      if (av === null && bv === null) return at.localeCompare(bt) * (dir === 'asc' ? 1 : -1);
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return (av - bv) * (dir === 'asc' ? 1 : -1);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+  function attachSorting() {
+    document.querySelectorAll('table').forEach(table => {
+      const ths = table.querySelectorAll('thead th');
+      ths.forEach((th, i) => {
+        if (th.dataset.sortBound) return;
+        th.dataset.sortBound = '1';
+        let dir = 'desc';
+        th.addEventListener('click', function() {
+          ths.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+          th.classList.add('sort-' + dir);
+          sortTbl(table, i, dir);
+          dir = dir === 'asc' ? 'desc' : 'asc';
+        });
+      });
+    });
+  }
+  // Run on load, and again after tab switches (index.html renders tables dynamically)
+  attachSorting();
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => setTimeout(attachSorting, 50));
+  });
+})();
 </script>
 </body>
 </html>
