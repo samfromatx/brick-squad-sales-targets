@@ -136,8 +136,65 @@
     <h3>➕ Add Purchase</h3>
     <div class="form-grid">
       <div class="form-group" style="grid-column: span 2;">
-        <label>Card Name</label>
-        <input type="text" id="fCard" placeholder="e.g. Brock Purdy 2022 Optic Base">
+        <label>Quick-Pick from Target List</label>
+        <select id="fPicker" onchange="onCardPick()">
+          <option value="">— Select a target card to auto-fill —</option>
+          <optgroup label="🏈 Football Targets">
+            <option value="fb|Brock Purdy 2022 Optic Base|PSA 9|22">Brock Purdy 2022 Optic Base · PSA 9 · $22</option>
+            <option value="fb|Bo Nix 2024 Donruss Optic Preview Pink|PSA 9|24">Bo Nix 2024 Donruss Optic Preview Pink · PSA 9 · $24</option>
+            <option value="fb|Malik Nabers 2024 Prizm Silver|PSA 9|24">Malik Nabers 2024 Prizm Silver · PSA 9 · $24</option>
+            <option value="fb|Brock Bowers 2024 Prizm Silver|PSA 9|21">Brock Bowers 2024 Prizm Silver · PSA 9 · $21</option>
+            <option value="fb|Jayden Daniels 2024 Prizm Silver|PSA 9|24">Jayden Daniels 2024 Prizm Silver · PSA 9 · $24</option>
+            <option value="fb|Caleb Williams 2024 Prizm Base|PSA 9|16">Caleb Williams 2024 Prizm Base · PSA 9 · $16</option>
+            <option value="fb|Justin Herbert 2020 Optic Base|PSA 9|22">Justin Herbert 2020 Optic Base · PSA 9 · $22</option>
+            <option value="fb|CJ Stroud 2023 Optic Base|PSA 9|10">CJ Stroud 2023 Optic Base · PSA 9 · $10</option>
+            <option value="fb|Jared Goff 2016 Donruss Base|PSA 9|20">Jared Goff 2016 Donruss Base · PSA 9 · $20</option>
+            <option value="fb|Trevor Lawrence 2021 Prizm Base|PSA 9|13">Trevor Lawrence 2021 Prizm Base · PSA 9 · $13</option>
+            <option value="fb|Jaxson Dart 2025 Mosaic Rookie Var|PSA 10|90">Jaxson Dart 2025 Mosaic Rookie Var · PSA 10 · $90</option>
+            <option value="fb|Cam Ward 2025 Topps Now Draft|PSA 10|22">Cam Ward 2025 Topps Now Draft · PSA 10 · $22</option>
+            <option value="fb|Bijan Robinson 2023 Prizm Silver|PSA 10|141">Bijan Robinson 2023 Prizm Silver · PSA 10 · $141</option>
+            <option value="fb|Puka Nacua 2023 Prizm Silver|PSA 9|30">Puka Nacua 2023 Prizm Silver · PSA 9 · $30</option>
+            <option value="fb|Jahmyr Gibbs 2023 Prizm Silver|PSA 9|30">Jahmyr Gibbs 2023 Prizm Silver · PSA 9 · $30</option>
+            <option value="fb|Marvin Harrison Jr 2024 Prizm Silver|PSA 9|18">Marvin Harrison Jr 2024 Prizm Silver · PSA 9 · $18</option>
+            <option value="fb|Josh Allen 2018 Prizm Base|PSA 9|120">Josh Allen 2018 Prizm Base · PSA 9 · $120</option>
+            <option value="fb|Travis Hunter 2023 Bowman Chrome|PSA 10|30">Travis Hunter 2023 Bowman Chrome · PSA 10 · $30</option>
+          </optgroup>
+          <optgroup label="🏀 Basketball Targets">
+            <option value="bb|Wembanyama 2023 Prizm Instant Impact|PSA 10|46">Wembanyama 2023 Prizm Instant Impact · PSA 10 · $46</option>
+            <option value="bb|Cade Cunningham 2021 Prizm Base|PSA 10|73">Cade Cunningham 2021 Prizm Base · PSA 10 · $73</option>
+            <option value="bb|Stephon Castle 2024 Optic Express Lane|PSA 10|29">Stephon Castle 2024 Optic Express Lane · PSA 10 · $29</option>
+            <option value="bb|Stephon Castle 2024 Prizm Fireworks Silver|PSA 10|45">Stephon Castle 2024 Prizm Fireworks Silver · PSA 10 · $45</option>
+            <option value="bb|Anthony Edwards 2020 Prizm Base|PSA 10|92">Anthony Edwards 2020 Prizm Base · PSA 10 · $92</option>
+            <option value="bb|Wembanyama 2023 Optic Express Lane Purple|PSA 10|48">Wembanyama 2023 Optic Express Lane Purple · PSA 10 · $48</option>
+            <option value="bb|Kobe Bryant 2019 Prizm Base|PSA 10|73">Kobe Bryant 2019 Prizm Base · PSA 10 · $73</option>
+            <option value="bb|Wembanyama 2023 Select Premier Level Blue|PSA 10|79">Wembanyama 2023 Select Premier Level Blue · PSA 10 · $79</option>
+            <option value="bb|Anthony Edwards 2020 Prizm RWB|PSA 10|262">Anthony Edwards 2020 Prizm RWB · PSA 10 · $262</option>
+            <option value="bb|Amen Thompson 2023 Prizm Pink Ice|PSA 10|65">Amen Thompson 2023 Prizm Pink Ice · PSA 10 · $65</option>
+            <option value="bb|Brandon Miller 2023 Prizm Base|PSA 10|22">Brandon Miller 2023 Prizm Base · PSA 10 · $22</option>
+            <option value="bb|Jayson Tatum 2017 Hoops Base|PSA 10|54">Jayson Tatum 2017 Hoops Base · PSA 10 · $54</option>
+            <option value="bb|SGA 2018 Prizm Base|PSA 9|40">SGA 2018 Prizm Base · PSA 9 · $40</option>
+          </optgroup>
+          <optgroup label="📦 Raw-to-Grade Targets">
+            <option value="fb|Bijan Robinson 2023 Prizm Silver|Raw|18">Bijan Robinson 2023 Prizm Silver · Raw · $18 (FB)</option>
+            <option value="fb|Jaxson Dart 2025 Donruss Rated Rookies Throwback|Raw|4">Jaxson Dart 2025 Donruss Rated Rookies Throwback · Raw · $4 (FB)</option>
+            <option value="fb|Drake Maye 2024 Select Turbocharged|Raw|4">Drake Maye 2024 Select Turbocharged · Raw · $4 (FB)</option>
+            <option value="fb|Cam Ward 2025 Prizm Silver|Raw|90">Cam Ward 2025 Prizm Silver · Raw · $90 (FB)</option>
+            <option value="fb|Puka Nacua 2023 Prizm Silver|Raw|30">Puka Nacua 2023 Prizm Silver · Raw · $30 (FB)</option>
+            <option value="fb|Jahmyr Gibbs 2023 Prizm Silver|Raw|20">Jahmyr Gibbs 2023 Prizm Silver · Raw · $20 (FB)</option>
+            <option value="fb|Josh Allen 2018 Score Base|Raw|14">Josh Allen 2018 Score Base · Raw · $14 (FB)</option>
+            <option value="bb|Wembanyama 2023 Prizm Base|Raw|26">Wembanyama 2023 Prizm Base · Raw · $26 (BB)</option>
+            <option value="bb|Anthony Edwards 2020 Prizm Base|Raw|18">Anthony Edwards 2020 Prizm Base · Raw · $18 (BB)</option>
+            <option value="bb|Tyrese Maxey 2020 Prizm Silver|Raw|36">Tyrese Maxey 2020 Prizm Silver · Raw · $36 (BB)</option>
+            <option value="bb|Amen Thompson 2023 Prizm Silver|Raw|27">Amen Thompson 2023 Prizm Silver · Raw · $27 (BB)</option>
+            <option value="bb|Brandon Miller 2023 Prizm Silver|Raw|23">Brandon Miller 2023 Prizm Silver · Raw · $23 (BB)</option>
+            <option value="bb|SGA 2018 Prizm Base|Raw|24">SGA 2018 Prizm Base · Raw · $24 (BB)</option>
+          </optgroup>
+          <option value="__other__">✏️ Other — not on list</option>
+        </select>
+      </div>
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Card Name <span style="color:#484f58;font-size:.7rem;font-weight:400;">· edit or type manually</span></label>
+        <input type="text" id="fCard" placeholder="Auto-filled when you pick above, or type here">
       </div>
       <div class="form-group">
         <label>Sport</label>
@@ -235,6 +292,31 @@ let entries = [];
 let sortCol = 11; // default sort by date
 let sortDir = 'desc';
 
+// ── Card Picker ───────────────────────────────────────────────────
+function onCardPick() {
+  const val = document.getElementById('fPicker').value;
+  if (!val || val === '__other__') {
+    if (val === '__other__') {
+      document.getElementById('fCard').value = '';
+      document.getElementById('fCard').focus();
+    }
+    return;
+  }
+  const [sport, name, grade, price] = val.split('|');
+  document.getElementById('fCard').value  = name;
+  document.getElementById('fSport').value = sport === 'fb' ? '🏈 FB' : '🏀 BB';
+  // set grade
+  const gradeEl = document.getElementById('fGrade');
+  for (let o of gradeEl.options) { if (o.value === grade) { gradeEl.value = grade; break; } }
+  // set target sell (pre-fill if not already set)
+  const tEl = document.getElementById('fTarget');
+  if (!tEl.value) tEl.value = price;
+  // auto-fill grading cost for Raw picks
+  const gEl = document.getElementById('fGrading');
+  if (grade === 'Raw' && !gEl.value) gEl.value = '38';
+  document.getElementById('fPrice').focus();
+}
+
 // ── Load ──────────────────────────────────────────────────────────
 function load() {
   try { entries = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch(e) { entries = []; }
@@ -266,12 +348,13 @@ function addEntry() {
   render();
 
   // reset form fields (keep sport/grade/date)
-  document.getElementById('fCard').value   = '';
-  document.getElementById('fPrice').value  = '';
-  document.getElementById('fQty').value    = '1';
+  document.getElementById('fPicker').value  = '';
+  document.getElementById('fCard').value    = '';
+  document.getElementById('fPrice').value   = '';
+  document.getElementById('fQty').value     = '1';
   document.getElementById('fGrading').value = '';
-  document.getElementById('fTarget').value = '';
-  document.getElementById('fNotes').value  = '';
+  document.getElementById('fTarget').value  = '';
+  document.getElementById('fNotes').value   = '';
 
   const msg = document.getElementById('formMsg');
   msg.style.display = 'inline';
