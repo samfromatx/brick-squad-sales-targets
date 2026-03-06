@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brick Squad — My Portfolio</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 28px 24px 20px; border-bottom: 1px solid #30363d; }
+  .header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -.3px; margin-bottom: 6px; }
+  .header .meta { font-size: .78rem; color: #8b949e; margin-bottom: 14px; }
+
+  /* NAV */
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .nav a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; background: rgba(255,255,255,.07); color: #c9d1d9; text-decoration: none; font-size: .8rem; font-weight: 500; border: 1px solid rgba(255,255,255,.1); transition: background .15s; }
+  .nav a:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+  /* CONTENT */
+  .content { padding: 24px; max-width: 1400px; }
+
+  /* STATS ROW */
+  .stats-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 140px; }
+  .stat-card .label { font-size: .72rem; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-card .sub { font-size: .72rem; color: #8b949e; margin-top: 2px; }
+  .stat-card.green .value { color: #3fb950; }
+  .stat-card.red .value { color: #f85149; }
+
+  /* ADD FORM */
+  .form-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+  .form-card h3 { font-size: .9rem; font-weight: 600; color: #c9d1d9; margin-bottom: 16px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: .72rem; color: #8b949e; text-transform: uppercase; letter-spacing: .4px; }
+  .form-group input, .form-group select { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 10px; color: #e6edf3; font-size: .82rem; outline: none; transition: border-color .15s; }
+  .form-group input:focus, .form-group select:focus { border-color: #58a6ff; }
+  .form-group input::placeholder { color: #484f58; }
+  .form-group select option { background: #161b22; }
+  .form-actions { display: flex; gap: 10px; align-items: center; }
+  .btn { padding: 8px 18px; border-radius: 6px; border: none; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-primary { background: #1f6feb; color: #fff; }
+  .btn-primary:hover { background: #388bfd; }
+  .btn-danger { background: transparent; color: #f85149; border: 1px solid rgba(248,81,73,.3); padding: 4px 10px; font-size: .75rem; border-radius: 4px; }
+  .btn-danger:hover { background: rgba(248,81,73,.1); }
+  .btn-sm { padding: 3px 8px; font-size: .72rem; border-radius: 4px; }
+
+  /* TABLE */
+  .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #21262d; color: #c9d1d9; display: flex; align-items: center; justify-content: space-between; }
+  .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  thead th { background: #161b22; padding: 10px 12px; text-align: left; font-weight: 600; color: #8b949e; font-size: .75rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { background: #2d3a4e; }
+  thead th.sort-asc::after { content: ' ▲'; opacity: .7; font-size: 9px; }
+  thead th.sort-desc::after { content: ' ▼'; opacity: .7; font-size: 9px; }
+  tbody tr { border-top: 1px solid #21262d; transition: background .1s; }
+  tbody tr:hover { background: rgba(255,255,255,.03); }
+  tbody td { padding: 9px 12px; vertical-align: middle; white-space: nowrap; }
+  .empty-row td { text-align: center; color: #484f58; padding: 32px; font-size: .82rem; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .72rem; font-weight: 600; }
+  .badge-psa10 { background: rgba(88,166,255,.15); color: #58a6ff; border: 1px solid rgba(88,166,255,.3); }
+  .badge-psa9  { background: rgba(139,148,158,.15); color: #8b949e; border: 1px solid rgba(139,148,158,.3); }
+  .badge-raw   { background: rgba(210,153,34,.1); color: #d2961e; border: 1px solid rgba(210,153,34,.25); }
+  .badge-fb    { background: rgba(63,185,80,.1); color: #3fb950; border: 1px solid rgba(63,185,80,.25); font-size: .65rem; }
+  .badge-bb    { background: rgba(88,166,255,.08); color: #58a6ff; border: 1px solid rgba(88,166,255,.2); font-size: .65rem; }
+
+  /* P&L */
+  .profit-pos { color: #3fb950; font-weight: 600; }
+  .profit-neg { color: #f85149; font-weight: 600; }
+  .profit-zero { color: #8b949e; }
+
+  /* EXPORT */
+  .btn-export { background: transparent; color: #8b949e; border: 1px solid #30363d; padding: 5px 12px; font-size: .75rem; border-radius: 6px; cursor: pointer; transition: all .15s; }
+  .btn-export:hover { color: #c9d1d9; border-color: #484f58; }
+
+  /* CLEAR confirm */
+  .danger-zone { margin-top: 16px; padding-top: 14px; border-top: 1px solid #21262d; display: flex; align-items: center; gap: 10px; }
+  .danger-zone span { font-size: .75rem; color: #484f58; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 24px; color: #484f58; font-size: .75rem; border-top: 1px solid #21262d; margin-top: 20px; }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.2rem; }
+    .content { padding: 16px; }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📋 Brick Squad — My Portfolio</h1>
+  <div class="meta">Track purchases, cost basis, and target returns · Data saved locally in your browser</div>
+  <div class="nav">
+    <a href="index.html">🏠 Targets</a>
+    <a href="grading-analysis.html">🏀 BB Raw→Grade</a>
+    <a href="football-analysis.html">🏈 FB Raw→Grade</a>
+    <a href="football-buys.html">💰 FB Buy Graded</a>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- STATS -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="label">Total Cards</div>
+      <div class="value" id="statCards">0</div>
+      <div class="sub">Across all entries</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Invested</div>
+      <div class="value" id="statInvested">$0</div>
+      <div class="sub">Cost + grading fees</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Target Value</div>
+      <div class="value" id="statTarget">$0</div>
+      <div class="sub">At sell price × qty</div>
+    </div>
+    <div class="stat-card green">
+      <div class="label">Target Profit</div>
+      <div class="value" id="statProfit">$0</div>
+      <div class="sub" id="statRoi">—</div>
+    </div>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="form-card">
+    <h3>➕ Add Purchase</h3>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Card Name</label>
+        <input type="text" id="fCard" placeholder="e.g. Brock Purdy 2022 Optic Base">
+      </div>
+      <div class="form-group">
+        <label>Sport</label>
+        <select id="fSport">
+          <option value="🏈 FB">🏈 Football</option>
+          <option value="🏀 BB">🏀 Basketball</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Grade</label>
+        <select id="fGrade">
+          <option value="PSA 10">PSA 10</option>
+          <option value="PSA 9">PSA 9</option>
+          <option value="Raw">Raw</option>
+          <option value="PSA 8">PSA 8</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Price Paid ($)</label>
+        <input type="number" id="fPrice" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" id="fQty" placeholder="1" min="1" value="1">
+      </div>
+      <div class="form-group">
+        <label>Grading Cost ($)</label>
+        <input type="number" id="fGrading" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Target Sell Price ($)</label>
+        <input type="number" id="fTarget" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Date Purchased</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="form-group" style="grid-column: span 2;">
+        <label>Notes (optional)</label>
+        <input type="text" id="fNotes" placeholder="e.g. bought at card show">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="addEntry()">Add to Portfolio</button>
+      <span id="formMsg" style="font-size:.78rem;color:#3fb950;display:none;">✓ Added!</span>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-title">
+    <span>Purchase Log (<span id="entryCount">0</span> entries)</span>
+    <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+
+  <div class="tbl-wrap">
+    <table id="portfolioTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Card</th>
+          <th onclick="sortTable(1)">Sport</th>
+          <th onclick="sortTable(2)">Grade</th>
+          <th onclick="sortTable(3)">Paid</th>
+          <th onclick="sortTable(4)">Qty</th>
+          <th onclick="sortTable(5)">Grading $</th>
+          <th onclick="sortTable(6)">Total Cost</th>
+          <th onclick="sortTable(7)">Target Sell</th>
+          <th onclick="sortTable(8)">Target Return</th>
+          <th onclick="sortTable(9)">Profit</th>
+          <th onclick="sortTable(10)">ROI</th>
+          <th onclick="sortTable(11)">Date</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="portfolioBody">
+        <tr class="empty-row"><td colspan="14">No purchases yet — add your first card above</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="danger-zone">
+    <span>Danger zone:</span>
+    <button class="btn-danger btn-sm" onclick="clearAll()">Clear All Data</button>
+    <span style="color:#484f58;">— this cannot be undone</span>
+  </div>
+
+</div>
+
+<div class="footer">Brick Squad Sports Cards &middot; My Portfolio &middot; Data stored locally in your browser</div>
+
+<script>
+const STORE_KEY = 'bricksquad_portfolio_v1';
+let entries = [];
+let sortCol = 11; // default sort by date
+let sortDir = 'desc';
+
+// ── Load ──────────────────────────────────────────────────────────
+function load() {
+  try { entries = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch(e) { entries = []; }
+  setDefaultDate();
+  render();
+}
+
+function setDefaultDate() {
+  const d = new Date();
+  document.getElementById('fDate').value = d.toISOString().split('T')[0];
+}
+
+// ── Add ──────────────────────────────────────────────────────────
+function addEntry() {
+  const card    = document.getElementById('fCard').value.trim();
+  const sport   = document.getElementById('fSport').value;
+  const grade   = document.getElementById('fGrade').value;
+  const price   = parseFloat(document.getElementById('fPrice').value) || 0;
+  const qty     = parseInt(document.getElementById('fQty').value)   || 1;
+  const grading = parseFloat(document.getElementById('fGrading').value) || 0;
+  const target  = parseFloat(document.getElementById('fTarget').value) || 0;
+  const date    = document.getElementById('fDate').value;
+  const notes   = document.getElementById('fNotes').value.trim();
+
+  if (!card) { document.getElementById('fCard').focus(); return; }
+
+  entries.push({ id: Date.now(), card, sport, grade, price, qty, grading, target, date, notes });
+  save();
+  render();
+
+  // reset form fields (keep sport/grade/date)
+  document.getElementById('fCard').value   = '';
+  document.getElementById('fPrice').value  = '';
+  document.getElementById('fQty').value    = '1';
+  document.getElementById('fGrading').value = '';
+  document.getElementById('fTarget').value = '';
+  document.getElementById('fNotes').value  = '';
+
+  const msg = document.getElementById('formMsg');
+  msg.style.display = 'inline';
+  setTimeout(() => msg.style.display = 'none', 1800);
+}
+
+// ── Delete ────────────────────────────────────────────────────────
+function deleteEntry(id) {
+  entries = entries.filter(e => e.id !== id);
+  save();
+  render();
+}
+
+// ── Clear All ─────────────────────────────────────────────────────
+function clearAll() {
+  if (!confirm('Delete all portfolio entries? This cannot be undone.')) return;
+  entries = [];
+  save();
+  render();
+}
+
+// ── Save ──────────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(entries));
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function render() {
+  renderStats();
+  renderTable();
+}
+
+function renderStats() {
+  let totalCards = 0, totalCost = 0, totalTargetReturn = 0;
+  entries.forEach(e => {
+    totalCards += e.qty;
+    totalCost  += e.price * e.qty + e.grading;
+    totalTargetReturn += e.target * e.qty;
+  });
+  const profit = totalTargetReturn - totalCost;
+  const roi    = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : null;
+
+  document.getElementById('statCards').textContent    = totalCards;
+  document.getElementById('statInvested').textContent = fmt(totalCost);
+  document.getElementById('statTarget').textContent   = fmt(totalTargetReturn);
+  document.getElementById('statProfit').textContent   = (profit >= 0 ? '+' : '') + fmt(profit);
+  document.getElementById('statRoi').textContent      = roi !== null ? roi + '% ROI' : '—';
+
+  const profitCard = document.getElementById('statProfit').closest('.stat-card');
+  profitCard.classList.toggle('green', profit > 0);
+  profitCard.classList.toggle('red',   profit < 0);
+}
+
+function renderTable() {
+  const tbody = document.getElementById('portfolioBody');
+  document.getElementById('entryCount').textContent = entries.length;
+
+  if (!entries.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="14">No purchases yet — add your first card above</td></tr>';
+    return;
+  }
+
+  const sorted = [...entries].sort((a, b) => {
+    const av = sortVal(a, sortCol), bv = sortVal(b, sortCol);
+    if (av === null && bv === null) return 0;
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    if (typeof av === 'string') return av.localeCompare(bv) * (sortDir === 'asc' ? 1 : -1);
+    return (av - bv) * (sortDir === 'asc' ? 1 : -1);
+  });
+
+  tbody.innerHTML = sorted.map(e => {
+    const totalCost = e.price * e.qty + e.grading;
+    const targetReturn = e.target * e.qty;
+    const profit = e.target > 0 ? targetReturn - totalCost : null;
+    const roi    = profit !== null && totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : null;
+    const gradeBadge = e.grade === 'PSA 10' ? 'badge-psa10' : e.grade === 'PSA 9' ? 'badge-psa9' : 'badge-raw';
+    const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : 'badge-bb';
+    const profitCls = profit === null ? 'profit-zero' : profit > 0 ? 'profit-pos' : profit < 0 ? 'profit-neg' : 'profit-zero';
+    return `<tr>
+      <td>${esc(e.card)}</td>
+      <td><span class="badge ${sportBadge}">${e.sport}</span></td>
+      <td><span class="badge ${gradeBadge}">${esc(e.grade)}</span></td>
+      <td>${fmt(e.price)}</td>
+      <td>${e.qty}</td>
+      <td>${e.grading > 0 ? fmt(e.grading) : '—'}</td>
+      <td><strong>${fmt(totalCost)}</strong></td>
+      <td>${e.target > 0 ? fmt(e.target) : '—'}</td>
+      <td>${e.target > 0 ? fmt(targetReturn) : '—'}</td>
+      <td class="${profitCls}">${profit !== null ? (profit >= 0 ? '+' : '') + fmt(profit) : '—'}</td>
+      <td class="${profitCls}">${roi !== null ? (roi >= 0 ? '+' : '') + roi + '%' : '—'}</td>
+      <td>${e.date || '—'}</td>
+      <td style="color:#8b949e;font-size:.75rem;">${esc(e.notes)}</td>
+      <td><button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Sort ──────────────────────────────────────────────────────────
+function sortVal(e, col) {
+  const totalCost = e.price * e.qty + e.grading;
+  const profit = e.target > 0 ? e.target * e.qty - totalCost : null;
+  const roi    = profit !== null && totalCost > 0 ? profit / totalCost * 100 : null;
+  switch(col) {
+    case 0:  return e.card;
+    case 1:  return e.sport;
+    case 2:  return e.grade;
+    case 3:  return e.price;
+    case 4:  return e.qty;
+    case 5:  return e.grading;
+    case 6:  return totalCost;
+    case 7:  return e.target;
+    case 8:  return e.target * e.qty;
+    case 9:  return profit;
+    case 10: return roi;
+    case 11: return e.date;
+    default: return null;
+  }
+}
+
+function sortTable(col) {
+  if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+  else { sortCol = col; sortDir = col >= 3 ? 'desc' : 'asc'; }
+  document.querySelectorAll('thead th').forEach((th, i) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (i === col) th.classList.add('sort-' + sortDir);
+  });
+  renderTable();
+}
+
+// ── Export CSV ────────────────────────────────────────────────────
+function exportCSV() {
+  if (!entries.length) { alert('No entries to export.'); return; }
+  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Target Return','Profit','ROI %','Date','Notes'];
+  const rows = entries.map(e => {
+    const totalCost = e.price * e.qty + e.grading;
+    const targetReturn = e.target * e.qty;
+    const profit = e.target > 0 ? targetReturn - totalCost : '';
+    const roi    = profit !== '' && totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : '';
+    return [e.card, e.sport, e.grade, e.price, e.qty, e.grading, totalCost.toFixed(2),
+            e.target || '', targetReturn || '', profit !== '' ? profit.toFixed(2) : '',
+            roi, e.date, e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bricksquad-portfolio.csv';
+  a.click();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function fmt(n) { return '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Init ──────────────────────────────────────────────────────────
+load();
+</script>
+</body>
+</html>
