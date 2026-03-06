@@ -77,6 +77,11 @@
   /* EXPORT */
   .btn-export { background: transparent; color: #8b949e; border: 1px solid #30363d; padding: 5px 12px; font-size: .75rem; border-radius: 6px; cursor: pointer; transition: all .15s; }
   .btn-export:hover { color: #c9d1d9; border-color: #484f58; }
+  .btn-edit { background: transparent; color: #58a6ff; border: 1px solid rgba(88,166,255,.3); padding: 4px 10px; font-size: .75rem; border-radius: 4px; cursor: pointer; transition: all .15s; }
+  .btn-edit:hover { background: rgba(88,166,255,.1); }
+  .btn-cancel { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+  .btn-cancel:hover { background: #2d3a4e; }
+  .form-card.editing { border-color: #388bfd; box-shadow: 0 0 0 1px rgba(56,139,253,.2); }
 
   /* CLEAR confirm */
   .danger-zone { margin-top: 16px; padding-top: 14px; border-top: 1px solid #21262d; display: flex; align-items: center; gap: 10px; }
@@ -133,7 +138,7 @@
 
   <!-- ADD FORM -->
   <div class="form-card">
-    <h3>➕ Add Purchase</h3>
+    <h3 id="formTitle">➕ Add Purchase</h3>
     <div class="form-grid">
       <div class="form-group" style="grid-column: span 2;">
         <label>Quick-Pick from Target List</label>
@@ -239,8 +244,9 @@
       </div>
     </div>
     <div class="form-actions">
-      <button class="btn btn-primary" onclick="addEntry()">Add to Portfolio</button>
-      <span id="formMsg" style="font-size:.78rem;color:#3fb950;display:none;">✓ Added!</span>
+      <button class="btn btn-primary" id="submitBtn" onclick="addEntry()">Add to Portfolio</button>
+      <button class="btn btn-cancel" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+      <span id="formMsg" style="font-size:.78rem;color:#3fb950;display:none;"></span>
     </div>
   </div>
 
@@ -291,6 +297,7 @@ const STORE_KEY = 'bricksquad_portfolio_v1';
 let entries = [];
 let sortCol = 11; // default sort by date
 let sortDir = 'desc';
+let editingId = null;
 
 // ── Card Picker ───────────────────────────────────────────────────
 function onCardPick() {
@@ -329,7 +336,7 @@ function setDefaultDate() {
   document.getElementById('fDate').value = d.toISOString().split('T')[0];
 }
 
-// ── Add ──────────────────────────────────────────────────────────
+// ── Add / Save Edit ───────────────────────────────────────────────
 function addEntry() {
   const card    = document.getElementById('fCard').value.trim();
   const sport   = document.getElementById('fSport').value;
@@ -343,11 +350,55 @@ function addEntry() {
 
   if (!card) { document.getElementById('fCard').focus(); return; }
 
-  entries.push({ id: Date.now(), card, sport, grade, price, qty, grading, target, date, notes });
+  const isEdit = editingId !== null;
+  if (isEdit) {
+    const idx = entries.findIndex(e => e.id === editingId);
+    if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, qty, grading, target, date, notes };
+  } else {
+    entries.push({ id: Date.now(), card, sport, grade, price, qty, grading, target, date, notes });
+  }
   save();
   render();
+  resetForm();
 
-  // reset form fields (keep sport/grade/date)
+  const msg = document.getElementById('formMsg');
+  msg.textContent = isEdit ? '✓ Updated!' : '✓ Added!';
+  msg.style.display = 'inline';
+  setTimeout(() => msg.style.display = 'none', 1800);
+}
+
+// ── Edit ──────────────────────────────────────────────────────────
+function editEntry(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  editingId = id;
+  document.getElementById('fPicker').value  = '';
+  document.getElementById('fCard').value    = e.card;
+  document.getElementById('fSport').value   = e.sport;
+  document.getElementById('fGrade').value   = e.grade;
+  document.getElementById('fPrice').value   = e.price || '';
+  document.getElementById('fQty').value     = e.qty;
+  document.getElementById('fGrading').value = e.grading || '';
+  document.getElementById('fTarget').value  = e.target || '';
+  document.getElementById('fDate').value    = e.date;
+  document.getElementById('fNotes').value   = e.notes;
+  document.getElementById('formTitle').textContent    = '✏️ Edit Entry';
+  document.getElementById('submitBtn').textContent    = 'Save Changes';
+  document.getElementById('cancelBtn').style.display  = 'inline-block';
+  document.querySelector('.form-card').classList.add('editing');
+  document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Cancel Edit ───────────────────────────────────────────────────
+function cancelEdit() {
+  editingId = null;
+  resetForm();
+  document.getElementById('formMsg').style.display = 'none';
+}
+
+// ── Reset Form ────────────────────────────────────────────────────
+function resetForm() {
+  editingId = null;
   document.getElementById('fPicker').value  = '';
   document.getElementById('fCard').value    = '';
   document.getElementById('fPrice').value   = '';
@@ -355,10 +406,10 @@ function addEntry() {
   document.getElementById('fGrading').value = '';
   document.getElementById('fTarget').value  = '';
   document.getElementById('fNotes').value   = '';
-
-  const msg = document.getElementById('formMsg');
-  msg.style.display = 'inline';
-  setTimeout(() => msg.style.display = 'none', 1800);
+  document.getElementById('formTitle').textContent   = '➕ Add Purchase';
+  document.getElementById('submitBtn').textContent   = 'Add to Portfolio';
+  document.getElementById('cancelBtn').style.display = 'none';
+  document.querySelector('.form-card').classList.remove('editing');
 }
 
 // ── Delete ────────────────────────────────────────────────────────
@@ -448,7 +499,10 @@ function renderTable() {
       <td class="${profitCls}">${roi !== null ? (roi >= 0 ? '+' : '') + roi + '%' : '—'}</td>
       <td>${e.date || '—'}</td>
       <td style="color:#8b949e;font-size:.75rem;">${esc(e.notes)}</td>
-      <td><button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})">✕</button></td>
+      <td style="white-space:nowrap;">
+        <button class="btn-edit btn-sm" onclick="editEntry(${e.id})">✏️</button>
+        <button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})" style="margin-left:4px;">✕</button>
+      </td>
     </tr>`;
   }).join('');
 }
