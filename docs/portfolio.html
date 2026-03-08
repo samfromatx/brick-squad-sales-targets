@@ -4,9 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brick Squad — My Portfolio</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  /* AUTH OVERLAY */
+  .auth-overlay { position: fixed; inset: 0; background: #0d1117; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+  .auth-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 32px; width: 100%; max-width: 360px; }
+  .auth-box h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+  .auth-box .auth-sub { font-size: .78rem; color: #8b949e; margin-bottom: 24px; }
+  .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #30363d; }
+  .auth-tab { padding: 8px 16px; font-size: .82rem; font-weight: 600; color: #8b949e; cursor: pointer; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; transition: all .15s; }
+  .auth-tab.active { color: #58a6ff; border-bottom-color: #58a6ff; }
+  .auth-fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .auth-fg label { font-size: .72rem; color: #8b949e; text-transform: uppercase; letter-spacing: .4px; }
+  .auth-fg input { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 10px; color: #e6edf3; font-size: .82rem; outline: none; transition: border-color .15s; }
+  .auth-fg input:focus { border-color: #58a6ff; }
+  .auth-error   { color: #f85149; font-size: .78rem; margin-top: 10px; min-height: 18px; }
+  .auth-success { color: #3fb950; font-size: .78rem; margin-top: 10px; }
 
   /* HEADER */
   .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 28px 24px 20px; border-bottom: 1px solid #30363d; }
@@ -14,9 +30,13 @@
   .header .meta { font-size: .78rem; color: #8b949e; margin-bottom: 14px; }
 
   /* NAV */
-  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
   .nav a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; background: rgba(255,255,255,.07); color: #c9d1d9; text-decoration: none; font-size: .8rem; font-weight: 500; border: 1px solid rgba(255,255,255,.1); transition: background .15s; }
   .nav a:hover { background: rgba(255,255,255,.14); color: #fff; }
+  .nav-user { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .nav-email { font-size: .75rem; color: #8b949e; }
+  .btn-signout { background: transparent; color: #8b949e; border: 1px solid #30363d; padding: 4px 10px; font-size: .73rem; border-radius: 5px; cursor: pointer; transition: all .15s; }
+  .btn-signout:hover { color: #f85149; border-color: rgba(248,81,73,.4); }
 
   /* CONTENT */
   .content { padding: 24px; max-width: 1400px; }
@@ -44,6 +64,7 @@
   .btn { padding: 8px 18px; border-radius: 6px; border: none; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; }
   .btn-primary { background: #1f6feb; color: #fff; }
   .btn-primary:hover { background: #388bfd; }
+  .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
   .btn-danger { background: transparent; color: #f85149; border: 1px solid rgba(248,81,73,.3); padding: 4px 10px; font-size: .75rem; border-radius: 4px; }
   .btn-danger:hover { background: rgba(248,81,73,.1); }
   .btn-sm { padding: 3px 8px; font-size: .72rem; border-radius: 4px; }
@@ -54,7 +75,7 @@
   table { width: 100%; border-collapse: collapse; font-size: .82rem; }
   thead th { background: #161b22; padding: 10px 12px; text-align: left; font-weight: 600; color: #8b949e; font-size: .75rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; cursor: pointer; user-select: none; }
   thead th:hover { background: #2d3a4e; }
-  thead th.sort-asc::after { content: ' ▲'; opacity: .7; font-size: 9px; }
+  thead th.sort-asc::after  { content: ' ▲'; opacity: .7; font-size: 9px; }
   thead th.sort-desc::after { content: ' ▼'; opacity: .7; font-size: 9px; }
   tbody tr { border-top: 1px solid #21262d; transition: background .1s; }
   tbody tr:hover { background: rgba(255,255,255,.03); }
@@ -70,8 +91,8 @@
   .badge-bb    { background: rgba(88,166,255,.08); color: #58a6ff; border: 1px solid rgba(88,166,255,.2); font-size: .65rem; }
 
   /* P&L */
-  .profit-pos { color: #3fb950; font-weight: 600; }
-  .profit-neg { color: #f85149; font-weight: 600; }
+  .profit-pos  { color: #3fb950; font-weight: 600; }
+  .profit-neg  { color: #f85149; font-weight: 600; }
   .profit-zero { color: #8b949e; }
 
   /* EXPORT */
@@ -83,7 +104,7 @@
   .btn-cancel:hover { background: #2d3a4e; }
   .form-card.editing { border-color: #388bfd; box-shadow: 0 0 0 1px rgba(56,139,253,.2); }
 
-  /* CLEAR confirm */
+  /* DANGER */
   .danger-zone { margin-top: 16px; padding-top: 14px; border-top: 1px solid #21262d; display: flex; align-items: center; gap: 10px; }
   .danger-zone span { font-size: .75rem; color: #484f58; }
 
@@ -99,21 +120,52 @@
 </head>
 <body>
 
+<!-- AUTH OVERLAY -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-box">
+    <h2>🏈 Brick Squad Portfolio</h2>
+    <div class="auth-sub">Sign in to access your card portfolio</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <div class="auth-fg">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')authSubmit()">
+    </div>
+    <div class="auth-fg">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')authSubmit()">
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" style="width:100%;" id="authBtn" onclick="authSubmit()">Sign In</button>
+    </div>
+    <div id="authMsg" class="auth-error"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainContent" style="display:none;">
+
 <div class="header">
   <h1>📋 Brick Squad — My Portfolio</h1>
-  <div class="meta">Track purchases, cost basis, and target returns · Data saved locally in your browser</div>
+  <div class="meta">Track purchases, cost basis, and target returns · Data synced to the cloud</div>
   <div class="nav">
     <a href="index.html">🏠 Targets</a>
     <a href="grading-analysis.html">🏀 BB Raw→Grade</a>
     <a href="football-analysis.html">🏈 FB Raw→Grade</a>
     <a href="football-buys.html">💰 FB Buy Graded</a>
+    <div class="nav-user">
+      <span class="nav-email" id="navEmail"></span>
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
   </div>
 </div>
 
 <div class="content">
 
   <!-- STATS -->
-  <div class="stats-row" id="statsRow">
+  <div class="stats-row">
     <div class="stat-card">
       <div class="label">Total Cards</div>
       <div class="value" id="statCards">0</div>
@@ -287,79 +339,190 @@
     <span style="color:#484f58;">— this cannot be undone</span>
   </div>
 
-</div>
+</div><!-- end .content -->
 
-<div class="footer">Brick Squad Sports Cards &middot; My Portfolio &middot; Data stored locally in your browser</div>
+<div class="footer">Brick Squad Sports Cards &middot; My Portfolio &middot; Data synced to the cloud</div>
+
+</div><!-- end #mainContent -->
 
 <script>
-const STORE_KEY = 'bricksquad_portfolio_v1';
-let entries = [];
-let sortCol = 10; // default sort by date
-let sortDir = 'desc';
+const SUPABASE_URL = 'https://azvoynuwnmejqwzscmnc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zzhXo3XG5seQBYgADSAbmA_PyTWou2a';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let entries   = [];
+let sortCol   = 10;
+let sortDir   = 'desc';
 let editingId = null;
+let currentUser = null;
+let authMode  = 'login';
+
+// ── Auth UI ───────────────────────────────────────────────────────
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (mode === 'login' ? 0 : 1) === i);
+  });
+  document.getElementById('authBtn').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+  const msg = document.getElementById('authMsg');
+  msg.className = 'auth-error';
+  msg.textContent = '';
+}
+
+async function authSubmit() {
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const msgEl    = document.getElementById('authMsg');
+  const btn      = document.getElementById('authBtn');
+  msgEl.textContent = '';
+
+  if (!email || !password) { msgEl.textContent = 'Email and password required.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'login' ? 'Signing in…' : 'Creating account…';
+
+  const result = authMode === 'login'
+    ? await sb.auth.signInWithPassword({ email, password })
+    : await sb.auth.signUp({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+
+  if (result.error) {
+    msgEl.className = 'auth-error';
+    msgEl.textContent = result.error.message;
+    return;
+  }
+
+  if (authMode === 'signup' && !result.data.session) {
+    msgEl.className = 'auth-success';
+    msgEl.textContent = 'Check your email to confirm your account, then sign in.';
+    return;
+  }
+
+  currentUser = result.data.user;
+  await showApp();
+}
+
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await showApp();
+  } else {
+    document.getElementById('authOverlay').style.display = 'flex';
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  entries = [];
+  document.getElementById('mainContent').style.display  = 'none';
+  document.getElementById('authOverlay').style.display  = 'flex';
+  document.getElementById('authEmail').value    = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authMsg').textContent = '';
+}
+
+async function showApp() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('navEmail').textContent = currentUser.email;
+  setDefaultDate();
+  await loadEntries();
+  render();
+}
+
+// ── Load from Supabase ─────────────────────────────────────────────
+async function loadEntries() {
+  const { data, error } = await sb.from('portfolio_entries')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('Load error:', error); return; }
+  entries = (data || []).map(row => ({
+    id:      row.id,
+    card:    row.card,
+    sport:   row.sport,
+    grade:   row.grade,
+    price:   parseFloat(row.price)        || 0,
+    qty:     parseInt(row.qty)            || 1,
+    grading: parseFloat(row.grading_cost) || 0,
+    target:  parseFloat(row.target_sell)  || 0,
+    date:    row.date  || '',
+    notes:   row.notes || ''
+  }));
+}
+
+function setDefaultDate() {
+  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+}
 
 // ── Card Picker ───────────────────────────────────────────────────
 function onCardPick() {
   const val = document.getElementById('fPicker').value;
   if (!val || val === '__other__') {
-    if (val === '__other__') {
-      document.getElementById('fCard').value = '';
-      document.getElementById('fCard').focus();
-    }
+    if (val === '__other__') { document.getElementById('fCard').value = ''; document.getElementById('fCard').focus(); }
     return;
   }
   const [sport, name, grade, price] = val.split('|');
   document.getElementById('fCard').value  = name;
   document.getElementById('fSport').value = sport === 'fb' ? '🏈 FB' : '🏀 BB';
-  // set grade
   const gradeEl = document.getElementById('fGrade');
   for (let o of gradeEl.options) { if (o.value === grade) { gradeEl.value = grade; break; } }
-  // set target sell (pre-fill if not already set)
   const tEl = document.getElementById('fTarget');
   if (!tEl.value) tEl.value = price;
-  // auto-fill grading cost for Raw picks
   const gEl = document.getElementById('fGrading');
   if (grade === 'Raw' && !gEl.value) gEl.value = '38';
   document.getElementById('fPrice').focus();
 }
 
-// ── Load ──────────────────────────────────────────────────────────
-function load() {
-  try { entries = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch(e) { entries = []; }
-  setDefaultDate();
-  render();
-}
-
-function setDefaultDate() {
-  const d = new Date();
-  document.getElementById('fDate').value = d.toISOString().split('T')[0];
-}
-
 // ── Add / Save Edit ───────────────────────────────────────────────
-function addEntry() {
+async function addEntry() {
   const card    = document.getElementById('fCard').value.trim();
   const sport   = document.getElementById('fSport').value;
   const grade   = document.getElementById('fGrade').value;
-  const price   = parseFloat(document.getElementById('fPrice').value) || 0;
-  const qty     = parseInt(document.getElementById('fQty').value)   || 1;
+  const price   = parseFloat(document.getElementById('fPrice').value)   || 0;
+  const qty     = parseInt(document.getElementById('fQty').value)       || 1;
   const grading = parseFloat(document.getElementById('fGrading').value) || 0;
-  const target  = parseFloat(document.getElementById('fTarget').value) || 0;
+  const target  = parseFloat(document.getElementById('fTarget').value)  || 0;
   const date    = document.getElementById('fDate').value;
   const notes   = document.getElementById('fNotes').value.trim();
 
   if (!card) { document.getElementById('fCard').focus(); return; }
 
-  const isEdit = editingId !== null;
+  const submitBtn = document.getElementById('submitBtn');
+  const isEdit    = editingId !== null;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Saving…';
+
   if (isEdit) {
-    const idx = entries.findIndex(e => e.id === editingId);
-    if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, qty, grading, target, date, notes };
+    const { error } = await sb.from('portfolio_entries').update({
+      card, sport, grade, price, qty,
+      grading_cost: grading,
+      target_sell:  target,
+      date, notes
+    }).eq('id', editingId);
+    if (!error) {
+      const idx = entries.findIndex(e => e.id === editingId);
+      if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, qty, grading, target, date, notes };
+    }
   } else {
-    entries.push({ id: Date.now(), card, sport, grade, price, qty, grading, target, date, notes });
+    const { data, error } = await sb.from('portfolio_entries').insert({
+      user_id: currentUser.id,
+      card, sport, grade, price, qty,
+      grading_cost: grading,
+      target_sell:  target,
+      date, notes
+    }).select().single();
+    if (!error && data) {
+      entries.push({ id: data.id, card, sport, grade, price, qty, grading, target, date, notes });
+    }
   }
-  save();
+
+  submitBtn.disabled = false;
   render();
   resetForm();
-
   const msg = document.getElementById('formMsg');
   msg.textContent = isEdit ? '✓ Updated!' : '✓ Added!';
   msg.style.display = 'inline';
@@ -375,27 +538,25 @@ function editEntry(id) {
   document.getElementById('fCard').value    = e.card;
   document.getElementById('fSport').value   = e.sport;
   document.getElementById('fGrade').value   = e.grade;
-  document.getElementById('fPrice').value   = e.price || '';
+  document.getElementById('fPrice').value   = e.price   || '';
   document.getElementById('fQty').value     = e.qty;
   document.getElementById('fGrading').value = e.grading || '';
-  document.getElementById('fTarget').value  = e.target || '';
+  document.getElementById('fTarget').value  = e.target  || '';
   document.getElementById('fDate').value    = e.date;
   document.getElementById('fNotes').value   = e.notes;
-  document.getElementById('formTitle').textContent    = '✏️ Edit Entry';
-  document.getElementById('submitBtn').textContent    = 'Save Changes';
-  document.getElementById('cancelBtn').style.display  = 'inline-block';
+  document.getElementById('formTitle').textContent   = '✏️ Edit Entry';
+  document.getElementById('submitBtn').textContent   = 'Save Changes';
+  document.getElementById('cancelBtn').style.display = 'inline-block';
   document.querySelector('.form-card').classList.add('editing');
   document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── Cancel Edit ───────────────────────────────────────────────────
+// ── Cancel / Reset ────────────────────────────────────────────────
 function cancelEdit() {
-  editingId = null;
   resetForm();
   document.getElementById('formMsg').style.display = 'none';
 }
 
-// ── Reset Form ────────────────────────────────────────────────────
 function resetForm() {
   editingId = null;
   document.getElementById('fPicker').value  = '';
@@ -412,61 +573,49 @@ function resetForm() {
 }
 
 // ── Delete ────────────────────────────────────────────────────────
-function deleteEntry(id) {
+async function deleteEntry(id) {
+  await sb.from('portfolio_entries').delete().eq('id', id);
   entries = entries.filter(e => e.id !== id);
-  save();
   render();
 }
 
 // ── Clear All ─────────────────────────────────────────────────────
-function clearAll() {
+async function clearAll() {
   if (!confirm('Delete all portfolio entries? This cannot be undone.')) return;
+  await sb.from('portfolio_entries').delete().eq('user_id', currentUser.id);
   entries = [];
-  save();
   render();
 }
 
-// ── Save ──────────────────────────────────────────────────────────
-function save() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(entries));
-}
-
 // ── Render ────────────────────────────────────────────────────────
-function render() {
-  renderStats();
-  renderTable();
-}
+function render() { renderStats(); renderTable(); }
 
 function renderStats() {
-  let totalCards = 0, totalCost = 0, totalTargetReturn = 0;
+  let totalCards = 0, totalCost = 0, totalTarget = 0;
   entries.forEach(e => {
-    totalCards += e.qty;
-    totalCost  += e.price * e.qty + e.grading;
-    totalTargetReturn += e.target * e.qty;
+    totalCards  += e.qty;
+    totalCost   += e.price * e.qty + e.grading;
+    totalTarget += e.target * e.qty;
   });
-  const profit = totalTargetReturn - totalCost;
+  const profit = totalTarget - totalCost;
   const roi    = totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : null;
-
   document.getElementById('statCards').textContent    = totalCards;
   document.getElementById('statInvested').textContent = fmt(totalCost);
-  document.getElementById('statTarget').textContent   = fmt(totalTargetReturn);
+  document.getElementById('statTarget').textContent   = fmt(totalTarget);
   document.getElementById('statProfit').textContent   = (profit >= 0 ? '+' : '') + fmt(profit);
   document.getElementById('statRoi').textContent      = roi !== null ? roi + '% ROI' : '—';
-
-  const profitCard = document.getElementById('statProfit').closest('.stat-card');
-  profitCard.classList.toggle('green', profit > 0);
-  profitCard.classList.toggle('red',   profit < 0);
+  const card = document.getElementById('statProfit').closest('.stat-card');
+  card.classList.toggle('green', profit > 0);
+  card.classList.toggle('red',   profit < 0);
 }
 
 function renderTable() {
   const tbody = document.getElementById('portfolioBody');
   document.getElementById('entryCount').textContent = entries.length;
-
   if (!entries.length) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="13">No purchases yet — add your first card above</td></tr>';
     return;
   }
-
   const sorted = [...entries].sort((a, b) => {
     const av = sortVal(a, sortCol), bv = sortVal(b, sortCol);
     if (av === null && bv === null) return 0;
@@ -475,15 +624,13 @@ function renderTable() {
     if (typeof av === 'string') return av.localeCompare(bv) * (sortDir === 'asc' ? 1 : -1);
     return (av - bv) * (sortDir === 'asc' ? 1 : -1);
   });
-
   tbody.innerHTML = sorted.map(e => {
-    const totalCost = e.price * e.qty + e.grading;
-    const targetReturn = e.target * e.qty;
-    const profit = e.target > 0 ? targetReturn - totalCost : null;
-    const roi    = profit !== null && totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : null;
+    const totalCost  = e.price * e.qty + e.grading;
+    const profit     = e.target > 0 ? e.target * e.qty - totalCost : null;
+    const roi        = profit !== null && totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : null;
     const gradeBadge = e.grade === 'PSA 10' ? 'badge-psa10' : e.grade === 'PSA 9' ? 'badge-psa9' : 'badge-raw';
     const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : 'badge-bb';
-    const profitCls = profit === null ? 'profit-zero' : profit > 0 ? 'profit-pos' : profit < 0 ? 'profit-neg' : 'profit-zero';
+    const profitCls  = profit === null ? 'profit-zero' : profit > 0 ? 'profit-pos' : profit < 0 ? 'profit-neg' : 'profit-zero';
     return `<tr>
       <td>${esc(e.card)}</td>
       <td><span class="badge ${sportBadge}">${e.sport}</span></td>
@@ -508,8 +655,8 @@ function renderTable() {
 // ── Sort ──────────────────────────────────────────────────────────
 function sortVal(e, col) {
   const totalCost = e.price * e.qty + e.grading;
-  const profit = e.target > 0 ? e.target * e.qty - totalCost : null;
-  const roi    = profit !== null && totalCost > 0 ? profit / totalCost * 100 : null;
+  const profit    = e.target > 0 ? e.target * e.qty - totalCost : null;
+  const roi       = profit !== null && totalCost > 0 ? profit / totalCost * 100 : null;
   switch(col) {
     case 0:  return e.card;
     case 1:  return e.sport;
@@ -542,15 +689,13 @@ function exportCSV() {
   const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Profit','ROI %','Date','Notes'];
   const rows = entries.map(e => {
     const totalCost = e.price * e.qty + e.grading;
-    const targetReturn = e.target * e.qty;
-    const profit = e.target > 0 ? targetReturn - totalCost : '';
-    const roi    = profit !== '' && totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : '';
+    const profit    = e.target > 0 ? e.target * e.qty - totalCost : '';
+    const roi       = profit !== '' && totalCost > 0 ? ((profit / totalCost) * 100).toFixed(1) : '';
     return [e.card, e.sport, e.grade, e.price, e.qty, e.grading, totalCost.toFixed(2),
-            e.target || '', targetReturn || '', profit !== '' ? profit.toFixed(2) : '',
+            e.target || '', profit !== '' ? profit.toFixed(2) : '',
             roi, e.date, e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   });
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
+  const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'bricksquad-portfolio.csv';
@@ -562,7 +707,7 @@ function fmt(n) { return '$' + (n || 0).toLocaleString('en-US', { minimumFractio
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── Init ──────────────────────────────────────────────────────────
-load();
+checkAuth();
 </script>
 </body>
 </html>
