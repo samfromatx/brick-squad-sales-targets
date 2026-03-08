@@ -104,6 +104,17 @@
   .btn-cancel:hover { background: #2d3a4e; }
   .form-card.editing { border-color: #388bfd; box-shadow: 0 0 0 1px rgba(56,139,253,.2); }
 
+  /* MIGRATION BANNER */
+  .migrate-banner { background: #1c2a1c; border: 1px solid #2ea04326; border-left: 3px solid #3fb950; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .migrate-banner .migrate-text { flex: 1; min-width: 200px; }
+  .migrate-banner .migrate-text strong { font-size: .85rem; color: #3fb950; display: block; margin-bottom: 2px; }
+  .migrate-banner .migrate-text span { font-size: .78rem; color: #8b949e; }
+  .btn-migrate { background: #238636; color: #fff; border: none; padding: 7px 16px; border-radius: 6px; font-size: .82rem; font-weight: 600; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .btn-migrate:hover { background: #2ea043; }
+  .btn-migrate:disabled { opacity: .6; cursor: not-allowed; }
+  .btn-dismiss { background: transparent; color: #484f58; border: none; font-size: .78rem; cursor: pointer; padding: 4px 8px; }
+  .btn-dismiss:hover { color: #8b949e; }
+
   /* DANGER */
   .danger-zone { margin-top: 16px; padding-top: 14px; border-top: 1px solid #21262d; display: flex; align-items: center; gap: 10px; }
   .danger-zone span { font-size: .75rem; color: #484f58; }
@@ -163,6 +174,16 @@
 </div>
 
 <div class="content">
+
+  <!-- MIGRATION BANNER -->
+  <div id="migrateBanner" style="display:none;" class="migrate-banner">
+    <div class="migrate-text">
+      <strong>📦 Local data found</strong>
+      <span id="migrateCount">You have entries stored locally in this browser.</span>
+    </div>
+    <button class="btn-migrate" id="migrateBtn" onclick="importFromLocal()">Import to Cloud</button>
+    <button class="btn-dismiss" onclick="dismissMigration()">Dismiss</button>
+  </div>
 
   <!-- STATS -->
   <div class="stats-row">
@@ -430,8 +451,55 @@ async function showApp() {
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('navEmail').textContent = currentUser.email;
   setDefaultDate();
+  checkMigration();
   await loadEntries();
   render();
+}
+
+// ── Local → Cloud Migration ───────────────────────────────────────
+function checkMigration() {
+  try {
+    const local = JSON.parse(localStorage.getItem('bricksquad_portfolio_v1')) || [];
+    if (!local.length) return;
+    document.getElementById('migrateCount').textContent =
+      `Found ${local.length} entr${local.length === 1 ? 'y' : 'ies'} stored locally in this browser — import them to the cloud.`;
+    document.getElementById('migrateBanner').style.display = 'flex';
+  } catch(e) { /* no local data */ }
+}
+
+async function importFromLocal() {
+  const local = JSON.parse(localStorage.getItem('bricksquad_portfolio_v1') || '[]');
+  if (!local.length) return;
+  const btn = document.getElementById('migrateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Importing…';
+  const rows = local.map(e => ({
+    user_id:      currentUser.id,
+    card:         e.card,
+    sport:        e.sport,
+    grade:        e.grade,
+    price:        e.price   || 0,
+    qty:          e.qty     || 1,
+    grading_cost: e.grading || 0,
+    target_sell:  e.target  || 0,
+    date:         e.date    || '',
+    notes:        e.notes   || ''
+  }));
+  const { error } = await sb.from('portfolio_entries').insert(rows);
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = 'Import to Cloud';
+    alert('Import failed: ' + error.message);
+    return;
+  }
+  localStorage.removeItem('bricksquad_portfolio_v1');
+  document.getElementById('migrateBanner').style.display = 'none';
+  await loadEntries();
+  render();
+}
+
+function dismissMigration() {
+  document.getElementById('migrateBanner').style.display = 'none';
 }
 
 // ── Load from Supabase ─────────────────────────────────────────────
