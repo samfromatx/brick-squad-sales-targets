@@ -268,16 +268,15 @@
           <th onclick="sortTable(5)">Grading $</th>
           <th onclick="sortTable(6)">Total Cost</th>
           <th onclick="sortTable(7)">Target Sell</th>
-          <th onclick="sortTable(8)">Target Return</th>
-          <th onclick="sortTable(9)">Profit</th>
-          <th onclick="sortTable(10)">ROI</th>
-          <th onclick="sortTable(11)">Date</th>
+          <th onclick="sortTable(8)">Profit</th>
+          <th onclick="sortTable(9)">ROI</th>
+          <th onclick="sortTable(10)">Date</th>
           <th>Notes</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="portfolioBody">
-        <tr class="empty-row"><td colspan="14">No purchases yet — add your first card above</td></tr>
+        <tr class="empty-row"><td colspan="13">No purchases yet — add your first card above</td></tr>
       </tbody>
     </table>
   </div>
@@ -295,7 +294,7 @@
 <script>
 const STORE_KEY = 'bricksquad_portfolio_v1';
 let entries = [];
-let sortCol = 11; // default sort by date
+let sortCol = 10; // default sort by date
 let sortDir = 'desc';
 let editingId = null;
 
@@ -464,7 +463,7 @@ function renderTable() {
   document.getElementById('entryCount').textContent = entries.length;
 
   if (!entries.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="14">No purchases yet — add your first card above</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="13">No purchases yet — add your first card above</td></tr>';
     return;
   }
 
@@ -494,7 +493,6 @@ function renderTable() {
       <td>${e.grading > 0 ? fmt(e.grading) : '—'}</td>
       <td><strong>${fmt(totalCost)}</strong></td>
       <td>${e.target > 0 ? fmt(e.target) : '—'}</td>
-      <td>${e.target > 0 ? fmt(targetReturn) : '—'}</td>
       <td class="${profitCls}">${profit !== null ? (profit >= 0 ? '+' : '') + fmt(profit) : '—'}</td>
       <td class="${profitCls}">${roi !== null ? (roi >= 0 ? '+' : '') + roi + '%' : '—'}</td>
       <td>${e.date || '—'}</td>
@@ -521,10 +519,9 @@ function sortVal(e, col) {
     case 5:  return e.grading;
     case 6:  return totalCost;
     case 7:  return e.target;
-    case 8:  return e.target * e.qty;
-    case 9:  return profit;
-    case 10: return roi;
-    case 11: return e.date;
+    case 8:  return profit;
+    case 9:  return roi;
+    case 10: return e.date;
     default: return null;
   }
 }
@@ -542,7 +539,7 @@ function sortTable(col) {
 // ── Export CSV ────────────────────────────────────────────────────
 function exportCSV() {
   if (!entries.length) { alert('No entries to export.'); return; }
-  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Target Return','Profit','ROI %','Date','Notes'];
+  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Profit','ROI %','Date','Notes'];
   const rows = entries.map(e => {
     const totalCost = e.price * e.qty + e.grading;
     const targetReturn = e.target * e.qty;
