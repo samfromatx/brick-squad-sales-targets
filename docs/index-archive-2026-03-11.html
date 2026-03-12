@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brick Squad — Investment Target List</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 28px 24px 20px; border-bottom: 1px solid #30363d; }
+  .header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -.3px; margin-bottom: 6px; }
+  .header .meta { font-size: .78rem; color: #8b949e; display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
+  .header .meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* NAV */
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .nav a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; background: rgba(255,255,255,.07); color: #c9d1d9; text-decoration: none; font-size: .8rem; font-weight: 500; border: 1px solid rgba(255,255,255,.1); transition: background .15s; }
+  .nav a:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+  /* TABS */
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 16px 24px 0; background: #161b22; border-bottom: 1px solid #30363d; }
+  .tab { padding: 8px 16px; border-radius: 6px 6px 0 0; background: transparent; border: 1px solid transparent; border-bottom: none; color: #8b949e; cursor: pointer; font-size: .82rem; font-weight: 500; transition: all .15s; }
+  .tab:hover { color: #c9d1d9; background: rgba(255,255,255,.05); }
+  .tab.active { background: #0d1117; border-color: #30363d; color: #e6edf3; }
+
+  /* CONTENT */
+  .content { padding: 24px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SECTION */
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #21262d; color: #c9d1d9; display: flex; align-items: center; gap: 8px; }
+
+  /* STATS ROW */
+  .stats-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 150px; }
+  .stat-card .label { font-size: .72rem; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
+  .stat-card .sub { font-size: .72rem; color: #8b949e; margin-top: 2px; }
+
+  /* TABLES */
+  .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  thead th { background: #161b22; padding: 10px 12px; text-align: left; font-weight: 600; color: #8b949e; font-size: .75rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+  tbody tr { border-top: 1px solid #21262d; transition: background .1s; }
+  tbody tr:hover { background: rgba(255,255,255,.03); }
+  tbody td { padding: 9px 12px; vertical-align: middle; white-space: nowrap; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .72rem; font-weight: 600; }
+  .badge-high { background: rgba(248,81,73,.15); color: #f85149; border: 1px solid rgba(248,81,73,.3); }
+  .badge-med { background: rgba(210,153,34,.15); color: #d2961e; border: 1px solid rgba(210,153,34,.3); }
+  .badge-premium { background: rgba(63,185,80,.15); color: #3fb950; border: 1px solid rgba(63,185,80,.3); }
+  .badge-psa10 { background: rgba(88,166,255,.15); color: #58a6ff; border: 1px solid rgba(88,166,255,.3); }
+  .badge-psa9 { background: rgba(139,148,158,.15); color: #8b949e; border: 1px solid rgba(139,148,158,.3); }
+  .badge-raw { background: rgba(210,153,34,.1); color: #d2961e; border: 1px solid rgba(210,153,34,.25); }
+
+  .ev-pos { color: #3fb950; font-weight: 600; }
+  .ev-neg { color: #f85149; }
+
+  /* GOLDEN RULE BOX */
+  .rule-box { background: #161b22; border: 1px solid #30363d; border-left: 4px solid #58a6ff; border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; font-family: monospace; }
+  .rule-box p { font-size: .82rem; color: #c9d1d9; line-height: 1.7; }
+
+  /* CALENDAR TABLE */
+  .event-hit { color: #3fb950; }
+  .event-miss { color: #f85149; }
+
+  /* STRATEGY CALLOUT */
+  .callout { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .callout-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; }
+  .callout-box h4 { font-size: .82rem; font-weight: 600; margin-bottom: 8px; }
+  .callout-box ul { list-style: none; font-size: .78rem; color: #8b949e; line-height: 1.8; }
+  .callout-box ul li::before { content: '• '; color: #58a6ff; }
+  .callout-buy { border-left: 4px solid #58a6ff; }
+  .callout-raw { border-left: 4px solid #3fb950; }
+
+  /* PORTFOLIO */
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .portfolio-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px; }
+  .portfolio-card .cat { font-size: .72rem; color: #8b949e; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+  .portfolio-card .alloc { font-size: 1.25rem; font-weight: 700; color: #58a6ff; }
+  .portfolio-card .cards { font-size: .75rem; color: #8b949e; margin-top: 2px; }
+  .portfolio-card .note { font-size: .72rem; color: #6e7681; margin-top: 4px; font-style: italic; }
+
+  /* SUB TABS */
+  .sub-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .sub-tab { padding: 5px 12px; border-radius: 20px; background: #21262d; border: 1px solid #30363d; color: #8b949e; cursor: pointer; font-size: .78rem; font-weight: 500; transition: all .15s; }
+  .sub-tab:hover { color: #c9d1d9; }
+  .sub-tab.active { background: #1f6feb; border-color: #388bfd; color: #fff; }
+  .sub-content { display: none; }
+  .sub-content.active { display: block; }
+
+  /* WATCHLIST */
+  .watchlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .watch-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; }
+  .watch-card .player { font-weight: 600; font-size: .9rem; color: #e6edf3; margin-bottom: 2px; }
+  .watch-card .team { font-size: .75rem; color: #8b949e; margin-bottom: 6px; }
+  .watch-card .why { font-size: .78rem; color: #c9d1d9; margin-bottom: 4px; }
+  .watch-card .targets { font-size: .72rem; color: #58a6ff; }
+
+  /* FOOTER */
+  .footer { text-align: center; padding: 24px; color: #484f58; font-size: .75rem; border-top: 1px solid #21262d; margin-top: 20px; }
+
+  /* SORT */
+  thead th { cursor: pointer; user-select: none; }
+  thead th:hover { background: #2d3a4e; }
+  thead th.sort-asc::after { content: ' ▲'; opacity: .7; font-size: 9px; }
+  thead th.sort-desc::after { content: ' ▼'; opacity: .7; font-size: 9px; }
+
+  @media (max-width: 600px) {
+    .callout { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.2rem; }
+    .tabs { padding: 12px 16px 0; }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏀🏈 Brick Squad — Investment Target List</h1>
+  <div class="meta">
+    <span>📅 Updated: March 4, 2026</span>
+    <span>💰 Grading: $38 ($30 PSA + $8 shipping)</span>
+    <span>⏱️ Turnaround: ~3 months</span>
+    <span>🎯 Focus: Post-2015 rookies, max ROI</span>
+  </div>
+  <div class="nav">
+    <a href="grading-analysis.html">🏀 BB Raw→Grade</a>
+    <a href="football-analysis.html">🏈 FB Raw→Grade</a>
+    <a href="football-buys.html">💰 FB Buy Graded</a>
+    <a href="portfolio.html">📋 My Portfolio</a>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview')">📊 Overview</div>
+  <div class="tab" onclick="showTab('football-targets')">🏈 Football Targets</div>
+  <div class="tab" onclick="showTab('basketball-targets')">🏀 Basketball Targets</div>
+  <div class="tab" onclick="showTab('raw-grade')">📦 Raw→Grade</div>
+  <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
+  <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
+  <div class="tab" onclick="showTab('watchlist')">📈 Watchlist</div>
+</div>
+
+<div class="content">
+
+  <!-- ===== OVERVIEW ===== -->
+  <div id="overview" class="tab-content active">
+
+    <div class="section">
+      <div class="section-title">📊 Executive Summary</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="label">Football Default</div>
+          <div class="value">PSA 9</div>
+          <div class="sub">Outperforms PSA 10 in 50% of cases</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Basketball Default</div>
+          <div class="value">PSA 10</div>
+          <div class="sub">Outperforms PSA 9 in 50% of cases</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">FB PSA 10 Premium</div>
+          <div class="value">+193%</div>
+          <div class="sub">Avg over PSA 9</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">BB PSA 10 Premium</div>
+          <div class="value">+206%</div>
+          <div class="sub">Avg over PSA 9</div>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Football</th>
+              <th>Basketball</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>PSA 10 outperformed PSA 9</td><td>42% of cards</td><td><strong>50% of cards</strong></td></tr>
+            <tr><td>PSA 9 outperformed PSA 10</td><td><strong>50% of cards</strong></td><td>39% of cards</td></tr>
+            <tr><td>Recommended Default Grade</td><td><strong>PSA 9</strong></td><td><strong>PSA 10</strong></td></tr>
+            <tr><td>Avg PSA 10 Premium</td><td>+193% over PSA 9</td><td>+206% over PSA 9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rule-box">
+        <p><strong>🏈 Football:</strong> Default to PSA 9 → Upgrade to PSA 10 only for premium ($300+) cards</p>
+        <p><strong>🏀 Basketball:</strong> Default to PSA 10 → Downgrade to PSA 9 only for speculation</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📅 Selling Window Analysis <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Cards submitted now return June–August 2026</span></div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Timing</th>
+              <th>Strategy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>NBA Playoffs</strong></td><td>Apr–Jun 2026</td><td><span class="event-miss">❌ Graded cards miss this</span> → Buy graded NOW to sell into playoffs</td></tr>
+            <tr><td><strong>NFL Draft</strong></td><td>Apr 2026</td><td><span class="event-miss">❌ Cards in grading</span> → Buy graded draft prospect cards NOW</td></tr>
+            <tr><td><strong>NFL Training Camp</strong></td><td>Jul–Aug 2026</td><td><span class="event-hit">✅ Cards return in time</span> → Raw-to-grade viable</td></tr>
+            <tr><td><strong>NFL Season Start</strong></td><td>Sep 2026</td><td><span class="event-hit">✅ Perfect timing</span> → Raw-to-grade optimal window</td></tr>
+            <tr><td><strong>NBA Season Start</strong></td><td>Oct 2026</td><td><span class="event-hit">✅ Perfect timing</span> → Raw-to-grade optimal window</td></tr>
+            <tr><td><strong>NFL Playoffs</strong></td><td>Jan 2027</td><td><span class="event-hit">✅ Cards ready</span> → Sell winners</td></tr>
+            <tr><td><strong>NBA All-Star</strong></td><td>Feb 2027</td><td><span class="event-hit">✅ Cards ready</span> → Sell risers</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <div class="callout-box callout-buy">
+          <h4>🛒 BUY GRADED NOW (flip before/during summer)</h4>
+          <ul>
+            <li>Basketball playoff contender cards</li>
+            <li>Football draft prospect cards (sell into April hype)</li>
+            <li>Any "flip in 30–90 days" plays</li>
+          </ul>
+        </div>
+        <div class="callout-box callout-raw">
+          <h4>📦 BUY RAW NOW (grade and sell in fall)</h4>
+          <ul>
+            <li>Football rookies → ready for NFL kickoff</li>
+            <li>Basketball rookies → ready for NBA tip-off</li>
+            <li>Cards with positive grading EV</li>
+            <li>You won't miss windows — you'll hit the NEXT ones</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== FOOTBALL TARGETS ===== -->
+  <div id="football-targets" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">🏈 Football Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">PSA 9 default · Upgrade to PSA 10 for $300+ cards</span></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Targets</div><div class="value">23</div><div class="sub">Cards to acquire</div></div>
+        <div class="stat-card"><div class="label">High Priority</div><div class="value">9</div><div class="sub">🔴 Buy now</div></div>
+        <div class="stat-card"><div class="label">Medium Priority</div><div class="value">12</div><div class="sub">🟡 Buy on value</div></div>
+        <div class="stat-card"><div class="label">Premium Play</div><div class="value">2</div><div class="sub">🟢 High-end</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>Grade</th>
+              <th>Target $</th>
+              <th>Max $</th>
+              <th>Trend</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Brock Purdy 2022 Optic Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$19</td><td>$24</td>
+              <td>+50% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Bo Nix 2024 Donruss Optic Preview Pink</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$24</td><td>$30</td>
+              <td>+62% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Malik Nabers 2024 Prizm Silver</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$24</td><td>$30</td>
+              <td>+35% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Brock Bowers 2024 Prizm Silver</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$21</td><td>$26</td>
+              <td>+4% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Jayden Daniels 2024 Prizm Silver</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$24</td><td>$30</td>
+              <td>Recovery</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Caleb Williams 2024 Prizm Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$16</td><td>$20</td>
+              <td>+94% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Justin Herbert 2020 Optic Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$22</td><td>$28</td>
+              <td>+23% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>CJ Stroud 2023 Optic Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$10</td><td>$14</td>
+              <td>+8% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Jared Goff 2016 Donruss Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$20</td><td>$26</td>
+              <td>SB value</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Trevor Lawrence 2021 Prizm Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$13</td><td>$18</td>
+              <td>+250% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Jaxson Dart 2025 Mosaic Rookie Var</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$90</td><td>$100</td>
+              <td>+83% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Cam Ward 2025 Topps Now Draft</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$22</td><td>$28</td>
+              <td>Contrarian</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Bijan Robinson 2023 Prizm Silver</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$141</td><td>$150</td>
+              <td>+26% (180d)</td>
+              <td><span class="badge badge-premium">🟢 Premium</span></td>
+            </tr>
+            <tr>
+              <td>Puka Nacua 2023 Prizm Silver</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$30</td><td>$35</td>
+              <td>+41% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Jahmyr Gibbs 2023 Prizm Silver</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$30</td><td>$38</td>
+              <td>+200% (180d) 🔥</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Marvin Harrison Jr 2024 Prizm Silver</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$18</td><td>$22</td>
+              <td>-60% (bottomed)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Josh Allen 2018 Prizm Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$120</td><td>$135</td>
+              <td>+13% (180d)</td>
+              <td><span class="badge badge-premium">🟢 Premium</span></td>
+            </tr>
+            <tr>
+              <td>Travis Hunter 2023 Bowman Chrome</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$30</td><td>$38</td>
+              <td>-11% (bottomed)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Rome Odunze 2024 Optic Uptowns</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$175</td><td>$200</td>
+              <td>+28% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Jayden Daniels 2024 Prizm Neon Green Pulsar</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$38</td><td>$48</td>
+              <td>+6% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Jayden Daniels 2024 Prizm Fireworks Green Wave</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$40</td><td>$50</td>
+              <td>+83% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Bo Nix 2024 Prizm Neon Green Pulsar</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$100</td><td>$115</td>
+              <td>-1% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Caleb Williams 2024 Donruss Optic Preview Red Wave</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$110</td><td>$125</td>
+              <td>+34% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== BASKETBALL TARGETS ===== -->
+  <div id="basketball-targets" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">🏀 Basketball Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">PSA 10 default · Downgrade to PSA 9 only for speculation</span></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Targets</div><div class="value">13</div><div class="sub">Cards to acquire</div></div>
+        <div class="stat-card"><div class="label">High Priority</div><div class="value">6</div><div class="sub">🔴 Buy now</div></div>
+        <div class="stat-card"><div class="label">Medium Priority</div><div class="value">6</div><div class="sub">🟡 Buy on value</div></div>
+        <div class="stat-card"><div class="label">Premium Play</div><div class="value">1</div><div class="sub">🟢 High-end</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>Grade</th>
+              <th>Target $</th>
+              <th>Max $</th>
+              <th>Trend</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Wembanyama 2023 Prizm Instant Impact</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$46</td><td>$55</td>
+              <td>Strong</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Cade Cunningham 2021 Prizm Base</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$73</td><td>$85</td>
+              <td>+23% (180d)</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Stephon Castle 2024 Optic Express Lane</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$29</td><td>$38</td>
+              <td>ROY hype</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Stephon Castle 2024 Prizm Fireworks Silver</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$45</td><td>$55</td>
+              <td>+226% (180d) 🔥</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Anthony Edwards 2020 Prizm Base</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$92</td><td>$100</td>
+              <td>MVP path</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Wembanyama 2023 Optic Express Lane Purple</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$48</td><td>$58</td>
+              <td>Solid</td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Kobe Bryant 2019 Prizm Base</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$73</td><td>$85</td>
+              <td>Evergreen</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Wembanyama 2023 Select Premier Level Blue</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$79</td><td>$90</td>
+              <td>Premium</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Anthony Edwards 2020 Prizm RWB</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$262</td><td>$280</td>
+              <td>High-end</td>
+              <td><span class="badge badge-premium">🟢 Premium</span></td>
+            </tr>
+            <tr>
+              <td>Amen Thompson 2023 Prizm Pink Ice</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$65</td><td>$75</td>
+              <td>+13% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Brandon Miller 2023 Prizm Base</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$22</td><td>$28</td>
+              <td>+34% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Jayson Tatum 2017 Hoops Base</td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$54</td><td>$65</td>
+              <td>+30% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>SGA 2018 Prizm Base</td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$40</td><td>$48</td>
+              <td>+3% (180d)</td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== RAW TO GRADE ===== -->
+  <div id="raw-grade" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">📦 Raw-to-Grade Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Grading cost: $38 ($30 PSA + $8 shipping) · Returns June–Aug 2026</span></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Targets</div><div class="value">13</div><div class="sub">Cards to grade</div></div>
+        <div class="stat-card"><div class="label">Grading Cost</div><div class="value">$38</div><div class="sub">Per card submitted</div></div>
+        <div class="stat-card"><div class="label">Best EV</div><div class="value">+$101 🔥</div><div class="sub">Tyrese Maxey 2020 Prizm</div></div>
+        <div class="stat-card"><div class="label">Turnaround</div><div class="value">~3 mo</div><div class="sub">Ready for fall season</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Card</th>
+              <th>Sport</th>
+              <th>Target Raw $</th>
+              <th>Max Raw $</th>
+              <th>Est PSA 10</th>
+              <th>Gem Rate</th>
+              <th>EV After $38</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bijan Robinson 2023 Prizm Silver</td>
+              <td>🏈 FB</td>
+              <td>$18</td><td>$22</td><td>$141</td><td>~45%</td>
+              <td><span class="ev-pos">+$27</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Jaxson Dart 2025 Donruss Rated Rookies Throwback</td>
+              <td>🏈 FB</td>
+              <td>$4</td><td>$5</td><td>$106</td><td>~50%</td>
+              <td><span class="ev-pos">+$30</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Drake Maye 2024 Select Turbocharged</td>
+              <td>🏈 FB</td>
+              <td>$4</td><td>$6</td><td>$113</td><td>~40%</td>
+              <td><span class="ev-pos">+$27</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Cam Ward 2025 Prizm Silver</td>
+              <td>🏈 FB</td>
+              <td>$90</td><td>$100</td><td>$350</td><td>~45%</td>
+              <td><span class="ev-pos">+$60</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Wembanyama 2023 Prizm Base</td>
+              <td>🏀 BB</td>
+              <td>$26</td><td>$32</td><td>$128</td><td>~50%</td>
+              <td><span class="ev-pos">+$26</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Anthony Edwards 2020 Prizm Base</td>
+              <td>🏀 BB</td>
+              <td>$18</td><td>$24</td><td>$92</td><td>~45%</td>
+              <td><span class="ev-pos">+$15</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Puka Nacua 2023 Prizm Silver</td>
+              <td>🏈 FB</td>
+              <td>$30</td><td>$36</td><td>$171</td><td>~45%</td>
+              <td><span class="ev-pos">+$29</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Jahmyr Gibbs 2023 Prizm Silver</td>
+              <td>🏈 FB</td>
+              <td>$20</td><td>$25</td><td>$155</td><td>~45%</td>
+              <td><span class="ev-pos">+$42</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Josh Allen 2018 Score Base</td>
+              <td>🏈 FB</td>
+              <td>$14</td><td>$18</td><td>$99</td><td>~45%</td>
+              <td><span class="ev-pos">+$16</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Tyrese Maxey 2020 Prizm Silver</td>
+              <td>🏀 BB</td>
+              <td>$36</td><td>$42</td><td>$363</td><td>~40%</td>
+              <td><span class="ev-pos">+$101 🔥</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Amen Thompson 2023 Prizm Silver</td>
+              <td>🏀 BB</td>
+              <td>$27</td><td>$32</td><td>$229</td><td>43%</td>
+              <td><span class="ev-pos">+$54</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Brandon Miller 2023 Prizm Silver</td>
+              <td>🏀 BB</td>
+              <td>$23</td><td>$28</td><td>$191</td><td>~45%</td>
+              <td><span class="ev-pos">+$43</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>SGA 2018 Prizm Base</td>
+              <td>🏀 BB</td>
+              <td>$24</td><td>$30</td><td>$178</td><td>~45%</td>
+              <td><span class="ev-pos">+$41</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Tetairoa McMillan 2025 Donruss Red Pandora</td>
+              <td>🏈 FB</td>
+              <td>$10</td><td>$25</td><td>$95</td><td>~45%</td>
+              <td><span class="ev-pos">+$13</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Omarion Hampton 2025 Mosaic Micro Mosaic</td>
+              <td>🏈 FB</td>
+              <td>$105</td><td>$145</td><td>$325</td><td>~55%</td>
+              <td><span class="ev-pos">+$87 🔥</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Omarion Hampton 2025 Mosaic Stained Glass</td>
+              <td>🏈 FB</td>
+              <td>$90</td><td>$115</td><td>$280</td><td>~55%</td>
+              <td><span class="ev-pos">+$70 🔥</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Tyler Shough 2025 Prizm Emergent Silver</td>
+              <td>🏈 FB</td>
+              <td>$4</td><td>$17</td><td>$88</td><td>~40%</td>
+              <td><span class="ev-pos">+$12</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Rome Odunze 2024 Mosaic Stained Glass</td>
+              <td>🏈 FB</td>
+              <td>$100</td><td>$150</td><td>$385</td><td>~50%</td>
+              <td><span class="ev-pos">+$122 🔥</span></td>
+              <td><span class="badge badge-high">🔴 High</span></td>
+            </tr>
+            <tr>
+              <td>Emeka Egbuka 2025 Donruss Red Pandora</td>
+              <td>🏈 FB</td>
+              <td>$9</td><td>$16</td><td>$82</td><td>~45%</td>
+              <td><span class="ev-pos">+$6</span></td>
+              <td><span class="badge badge-med">🟡 Med</span></td>
+            </tr>
+            <tr>
+              <td>Ashton Jeanty 2025 Mosaic Splash Silver</td>
+              <td>🏈 FB</td>
+              <td>$4</td><td>$7</td><td>—</td><td>—</td>
+              <td>—</td>
+              <td><span class="badge badge-high">🔴 Hold</span></td>
+            </tr>
+            <tr>
+              <td>Ashton Jeanty 2025 Mosaic No Huddle /25</td>
+              <td>🏈 FB</td>
+              <td>$8</td><td>$20</td><td>—</td><td>—</td>
+              <td>—</td>
+              <td><span class="badge badge-high">🔴 Hold</span></td>
+            </tr>
+            <tr>
+              <td>Tyler Shough 2025 R&amp;S Rookies Signatures</td>
+              <td>🏈 FB</td>
+              <td>$60</td><td>$122</td><td>—</td><td>—</td>
+              <td>—</td>
+              <td><span class="badge badge-med">🟡 Hold</span></td>
+            </tr>
+            <tr>
+              <td>Ashton Jeanty 2025 R&amp;S Rookies Signatures</td>
+              <td>🏈 FB</td>
+              <td>$55</td><td>$90</td><td>—</td><td>—</td>
+              <td>—</td>
+              <td><span class="badge badge-high">🔴 Hold</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rule-box">
+        <p><strong>Break-even formula:</strong> (PSA10 × GemRate) + (PSA9 × (1 − GemRate)) − Raw − $38 &gt; $0</p>
+        <p style="margin-top:6px;color:#8b949e;">EV shown assumes PSA 9 value = 35% of PSA 10 value where not specified.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== PORTFOLIOS ===== -->
+  <div id="portfolios" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">💰 Budget Portfolios</div>
+
+      <div class="sub-tabs">
+        <div class="sub-tab active" onclick="showSub('p1000')">$1,000 (~30 cards)</div>
+        <div class="sub-tab" onclick="showSub('p1500')">$1,500 (~39 cards)</div>
+        <div class="sub-tab" onclick="showSub('p2000')">$2,000 (~45 cards)</div>
+      </div>
+
+      <!-- $1,000 -->
+      <div id="p1000" class="sub-content active">
+        <div class="portfolio-grid">
+          <div class="portfolio-card"><div class="cat">Football Graded</div><div class="alloc">$400</div><div class="cards">~20 cards</div><div class="note">PSA 9 focus</div></div>
+          <div class="portfolio-card"><div class="cat">Football Raw+Grading</div><div class="alloc">$150</div><div class="cards">~3 cards</div><div class="note">Submit in April</div></div>
+          <div class="portfolio-card"><div class="cat">Basketball Graded</div><div class="alloc">$350</div><div class="cards">~6 cards</div><div class="note">PSA 10 focus</div></div>
+          <div class="portfolio-card"><div class="cat">Basketball Raw+Grading</div><div class="alloc">$75</div><div class="cards">~1 card</div><div class="note">Submit in April</div></div>
+          <div class="portfolio-card"><div class="cat">Cash Reserve</div><div class="alloc">$25</div><div class="cards">—</div><div class="note">Card show finds</div></div>
+        </div>
+
+        <div class="section-title" style="margin-top:8px;">Football Graded ($400)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Grade</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Brock Purdy 2022 Optic Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$19</td><td>2</td><td>$38</td></tr>
+              <tr><td>Bo Nix 2024 Optic Preview Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>2</td><td>$48</td></tr>
+              <tr><td>Malik Nabers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>2</td><td>$48</td></tr>
+              <tr><td>Brock Bowers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$21</td><td>2</td><td>$42</td></tr>
+              <tr><td>Jayden Daniels 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>2</td><td>$48</td></tr>
+              <tr><td>Caleb Williams 2024 Prizm Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$16</td><td>2</td><td>$32</td></tr>
+              <tr><td>Justin Herbert 2020 Optic Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$22</td><td>2</td><td>$44</td></tr>
+              <tr><td>CJ Stroud 2023 Optic Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$10</td><td>3</td><td>$30</td></tr>
+              <tr><td>Jared Goff 2016 Donruss Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$20</td><td>2</td><td>$40</td></tr>
+              <tr><td>Trevor Lawrence 2021 Prizm Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$13</td><td>2</td><td>$26</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td></td><td><strong>21</strong></td><td><strong>$396</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Football Raw-to-Grade ($150)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Raw $</th><th>Qty</th><th>Grading</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Bijan Robinson 2023 Prizm Silver</td><td>$18</td><td>2</td><td>$76</td><td>$112</td></tr>
+              <tr><td>Jaxson Dart 2025 Donruss Rated Rookies Throwback</td><td>$4</td><td>1</td><td>$38</td><td>$42</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td><strong>3</strong></td><td></td><td><strong>$154</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Basketball Graded ($350)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Grade</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Wembanyama 2023 Prizm Instant Impact</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$46</td><td>1</td><td>$46</td></tr>
+              <tr><td>Cade Cunningham 2021 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$73</td><td>1</td><td>$73</td></tr>
+              <tr><td>Stephon Castle 2024 Optic Express Lane</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$29</td><td>2</td><td>$58</td></tr>
+              <tr><td>Anthony Edwards 2020 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$92</td><td>1</td><td>$92</td></tr>
+              <tr><td>Wembanyama 2023 Optic Express Lane Purple</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$48</td><td>1</td><td>$48</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td></td><td><strong>6</strong></td><td><strong>$317</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Basketball Raw-to-Grade ($75)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Raw $</th><th>Qty</th><th>Grading</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Wembanyama 2023 Prizm Base</td><td>$26</td><td>1</td><td>$38</td><td>$64</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td><strong>1</strong></td><td></td><td><strong>$64</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- $1,500 -->
+      <div id="p1500" class="sub-content">
+        <div class="portfolio-grid">
+          <div class="portfolio-card"><div class="cat">Football Graded</div><div class="alloc">$575</div><div class="cards">~24 cards</div><div class="note">PSA 9 + select PSA 10</div></div>
+          <div class="portfolio-card"><div class="cat">Football Raw+Grading</div><div class="alloc">$250</div><div class="cards">~5 cards</div><div class="note">Submit in April</div></div>
+          <div class="portfolio-card"><div class="cat">Basketball Graded</div><div class="alloc">$500</div><div class="cards">~8 cards</div><div class="note">PSA 10 focus</div></div>
+          <div class="portfolio-card"><div class="cat">Basketball Raw+Grading</div><div class="alloc">$125</div><div class="cards">~2 cards</div><div class="note">Submit in April</div></div>
+          <div class="portfolio-card"><div class="cat">Cash Reserve</div><div class="alloc">$50</div><div class="cards">—</div><div class="note">Card show finds</div></div>
+        </div>
+
+        <div class="section-title" style="margin-top:8px;">Football Graded ($575)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Grade</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Brock Purdy 2022 Optic Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$19</td><td>3</td><td>$57</td></tr>
+              <tr><td>Bo Nix 2024 Optic Preview Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>3</td><td>$72</td></tr>
+              <tr><td>Malik Nabers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>3</td><td>$72</td></tr>
+              <tr><td>Brock Bowers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$21</td><td>3</td><td>$63</td></tr>
+              <tr><td>Jayden Daniels 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>2</td><td>$48</td></tr>
+              <tr><td>Caleb Williams 2024 Donruss Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$45</td><td>1</td><td>$45</td></tr>
+              <tr><td>Jaxson Dart 2025 Mosaic Rookie Var</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$90</td><td>1</td><td>$90</td></tr>
+              <tr><td>Cam Ward 2025 Topps Now Draft</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$22</td><td>2</td><td>$44</td></tr>
+              <tr><td>Jared Goff 2016 Donruss Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$20</td><td>2</td><td>$40</td></tr>
+              <tr><td>Trevor Lawrence 2021 Prizm Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$13</td><td>2</td><td>$26</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td></td><td><strong>22</strong></td><td><strong>$557</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Football Raw-to-Grade ($250)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Raw $</th><th>Qty</th><th>Grading</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Bijan Robinson 2023 Prizm Silver</td><td>$18</td><td>3</td><td>$114</td><td>$168</td></tr>
+              <tr><td>Drake Maye 2024 Select Turbocharged</td><td>$4</td><td>1</td><td>$38</td><td>$42</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td><strong>4</strong></td><td></td><td><strong>$210</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Basketball Graded ($500)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Grade</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Wembanyama 2023 Prizm Instant Impact</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$46</td><td>2</td><td>$92</td></tr>
+              <tr><td>Cade Cunningham 2021 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$73</td><td>1</td><td>$73</td></tr>
+              <tr><td>Stephon Castle 2024 Optic Express Lane</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$29</td><td>3</td><td>$87</td></tr>
+              <tr><td>Anthony Edwards 2020 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$92</td><td>1</td><td>$92</td></tr>
+              <tr><td>Kobe Bryant 2019 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$73</td><td>1</td><td>$73</td></tr>
+              <tr><td>Wembanyama 2023 Select Premier Level Blue</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$79</td><td>1</td><td>$79</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td></td><td><strong>9</strong></td><td><strong>$496</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Basketball Raw-to-Grade ($125)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Raw $</th><th>Qty</th><th>Grading</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Wembanyama 2023 Prizm Base</td><td>$26</td><td>2</td><td>$76</td><td>$128</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td><strong>2</strong></td><td></td><td><strong>$128</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- $2,000 -->
+      <div id="p2000" class="sub-content">
+        <div class="portfolio-grid">
+          <div class="portfolio-card"><div class="cat">Football Graded</div><div class="alloc">$700</div><div class="cards">~25 cards</div><div class="note">PSA 9 + PSA 10 mix</div></div>
+          <div class="portfolio-card"><div class="cat">Football Raw+Grading</div><div class="alloc">$350</div><div class="cards">~7 cards</div><div class="note">Submit in April</div></div>
+          <div class="portfolio-card"><div class="cat">Basketball Graded</div><div class="alloc">$700</div><div class="cards">~10 cards</div><div class="note">PSA 10 focus</div></div>
+          <div class="portfolio-card"><div class="cat">Basketball Raw+Grading</div><div class="alloc">$175</div><div class="cards">~3 cards</div><div class="note">Submit in April</div></div>
+          <div class="portfolio-card"><div class="cat">Cash Reserve</div><div class="alloc">$75</div><div class="cards">—</div><div class="note">Card show finds</div></div>
+        </div>
+
+        <div class="section-title" style="margin-top:8px;">Football Graded ($700)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Grade</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Brock Purdy 2022 Optic Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$19</td><td>4</td><td>$76</td></tr>
+              <tr><td>Bo Nix 2024 Optic Preview Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>3</td><td>$72</td></tr>
+              <tr><td>Malik Nabers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>4</td><td>$96</td></tr>
+              <tr><td>Brock Bowers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$21</td><td>4</td><td>$84</td></tr>
+              <tr><td>Jayden Daniels 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td>3</td><td>$72</td></tr>
+              <tr><td>Caleb Williams 2024 Donruss Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$45</td><td>2</td><td>$90</td></tr>
+              <tr><td>Jaxson Dart 2025 Mosaic Rookie Var</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$90</td><td>1</td><td>$90</td></tr>
+              <tr><td>Cam Ward 2025 Topps Now Draft</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$22</td><td>3</td><td>$66</td></tr>
+              <tr><td>Jared Goff 2016 Donruss Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$20</td><td>2</td><td>$40</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td></td><td><strong>26</strong></td><td><strong>$686</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Football Raw-to-Grade ($350)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Raw $</th><th>Qty</th><th>Grading</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Bijan Robinson 2023 Prizm Silver</td><td>$18</td><td>4</td><td>$152</td><td>$224</td></tr>
+              <tr><td>Drake Maye 2024 Select Turbocharged</td><td>$4</td><td>2</td><td>$76</td><td>$84</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td><strong>6</strong></td><td></td><td><strong>$308</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Basketball Graded ($700)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Grade</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Wembanyama 2023 Prizm Instant Impact</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$46</td><td>2</td><td>$92</td></tr>
+              <tr><td>Cade Cunningham 2021 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$73</td><td>2</td><td>$146</td></tr>
+              <tr><td>Stephon Castle 2024 Optic Express Lane</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$29</td><td>4</td><td>$116</td></tr>
+              <tr><td>Anthony Edwards 2020 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$92</td><td>2</td><td>$184</td></tr>
+              <tr><td>Kobe Bryant 2019 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$73</td><td>1</td><td>$73</td></tr>
+              <tr><td>Wembanyama 2023 Select Premier Level Blue</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$79</td><td>1</td><td>$79</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td></td><td><strong>12</strong></td><td><strong>$690</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-title">Basketball Raw-to-Grade ($175)</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Raw $</th><th>Qty</th><th>Grading</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Wembanyama 2023 Prizm Base</td><td>$26</td><td>3</td><td>$114</td><td>$192</td></tr>
+              <tr><td><strong>Subtotal</strong></td><td></td><td><strong>3</strong></td><td></td><td><strong>$192</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== CARD SHOW ===== -->
+  <div id="card-show" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">🛒 Card Show Quick Reference</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Football Cards</div><div class="value">24</div><div class="sub">At card shows</div></div>
+        <div class="stat-card"><div class="label">Basketball Cards</div><div class="value">13</div><div class="sub">At card shows</div></div>
+        <div class="stat-card"><div class="label">High Priority Total</div><div class="value">21</div><div class="sub">🔴 Must-buy targets</div></div>
+      </div>
+
+      <div class="section-title">🏈 Football — What to Buy</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Card</th><th>Grade</th><th>Max $</th><th>Priority</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Brock Purdy 2022 Optic Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$24</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Bo Nix 2024 Optic Preview Pink</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$30</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Malik Nabers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$30</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Brock Bowers 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$26</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Jayden Daniels 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$30</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Bijan Robinson 2023 Prizm Silver</td><td><span class="badge badge-raw">Raw</span></td><td>$22</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Jaxson Dart 2025 Donruss Rated Rookies Throwback</td><td><span class="badge badge-raw">Raw</span></td><td>$5</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Drake Maye 2024 Select Turbocharged</td><td><span class="badge badge-raw">Raw</span></td><td>$6</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Caleb Williams 2024 Prizm Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$20</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Jaxson Dart 2025 Mosaic Rookie Var</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$100</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Cam Ward 2025 Topps Now Draft</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$28</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Jahmyr Gibbs 2023 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$38</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Puka Nacua 2023 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$35</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Marvin Harrison Jr 2024 Prizm Silver</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$22</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Josh Allen 2018 Prizm Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$135</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Ashton Jeanty 2025 Mosaic Splash Silver</td><td><span class="badge badge-raw">Raw</span></td><td>$7</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Tetairoa McMillan 2025 Donruss Red Pandora</td><td><span class="badge badge-raw">Raw</span></td><td>$25</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Tyler Shough 2025 Prizm Emergent Silver</td><td><span class="badge badge-raw">Raw</span></td><td>$17</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Emeka Egbuka 2025 Donruss Red Pandora</td><td><span class="badge badge-raw">Raw</span></td><td>$16</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Rome Odunze 2024 Optic Uptowns</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$200</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Jayden Daniels 2024 Prizm Fireworks Green Wave</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$50</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Jayden Daniels 2024 Prizm Neon Green Pulsar</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$48</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Bo Nix 2024 Prizm Neon Green Pulsar</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$115</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Caleb Williams 2024 Donruss Optic Preview Red Wave</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$125</td><td><span class="badge badge-high">🔴</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title">🏀 Basketball — What to Buy</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Card</th><th>Grade</th><th>Max $</th><th>Priority</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Wembanyama 2023 Prizm Instant Impact</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$55</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Cade Cunningham 2021 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$85</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Stephon Castle 2024 Optic Express Lane</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$38</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Stephon Castle 2024 Prizm Fireworks Silver</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$55</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Anthony Edwards 2020 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$100</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Wembanyama 2023 Prizm Base</td><td><span class="badge badge-raw">Raw</span></td><td>$32</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Wembanyama 2023 Optic Express Lane Purple</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$58</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Kobe Bryant 2019 Prizm Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$85</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Wembanyama 2023 Select Premier Level Blue</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$90</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Tyrese Maxey 2020 Prizm Silver</td><td><span class="badge badge-raw">Raw</span></td><td>$42</td><td><span class="badge badge-high">🔴</span></td></tr>
+            <tr><td>Amen Thompson 2023 Prizm Pink Ice</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$75</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>Jayson Tatum 2017 Hoops Base</td><td><span class="badge badge-psa10">PSA 10</span></td><td>$65</td><td><span class="badge badge-med">🟡</span></td></tr>
+            <tr><td>SGA 2018 Prizm Base</td><td><span class="badge badge-psa9">PSA 9</span></td><td>$48</td><td><span class="badge badge-med">🟡</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== WATCHLIST ===== -->
+  <div id="watchlist" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">📈 Player Watchlist</div>
+
+      <div class="section-title" style="font-size:.85rem;">🏈 Football (19 Players)</div>
+      <div class="watchlist-grid">
+        <div class="watch-card">
+          <div class="player">Brock Purdy</div>
+          <div class="team">San Francisco 49ers</div>
+          <div class="why">SB contender, cheap entry point</div>
+          <div class="targets">Optic/Prizm PSA 9</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Bo Nix</div>
+          <div class="team">Denver Broncos</div>
+          <div class="why">Year 2 breakout candidate</div>
+          <div class="targets">Optic Preview PSA 9</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Malik Nabers</div>
+          <div class="team">New York Giants</div>
+          <div class="why">Elite WR + new QB (Dart)</div>
+          <div class="targets">Prizm Silver PSA 9</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Brock Bowers</div>
+          <div class="team">Las Vegas Raiders</div>
+          <div class="why">Best TE in class, bottomed out</div>
+          <div class="targets">Prizm Silver PSA 9</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Jaxson Dart</div>
+          <div class="team">New York Giants</div>
+          <div class="why">Nabers' new QB, ascending</div>
+          <div class="targets">Mosaic PSA 10, Raw Prizm</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Cam Ward</div>
+          <div class="team">Tennessee Titans</div>
+          <div class="why">Contrarian value play</div>
+          <div class="targets">Topps Now PSA 10</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Bijan Robinson</div>
+          <div class="team">Atlanta Falcons</div>
+          <div class="why">RB1 trending up, positive EV to grade</div>
+          <div class="targets">Raw Prizm Silver to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Drake Maye</div>
+          <div class="team">New England Patriots</div>
+          <div class="why">Franchise QB, massive upside</div>
+          <div class="targets">Raw Select Turbocharged to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Puka Nacua</div>
+          <div class="team">Los Angeles Rams</div>
+          <div class="why">Explosive value, +41% trend — raw and graded both viable</div>
+          <div class="targets">PSA 9 Prizm Silver · Raw to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Jahmyr Gibbs</div>
+          <div class="team">Detroit Lions</div>
+          <div class="why">+200% 180d momentum, strong raw-to-grade EV</div>
+          <div class="targets">PSA 9 Prizm Silver · Raw to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Marvin Harrison Jr</div>
+          <div class="team">Arizona Cardinals</div>
+          <div class="why">Down -60% from peak — recovery play with high ceiling</div>
+          <div class="targets">PSA 9 Prizm Silver</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Josh Allen</div>
+          <div class="team">Buffalo Bills</div>
+          <div class="why">Legend-tier QB, stable demand — graded and raw plays available</div>
+          <div class="targets">PSA 9 Prizm Base · Raw Score Base to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Travis Hunter</div>
+          <div class="team">Denver Broncos</div>
+          <div class="why">Two-way sensation, early market dip → buy the retracement</div>
+          <div class="targets">PSA 10 Bowman Chrome</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Ashton Jeanty</div>
+          <div class="team">Las Vegas Raiders</div>
+          <div class="why">Top 2025 RB rookie, +607% momentum — hold raw or grade</div>
+          <div class="targets">Mosaic Splash Silver Raw · No Huddle /25 · R&amp;S Auto</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Omarion Hampton</div>
+          <div class="team">Los Angeles Chargers</div>
+          <div class="why">#3 pick, elite gem rates on Micro Mosaic — strong raw-to-grade EV</div>
+          <div class="targets">Mosaic Micro Mosaic Raw · Stained Glass Raw to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Tetairoa McMillan</div>
+          <div class="team">Carolina Panthers</div>
+          <div class="why">Best 2025 WR momentum (+232%), value raw-to-grade play</div>
+          <div class="targets">Raw Donruss Red Pandora to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Rome Odunze</div>
+          <div class="team">Chicago Bears</div>
+          <div class="why">2024 WR1, highest raw-to-grade EV on list (+$122 🔥)</div>
+          <div class="targets">Raw Mosaic Stained Glass to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Tyler Shough</div>
+          <div class="team">New Orleans Saints</div>
+          <div class="why">QB premium play, +158% trend — affordable raw entry</div>
+          <div class="targets">Prizm Emergent Silver Raw to grade · R&amp;S Auto Hold</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Emeka Egbuka</div>
+          <div class="team">Tampa Bay Buccaneers</div>
+          <div class="why">Value 2025 WR, +83% trend — low-cost raw-to-grade target</div>
+          <div class="targets">Raw Donruss Red Pandora to grade</div>
+        </div>
+      </div>
+
+      <div class="section-title" style="font-size:.85rem;">🏀 Basketball (10 Players)</div>
+      <div class="watchlist-grid">
+        <div class="watch-card">
+          <div class="player">Victor Wembanyama</div>
+          <div class="team">San Antonio Spurs</div>
+          <div class="why">Generational talent, long-term hold</div>
+          <div class="targets">PSA 10 only, grade raw Prizm Base</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Anthony Edwards</div>
+          <div class="team">Minnesota Timberwolves</div>
+          <div class="why">MVP trajectory, ascending market</div>
+          <div class="targets">PSA 10 Prizm Base</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Stephon Castle</div>
+          <div class="team">San Antonio Spurs</div>
+          <div class="why">ROY candidate, ROY hype window</div>
+          <div class="targets">PSA 10 Optic Express Lane</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Cade Cunningham</div>
+          <div class="team">Detroit Pistons</div>
+          <div class="why">Breakout season, strong momentum</div>
+          <div class="targets">PSA 10 Prizm Base</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Kobe Bryant</div>
+          <div class="team">Legend</div>
+          <div class="why">Evergreen demand, never goes out of style</div>
+          <div class="targets">PSA 10 only</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Tyrese Maxey</div>
+          <div class="team">Philadelphia 76ers</div>
+          <div class="why">Best raw-to-grade EV on page (+$101 🔥), breakout star</div>
+          <div class="targets">Raw Prizm Silver to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Amen Thompson</div>
+          <div class="team">Houston Rockets</div>
+          <div class="why">Strong EV on raw grading (+$54) and graded Pink Ice momentum</div>
+          <div class="targets">PSA 10 Prizm Pink Ice · Raw Prizm Silver to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Brandon Miller</div>
+          <div class="team">Charlotte Hornets</div>
+          <div class="why">Solid raw-to-grade EV (+$43), rising graded market</div>
+          <div class="targets">PSA 10 Prizm Base · Raw Prizm Silver to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Shai Gilgeous-Alexander</div>
+          <div class="team">Oklahoma City Thunder</div>
+          <div class="why">MVP-caliber play, 2018 rookie cards hold strong demand</div>
+          <div class="targets">PSA 9 Prizm Base · Raw Prizm Base to grade</div>
+        </div>
+        <div class="watch-card">
+          <div class="player">Jayson Tatum</div>
+          <div class="team">Boston Celtics</div>
+          <div class="why">Championship pedigree, evergreen demand at +30% trend</div>
+          <div class="targets">PSA 10 Hoops Base</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">Brick Squad Sports Cards &middot; Investment Target List &middot; March 2026</div>
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','watchlist'];
+    const idx = ids.indexOf(id);
+    if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+    setTimeout(attachSorting, 50);
+  }
+
+  function showSub(id) {
+    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    const idx = ['p1000','p1500','p2000'].indexOf(id);
+    if (idx >= 0) document.querySelectorAll('.sub-tab')[idx].classList.add('active');
+    setTimeout(attachSorting, 50);
+  }
+
+  function parseVal(t) {
+    if (!t || t === 'N/A' || t === '—') return null;
+    const n = parseFloat(t.replace(/[~$,%×]/g, '').replace(/,/g, '').trim());
+    return isNaN(n) ? null : n;
+  }
+
+  function sortTbl(table, col, dir) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      const at = ((a.querySelectorAll('td')[col] || {}).textContent || '').trim();
+      const bt = ((b.querySelectorAll('td')[col] || {}).textContent || '').trim();
+      const av = parseVal(at), bv = parseVal(bt);
+      if (av === null && bv === null) return at.localeCompare(bt) * (dir === 'asc' ? 1 : -1);
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      return (av - bv) * (dir === 'asc' ? 1 : -1);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  }
+
+  function attachSorting() {
+    document.querySelectorAll('table').forEach(table => {
+      const ths = table.querySelectorAll('thead th');
+      ths.forEach((th, i) => {
+        if (th.dataset.sortBound) return;
+        th.dataset.sortBound = '1';
+        let dir = 'desc';
+        th.addEventListener('click', function() {
+          ths.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+          th.classList.add('sort-' + dir);
+          sortTbl(table, i, dir);
+          dir = dir === 'asc' ? 'desc' : 'asc';
+        });
+      });
+    });
+  }
+
+  attachSorting();
+</script>
+</body>
+</html>
