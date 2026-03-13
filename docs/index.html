@@ -4,26 +4,65 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brick Squad — Investment Target List</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #e8eaed; color: #111827; min-height: 100vh; }
+
+  /* AUTH OVERLAY */
+  .auth-overlay { position: fixed; inset: 0; background: #e8eaed; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+  .auth-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,.07); }
+  .auth-box h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; color: #111827; }
+  .auth-box .auth-sub { font-size: .78rem; color: #6b7280; margin-bottom: 24px; }
+  .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+  .auth-tab { padding: 8px 16px; font-size: .82rem; font-weight: 600; color: #6b7280; cursor: pointer; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; transition: all .15s; }
+  .auth-tab.active { color: #2563eb; border-bottom-color: #2563eb; }
+  .auth-fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .auth-fg label { font-size: .72rem; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; }
+  .auth-fg input { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; color: #111827; font-size: .82rem; outline: none; transition: border-color .15s; }
+  .auth-fg input:focus { border-color: #2563eb; background: #fff; }
+  .auth-error   { color: #dc2626; font-size: .78rem; margin-top: 10px; min-height: 18px; }
+  .auth-success { color: #16a34a; font-size: .78rem; margin-top: 10px; }
+
+  /* IMPORT MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; z-index: 500; }
+  .modal-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; width: 100%; max-width: 620px; margin: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.1); }
+  .modal-box h3 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: #111827; }
+  .modal-box .modal-sub { font-size: .78rem; color: #6b7280; margin-bottom: 14px; }
+  .modal-box textarea { width: 100%; height: 220px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; color: #111827; font-family: monospace; font-size: .76rem; resize: vertical; outline: none; transition: border-color .15s; }
+  .modal-box textarea:focus { border-color: #2563eb; background: #fff; }
+  .modal-actions { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+
+  /* BUTTONS */
+  .btn { padding: 8px 18px; border-radius: 6px; border: none; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-primary { background: #2563eb; color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-cancel { background: #f9fafb; color: #374151; border: 1px solid #e5e7eb; }
+  .btn-cancel:hover { background: #f3f4f6; }
 
   /* HEADER */
-  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 28px 24px 20px; border-bottom: 1px solid #30363d; }
-  .header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -.3px; margin-bottom: 6px; }
-  .header .meta { font-size: .78rem; color: #8b949e; display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
+  .header { background: #fff; padding: 20px 24px 14px; border-bottom: 1px solid #e5e7eb; }
+  .header h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -.3px; margin-bottom: 4px; color: #111827; }
+  .header .meta { font-size: .78rem; color: #6b7280; display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
   .header .meta span { display: flex; align-items: center; gap: 4px; }
 
   /* NAV */
-  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .nav a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; background: rgba(255,255,255,.07); color: #c9d1d9; text-decoration: none; font-size: .8rem; font-weight: 500; border: 1px solid rgba(255,255,255,.1); transition: background .15s; }
-  .nav a:hover { background: rgba(255,255,255,.14); color: #fff; }
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+  .nav a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 6px; background: #f3f4f6; color: #374151; text-decoration: none; font-size: .8rem; font-weight: 500; border: 1px solid #e5e7eb; transition: background .15s; }
+  .nav a:hover { background: #e5e7eb; color: #111827; }
+  .btn-import { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; background: #2563eb; color: #fff; font-size: .8rem; font-weight: 600; border: none; transition: background .15s; cursor: pointer; }
+  .btn-import:hover { background: #1d4ed8; }
+  .nav-user { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .nav-email { font-size: .75rem; color: #6b7280; }
+  .btn-signout { background: transparent; color: #6b7280; border: 1px solid #e5e7eb; padding: 4px 10px; font-size: .73rem; border-radius: 5px; cursor: pointer; transition: all .15s; }
+  .btn-signout:hover { color: #dc2626; border-color: rgba(220,38,38,.35); }
 
   /* TABS */
-  .tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 16px 24px 0; background: #161b22; border-bottom: 1px solid #30363d; }
-  .tab { padding: 8px 16px; border-radius: 6px 6px 0 0; background: transparent; border: 1px solid transparent; border-bottom: none; color: #8b949e; cursor: pointer; font-size: .82rem; font-weight: 500; transition: all .15s; }
-  .tab:hover { color: #c9d1d9; background: rgba(255,255,255,.05); }
-  .tab.active { background: #0d1117; border-color: #30363d; color: #e6edf3; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; padding: 0 24px; background: #fff; border-bottom: 1px solid #e5e7eb; }
+  .tab { padding: 12px 16px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #6b7280; cursor: pointer; font-size: .82rem; font-weight: 500; transition: all .15s; margin-bottom: -1px; white-space: nowrap; }
+  .tab:hover { color: #374151; }
+  .tab.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
 
   /* CONTENT */
   .content { padding: 24px; }
@@ -32,104 +71,165 @@
 
   /* SECTION */
   .section { margin-bottom: 28px; }
-  .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #21262d; color: #c9d1d9; display: flex; align-items: center; gap: 8px; }
+  .section-title { font-size: .95rem; font-weight: 600; margin-bottom: 14px; padding-left: 10px; border-left: 3px solid #2563eb; color: #111827; display: flex; align-items: center; gap: 8px; }
 
   /* STATS ROW */
   .stats-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-  .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 150px; }
-  .stat-card .label { font-size: .72rem; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #58a6ff; }
-  .stat-card .sub { font-size: .72rem; color: #8b949e; margin-top: 2px; }
+  .stat-card { background: #fff; border: 1px solid #d1d5db; border-top: 3px solid #e5e7eb; border-radius: 8px; padding: 14px 18px; flex: 1; min-width: 150px; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05); }
+  .stat-card .label { font-size: .7rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .stat-card .value { font-size: 1.4rem; font-weight: 700; color: #111827; }
+  .stat-card .sub { font-size: .7rem; color: #9ca3af; margin-top: 2px; }
+  .stat-card.accent-red   { border-top-color: #ef4444; }
+  .stat-card.accent-amber { border-top-color: #f59e0b; }
+  .stat-card.accent-green { border-top-color: #22c55e; }
+  .stat-card.accent-gray  { border-top-color: #d1d5db; }
+
+  /* FILTER BAR */
+  .filter-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .filter-bar-label { font-size: .7rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-right: 2px; }
+  .filter-btn { padding: 4px 14px; border-radius: 20px; background: #f3f4f6; border: 1px solid #d1d5db; color: #374151; cursor: pointer; font-size: .75rem; font-weight: 500; transition: all .15s; }
+  .filter-btn:hover { color: #111827; border-color: #9ca3af; background: #e5e7eb; }
+  .filter-btn.active { background: #e5e7eb; border-color: #9ca3af; color: #111827; font-weight: 600; }
+  .filter-btn.active[data-filter="high"]    { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+  .filter-btn.active[data-filter="med"]     { background: #fffbeb; border-color: #fcd34d; color: #b45309; }
+  .filter-btn.active[data-filter="watch"]   { background: #f3f4f6; border-color: #9ca3af; color: #374151; }
+  .filter-btn.active[data-filter="premium"] { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
 
   /* TABLES */
-  .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 20px; }
+  .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #d1d5db; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.07); background: #fff; }
   table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-  thead th { background: #161b22; padding: 10px 12px; text-align: left; font-weight: 600; color: #8b949e; font-size: .75rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
-  tbody tr { border-top: 1px solid #21262d; transition: background .1s; }
-  tbody tr:hover { background: rgba(255,255,255,.03); }
-  tbody td { padding: 9px 12px; vertical-align: middle; white-space: nowrap; }
+  thead th { background: #f9fafb; padding: 10px 12px; text-align: left; font-weight: 600; color: #6b7280; font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+  tbody tr { border-top: 1px solid #e5e7eb; transition: background .1s; }
+  tbody tr:nth-child(even) { background: #f9fafb; }
+  tbody tr:hover { background: #eff6ff; }
+  tbody td { padding: 11px 12px; vertical-align: middle; white-space: nowrap; color: #111827; }
 
   /* BADGES */
   .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .72rem; font-weight: 600; }
-  .badge-high { background: rgba(248,81,73,.15); color: #f85149; border: 1px solid rgba(248,81,73,.3); }
-  .badge-med { background: rgba(210,153,34,.15); color: #d2961e; border: 1px solid rgba(210,153,34,.3); }
-  .badge-premium { background: rgba(63,185,80,.15); color: #3fb950; border: 1px solid rgba(63,185,80,.3); }
-  .badge-psa10 { background: rgba(88,166,255,.15); color: #58a6ff; border: 1px solid rgba(88,166,255,.3); }
-  .badge-psa9 { background: rgba(139,148,158,.15); color: #8b949e; border: 1px solid rgba(139,148,158,.3); }
-  .badge-raw { background: rgba(210,153,34,.1); color: #d2961e; border: 1px solid rgba(210,153,34,.25); }
-  .badge-new { background: rgba(56,139,253,.15); color: #388bfd; border: 1px solid rgba(56,139,253,.3); font-size: .68rem; padding: 1px 6px; vertical-align: middle; margin-left: 4px; }
+  .badge-high    { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+  .badge-med     { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+  .badge-watch   { background: #f9fafb; color: #6b7280; border: 1px solid #d1d5db; }
+  .badge-premium { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+  .badge-psa10   { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; }
+  .badge-psa9    { background: #f9fafb; color: #6b7280; border: 1px solid #d1d5db; }
+  .badge-raw     { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+  .badge-new     { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; font-size: .68rem; padding: 1px 6px; vertical-align: middle; margin-left: 4px; }
 
-  .ev-pos { color: #3fb950; font-weight: 600; }
-  .ev-neg { color: #f85149; }
-  .trend-up { color: #3fb950; font-weight: 600; }
-  .trend-dn { color: #f85149; }
-  .trend-flat { color: #8b949e; }
+  .ev-pos   { color: #16a34a; font-weight: 600; }
+  .ev-neg   { color: #dc2626; }
+  .trend-up { color: #16a34a; font-weight: 600; }
+  .trend-dn { color: #dc2626; }
+  .trend-flat { color: #6b7280; }
 
   /* GOLDEN RULE BOX */
-  .rule-box { background: #161b22; border: 1px solid #30363d; border-left: 4px solid #58a6ff; border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; font-family: monospace; }
-  .rule-box p { font-size: .82rem; color: #c9d1d9; line-height: 1.7; }
+  .rule-box { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; }
+  .rule-box p { font-size: .82rem; color: #1e40af; line-height: 1.7; }
 
   /* CALENDAR TABLE */
-  .event-hit { color: #3fb950; }
-  .event-miss { color: #f85149; }
+  .event-hit  { color: #16a34a; }
+  .event-miss { color: #dc2626; }
 
   /* STRATEGY CALLOUT */
   .callout { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-  .callout-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; }
-  .callout-box h4 { font-size: .82rem; font-weight: 600; margin-bottom: 8px; }
-  .callout-box ul { list-style: none; font-size: .78rem; color: #8b949e; line-height: 1.8; }
-  .callout-box ul li::before { content: '• '; color: #58a6ff; }
-  .callout-buy { border-left: 4px solid #58a6ff; }
-  .callout-raw { border-left: 4px solid #3fb950; }
+  .callout-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; }
+  .callout-box h4 { font-size: .82rem; font-weight: 600; margin-bottom: 8px; color: #111827; }
+  .callout-box ul { list-style: none; font-size: .78rem; color: #6b7280; line-height: 1.8; }
+  .callout-box ul li::before { content: '• '; color: #2563eb; }
+  .callout-buy { border-left: 4px solid #2563eb; }
+  .callout-raw { border-left: 4px solid #16a34a; }
 
   /* PORTFOLIO SUB TABS */
   .sub-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-  .sub-tab { padding: 5px 12px; border-radius: 20px; background: #21262d; border: 1px solid #30363d; color: #8b949e; cursor: pointer; font-size: .78rem; font-weight: 500; transition: all .15s; }
-  .sub-tab:hover { color: #c9d1d9; }
-  .sub-tab.active { background: #1f6feb; border-color: #388bfd; color: #fff; }
+  .sub-tab { padding: 5px 12px; border-radius: 20px; background: #f3f4f6; border: 1px solid #e5e7eb; color: #6b7280; cursor: pointer; font-size: .78rem; font-weight: 500; transition: all .15s; }
+  .sub-tab:hover { color: #374151; background: #e5e7eb; }
+  .sub-tab.active { background: #2563eb; border-color: #1d4ed8; color: #fff; }
   .sub-content { display: none; }
   .sub-content.active { display: block; }
 
   /* WATCHLIST */
   .watchlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .watch-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px 16px; }
-  .watch-card .player { font-weight: 600; font-size: .9rem; color: #e6edf3; margin-bottom: 2px; }
-  .watch-card .team { font-size: .75rem; color: #8b949e; margin-bottom: 6px; }
-  .watch-card .why { font-size: .78rem; color: #c9d1d9; margin-bottom: 4px; }
-  .watch-card .targets { font-size: .72rem; color: #58a6ff; }
+  .watch-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; }
+  .watch-card .player { font-weight: 600; font-size: .9rem; color: #111827; margin-bottom: 2px; }
+  .watch-card .team { font-size: .75rem; color: #6b7280; margin-bottom: 6px; }
+  .watch-card .why { font-size: .78rem; color: #374151; margin-bottom: 4px; }
+  .watch-card .targets { font-size: .72rem; color: #2563eb; }
 
   /* FOOTER */
-  .footer { text-align: center; padding: 24px; color: #484f58; font-size: .75rem; border-top: 1px solid #21262d; margin-top: 20px; }
+  .footer { text-align: center; padding: 24px; color: #9ca3af; font-size: .75rem; border-top: 1px solid #f3f4f6; margin-top: 20px; }
 
   /* SORT */
   thead th { cursor: pointer; user-select: none; }
-  thead th:hover { background: #2d3a4e; }
-  thead th.sort-asc::after { content: ' ▲'; opacity: .7; font-size: 9px; }
-  thead th.sort-desc::after { content: ' ▼'; opacity: .7; font-size: 9px; }
+  thead th:hover { background: #f3f4f6; }
+  thead th.sort-asc::after  { content: ' ▲'; opacity: .6; font-size: 9px; }
+  thead th.sort-desc::after { content: ' ▼'; opacity: .6; font-size: 9px; }
+
+  /* EMPTY / LOADING */
+  .empty-msg { color: #9ca3af; padding: 24px 0; font-size: .82rem; }
 
   @media (max-width: 600px) {
     .callout { grid-template-columns: 1fr; }
     .header h1 { font-size: 1.2rem; }
-    .tabs { padding: 12px 16px 0; }
+    .tabs { padding: 0 16px; }
     .content { padding: 16px; }
   }
 </style>
 </head>
 <body>
 
+<!-- AUTH OVERLAY -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-box">
+    <h2>🏈🏀 Brick Squad Targets</h2>
+    <div class="auth-sub">Sign in to access the investment target list</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <div class="auth-fg">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')authSubmit()">
+    </div>
+    <div class="auth-fg">
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')authSubmit()">
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" style="width:100%;" id="authBtn" onclick="authSubmit()">Sign In</button>
+    </div>
+    <div id="authMsg" class="auth-error"></div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div id="importModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h3>⬆ Import Target Data from JSON</h3>
+    <p class="modal-sub">Paste your JSON file below. This replaces ALL existing target and portfolio data for your account.</p>
+    <textarea id="importJson" placeholder='Paste brick-squad-sales-targets.json contents here…'></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="importSubmitBtn" onclick="doImport()">Import</button>
+      <button class="btn btn-cancel" onclick="closeImportModal()">Cancel</button>
+      <span id="importMsg" style="font-size:.78rem;display:none;"></span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainContent" style="display:none;">
+
 <div class="header">
   <h1>🏀🏈 Brick Squad — Investment Target List</h1>
   <div class="meta">
-    <span>📅 Updated: March 11, 2026</span>
+    <span id="metaUpdated">📅 Updated: —</span>
     <span>💰 Grading: $38 ($30 PSA + $8 shipping)</span>
-    <span>⏱️ Turnaround: ~3 months</span>
-    <span>🎯 Focus: Post-2015 rookies, max ROI</span>
   </div>
   <div class="nav">
-    <a href="grading-analysis.html">🏀 BB Raw→Grade</a>
-    <a href="football-analysis.html">🏈 FB Raw→Grade</a>
-    <a href="football-buys.html">💰 FB Buy Graded</a>
     <a href="portfolio.html">📋 My Portfolio</a>
+    <button class="btn-import" onclick="openImportModal()">⬆ Import JSON</button>
+    <div class="nav-user">
+      <span class="nav-email" id="navEmail"></span>
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
   </div>
 </div>
 
@@ -145,7 +245,7 @@
 
 <div class="content">
 
-  <!-- ===== OVERVIEW ===== -->
+  <!-- ===== OVERVIEW (static) ===== -->
   <div id="overview" class="tab-content active">
 
     <div class="section">
@@ -244,779 +344,40 @@
 
   </div>
 
-  <!-- ===== FOOTBALL TARGETS ===== -->
+  <!-- ===== FOOTBALL TARGETS (DB-driven) ===== -->
   <div id="football-targets" class="tab-content">
-
-    <div class="section">
-      <div class="section-title">🏈 Football Graded Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">PSA 9 default · Upgrade to PSA 10 for $300+ cards</span></div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="label">Total Targets</div><div class="value">10</div><div class="sub">Graded cards to acquire</div></div>
-        <div class="stat-card"><div class="label">High Priority</div><div class="value">5</div><div class="sub">🔴 Buy now</div></div>
-        <div class="stat-card"><div class="label">Med Priority</div><div class="value">4</div><div class="sub">🟡 Buy on value</div></div>
-        <div class="stat-card"><div class="label">Watch</div><div class="value">1</div><div class="sub">👀 ACL buy-low</div></div>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Card</th>
-              <th>Grade</th>
-              <th>Priority</th>
-              <th>Buy</th>
-              <th>Max</th>
-              <th>Sell At</th>
-              <th>Trend</th>
-              <th>Vol</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Drake Maye 2024 Optic #229 Holo</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$73</td><td>$90</td><td>$169</td>
-              <td><span class="trend-up">+51.8%</span></td>
-              <td>17</td>
-              <td>MVP runner-up, SB QB</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Jayden Daniels 2024 Prizm #347 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-med">Med</span></td>
-              <td>$56</td><td>$69</td><td>$108</td>
-              <td><span class="trend-up">+36.0%</span></td>
-              <td>63</td>
-              <td>Buy-low, elite talent</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>CJ Stroud 2023 Prizm #339 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$11</td><td>$14</td><td>$31</td>
-              <td><span class="trend-up">+101.2%</span></td>
-              <td>27</td>
-              <td>Cheapest elite QB</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Caleb Williams 2024 Optic #201 Holo</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$45</td><td>$55</td><td>$106</td>
-              <td><span class="trend-up">+53.7%</span></td>
-              <td>16</td>
-              <td>Sophomore breakout</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Puka Nacua 2023 Prizm #357 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-med">Med</span></td>
-              <td>$53</td><td>$65</td><td>$151</td>
-              <td><span class="trend-up">+10.0%</span></td>
-              <td>11</td>
-              <td>OPOY finalist, extension</td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Bo Nix 2024 Prizm #309 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$73</td><td>$91</td><td>$172</td>
-              <td><span class="trend-up">+62.1%</span></td>
-              <td>24</td>
-              <td>25 wins in 2 years</td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Joe Burrow 2020 Prizm #307 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-med">Med</span></td>
-              <td>$75</td><td>$90</td><td>$137</td>
-              <td><span class="trend-up">+21.0%</span></td>
-              <td>32</td>
-              <td>Elite floor, buy-low</td>
-            </tr>
-            <tr>
-              <td>8</td>
-              <td>Malik Nabers 2024 Prizm #370 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-med">Watch</span></td>
-              <td>$25</td><td>$30</td><td>$35</td>
-              <td><span class="trend-dn">-3.2%</span></td>
-              <td>11</td>
-              <td>ACL buy-low, age 22</td>
-            </tr>
-            <tr>
-              <td>9</td>
-              <td>Jordan Love 2020 Prizm #363 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$15</td><td>$19</td><td>$34</td>
-              <td><span class="trend-up">+66.6%</span></td>
-              <td>15</td>
-              <td>3x playoff QB, value</td>
-            </tr>
-            <tr>
-              <td>10</td>
-              <td>Marvin Harrison Jr. 2024 Prizm #375 Silver</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-med">Med</span></td>
-              <td>$59</td><td>$72</td><td>$104</td>
-              <td><span class="trend-up">+26.1%</span></td>
-              <td>10</td>
-              <td>Patience play, talent</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
+    <div id="fb-targets-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== BASKETBALL TARGETS ===== -->
+  <!-- ===== BASKETBALL TARGETS (DB-driven) ===== -->
   <div id="basketball-targets" class="tab-content">
-
-    <div class="section">
-      <div class="section-title">🏀 Basketball Graded Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">PSA 10 default · Downgrade to PSA 9 for speculation only</span></div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="label">Total Targets</div><div class="value">10</div><div class="sub">Graded cards to acquire</div></div>
-        <div class="stat-card"><div class="label">High Priority</div><div class="value">7</div><div class="sub">🔴 Buy now</div></div>
-        <div class="stat-card"><div class="label">Med Priority</div><div class="value">2</div><div class="sub">🟡 Buy on value</div></div>
-        <div class="stat-card"><div class="label">Premium Play</div><div class="value">1</div><div class="sub">🟢 High-end hold</div></div>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Card</th>
-              <th>Grade</th>
-              <th>Priority</th>
-              <th>Buy</th>
-              <th>Max</th>
-              <th>Sell At</th>
-              <th>Trend</th>
-              <th>Vol</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Victor Wembanyama 2023 Prizm #136 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$36</td><td>$44</td><td>$98</td>
-              <td><span class="trend-up">+82.4%</span></td>
-              <td>112</td>
-              <td>DPOY frontrunner</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Anthony Edwards 2020 Prizm #258 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-med">Med</span></td>
-              <td>$95</td><td>$115</td><td>$185</td>
-              <td><span class="trend-up">+21.8%</span></td>
-              <td>63</td>
-              <td>Career year, 29.6 PPG</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>LaMelo Ball 2020 Prizm #278 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$28</td><td>$34</td><td>$65</td>
-              <td><span class="trend-up">+111.7%</span></td>
-              <td>20</td>
-              <td>Healthiest season</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Tyrese Maxey 2020 Prizm #256 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$46</td><td>$57</td><td>$104</td>
-              <td><span class="trend-up">+83.3%</span></td>
-              <td>16</td>
-              <td>29 PPG, MVP ladder</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Jalen Brunson 2018 Prizm #250 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$87</td><td>$107</td><td>$156</td>
-              <td><span class="trend-up">+69.0%</span></td>
-              <td>10</td>
-              <td>MVP candidate, NYC</td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Donovan Mitchell 2017 Prizm #117 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$10</td><td>$12</td><td>$23</td>
-              <td><span class="trend-up">+81.2%</span></td>
-              <td>15</td>
-              <td>Harden trade boost</td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Brandon Miller 2023 Prizm #152 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$28</td><td>$35</td><td>$52</td>
-              <td><span class="trend-up">+56.1%</span></td>
-              <td>19</td>
-              <td>Near All-Star, 20.6 PPG</td>
-            </tr>
-            <tr>
-              <td>8</td>
-              <td>Luka Doncic 2019 Prizm #75 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-high">High</span></td>
-              <td>$20</td><td>$25</td><td>$48</td>
-              <td><span class="trend-up">+53.9%</span></td>
-              <td>23</td>
-              <td>Scoring leader, Lakers</td>
-            </tr>
-            <tr>
-              <td>9</td>
-              <td>Brandon Miller 2023 Prizm #152 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-med">Med</span></td>
-              <td>$23</td><td>$28</td><td>$58</td>
-              <td><span class="trend-up">+36.0%</span></td>
-              <td>33</td>
-              <td>Steady rise, star path</td>
-            </tr>
-            <tr>
-              <td>10</td>
-              <td>Shai Gilgeous-Alexander 2018 Prizm #184 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td><span class="badge badge-premium">Premium</span></td>
-              <td>$170</td><td>$200</td><td>$325</td>
-              <td><span class="trend-up">+35.4%</span></td>
-              <td>40</td>
-              <td>Back-to-back MVP chase</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
+    <div id="bb-targets-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== RAW→GRADE ===== -->
+  <!-- ===== RAW→GRADE (DB-driven) ===== -->
   <div id="raw-grade" class="tab-content">
-
-    <div class="section">
-      <div class="section-title">🏈 Football Raw→Grade Targets</div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="label">FB Targets</div><div class="value">10</div><div class="sub">Raw cards to grade</div></div>
-        <div class="stat-card"><div class="label">Avg ROI</div><div class="value">76%</div><div class="sub">After $38 grading cost</div></div>
-        <div class="stat-card"><div class="label">Top ROI</div><div class="value">161%</div><div class="sub">Drake Maye Select B&amp;R</div></div>
-        <div class="stat-card"><div class="label">Grading Cost</div><div class="value">$38</div><div class="sub">PSA $30 + $8 shipping</div></div>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Card</th>
-              <th>Buy Raw</th>
-              <th>Max</th>
-              <th>PSA 9</th>
-              <th>PSA 10</th>
-              <th>Gem %</th>
-              <th>ROI</th>
-              <th>Vol</th>
-              <th>Sell At</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Jaxon Smith-Njigba 2023 Prizm #390 Silver</td>
-              <td>$27</td><td>$35</td><td>$68</td><td>$241</td><td>50%</td>
-              <td><span class="ev-pos">121%</span></td><td>73</td><td>$313</td>
-              <td>OPOY + SB champ, 50% gem</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Drake Maye 2024 Prizm #329 Base</td>
-              <td>$7</td><td>$9</td><td>$32</td><td>$210</td><td>37%</td>
-              <td><span class="ev-pos">111%</span></td><td>612</td><td>$210</td>
-              <td>MVP runner-up, vol king</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Drake Maye 2024 Select #27 Concourse B&amp;R Shock</td>
-              <td>$17</td><td>$18</td><td>$91</td><td>$261</td><td>30%</td>
-              <td><span class="ev-pos">161%</span></td><td>95</td><td>$339</td>
-              <td>Select value, high ROI</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Sam Darnold 2018 Optic #151 Holo</td>
-              <td>$55</td><td>$65</td><td>$95</td><td>$273</td><td>49%</td>
-              <td><span class="ev-pos">81%</span></td><td>15</td><td>$273</td>
-              <td>SB champ, 49% gem</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>CJ Stroud 2023 Prizm #339 Silver</td>
-              <td>$48</td><td>$58</td><td>$57</td><td>$276</td><td>37%</td>
-              <td><span class="ev-pos">48%</span></td><td>19</td><td>$276</td>
-              <td>Buy the dip, former OROY</td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Puka Nacua 2023 Optic #238 Holo</td>
-              <td>$10</td><td>$14</td><td>$31</td><td>$96</td><td>56%</td>
-              <td><span class="ev-pos">34%</span></td><td>47</td><td>$125</td>
-              <td>56% gem, OPOY finalist</td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Jahmyr Gibbs 2023 Prizm #331 Silver</td>
-              <td>$18</td><td>$24</td><td>$39</td><td>$156</td><td>38%</td>
-              <td><span class="ev-pos">41%</span></td><td>28</td><td>$203</td>
-              <td>1,726 scrimmage yds</td>
-            </tr>
-            <tr>
-              <td>8</td>
-              <td>Sam Darnold 2018 Prizm #203 Base</td>
-              <td>$9</td><td>$12</td><td>$30</td><td>$96</td><td>50%</td>
-              <td><span class="ev-pos">28%</span></td><td>82</td><td>$96</td>
-              <td>SB champ, 50% gem rate</td>
-            </tr>
-            <tr>
-              <td>9</td>
-              <td>Bo Nix 2024 Optic #209 Holo</td>
-              <td>$20</td><td>$26</td><td>$36</td><td>$155</td><td>36%</td>
-              <td><span class="ev-pos">27%</span></td><td>99</td><td>$201</td>
-              <td>Record setter, good gem</td>
-            </tr>
-            <tr>
-              <td>10</td>
-              <td>Drake Maye 2024 Optic #229 Holo</td>
-              <td>$45</td><td>$55</td><td>$86</td><td>$361</td><td>31%</td>
-              <td><span class="ev-pos">103%</span></td><td>131</td><td>$469</td>
-              <td>Premium parallel, SB QB</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">🏀 Basketball Raw→Grade Targets</div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="label">BB Targets</div><div class="value">10</div><div class="sub">Raw cards to grade</div></div>
-        <div class="stat-card"><div class="label">Avg ROI</div><div class="value">73%</div><div class="sub">After $38 grading cost</div></div>
-        <div class="stat-card"><div class="label">Top ROI</div><div class="value">90%</div><div class="sub">Brandon Miller Silver</div></div>
-        <div class="stat-card"><div class="label">Grading Cost</div><div class="value">$38</div><div class="sub">PSA $30 + $8 shipping</div></div>
-      </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Card</th>
-              <th>Buy Raw</th>
-              <th>Max</th>
-              <th>PSA 9</th>
-              <th>PSA 10</th>
-              <th>Gem %</th>
-              <th>ROI</th>
-              <th>Vol</th>
-              <th>Sell At</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Brandon Miller 2023 Prizm #152 Silver</td>
-              <td>$23</td><td>$30</td><td>$33</td><td>$199</td><td>55%</td>
-              <td><span class="ev-pos">90%</span></td><td>27</td><td>$259</td>
-              <td>55% gem, All-Star path</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Victor Wembanyama 2023 Topps Chrome #1 Base</td>
-              <td>$14</td><td>$18</td><td>$42</td><td>$203</td><td>36%</td>
-              <td><span class="ev-pos">83%</span></td><td>267</td><td>$264</td>
-              <td>DPOY + generational</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Anthony Edwards 2020 Optic #151 Holo</td>
-              <td>$42</td><td>$54</td><td>$62</td><td>$295</td><td>40%</td>
-              <td><span class="ev-pos">78%</span></td><td>14</td><td>$384</td>
-              <td>40% gem, career year</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Jalen Johnson 2021 Prizm #305 Silver</td>
-              <td>$27</td><td>$35</td><td>$71</td><td>$247</td><td>30%</td>
-              <td><span class="ev-pos">78%</span></td><td>65</td><td>$321</td>
-              <td>First All-Star, 23 PPG</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Cade Cunningham 2021 Optic #161 Holo</td>
-              <td>$23</td><td>$30</td><td>$46</td><td>$197</td><td>40%</td>
-              <td><span class="ev-pos">63%</span></td><td>22</td><td>$197</td>
-              <td>MVP candidate, buy-low</td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Victor Wembanyama 2023 Topps Chrome Cosmic #151 Base</td>
-              <td>$26</td><td>$33</td><td>$57</td><td>$219</td><td>36%</td>
-              <td><span class="ev-pos">69%</span></td><td>93</td><td>$284</td>
-              <td>Premium Wemby parallel</td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Paolo Banchero 2022 Prizm #249 Silver</td>
-              <td>$31</td><td>$40</td><td>$40</td><td>$272</td><td>34%</td>
-              <td><span class="ev-pos">59%</span></td><td>16</td><td>$354</td>
-              <td>$239M max, age 23</td>
-            </tr>
-            <tr>
-              <td>8</td>
-              <td>Caitlin Clark 2024 Prizm WNBA #22 Base</td>
-              <td>$15</td><td>$20</td><td>$35</td><td>$222</td><td>35%</td>
-              <td><span class="ev-pos">77%</span></td><td>141</td><td>$289</td>
-              <td>Hobby icon, high vol</td>
-            </tr>
-            <tr>
-              <td>9</td>
-              <td>Victor Wembanyama 2023 Prizm #1 Deep Space Silver</td>
-              <td>$9</td><td>$12</td><td>$37</td><td>$105</td><td>63%</td>
-              <td><span class="ev-pos">63%</span></td><td>16</td><td>$105</td>
-              <td>63% gem rate, safe</td>
-            </tr>
-            <tr>
-              <td>10</td>
-              <td>Shai Gilgeous-Alexander 2018 Prizm #184 Base</td>
-              <td>$20</td><td>$28</td><td>$42</td><td>$189</td><td>45%</td>
-              <td><span class="ev-pos">71%</span></td><td>118</td><td>$246</td>
-              <td>MVP favorite, value raw</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
+    <div id="raw-grade-fb-container"><p class="empty-msg">Loading…</p></div>
+    <div id="raw-grade-bb-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== PORTFOLIOS ===== -->
+  <!-- ===== PORTFOLIOS (DB-driven) ===== -->
   <div id="portfolios" class="tab-content">
-
     <div class="sub-tabs">
       <div class="sub-tab active" onclick="showSub('p1000')">$1,000</div>
       <div class="sub-tab" onclick="showSub('p1500')">$1,500</div>
       <div class="sub-tab" onclick="showSub('p2000')">$2,000</div>
     </div>
-
-    <!-- $1K PORTFOLIO -->
-    <div id="p1000" class="sub-content active">
-      <div class="section">
-        <div class="section-title">💰 $1,000 Portfolio <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Total: $1,011 · 10 allocations</span></div>
-        <div class="stats-row">
-          <div class="stat-card"><div class="label">Budget</div><div class="value">$1,000</div><div class="sub">Target allocation</div></div>
-          <div class="stat-card"><div class="label">Deployed</div><div class="value">$1,011</div><div class="sub">Total cost</div></div>
-          <div class="stat-card"><div class="label">Positions</div><div class="value">10</div><div class="sub">Allocations</div></div>
-          <div class="stat-card"><div class="label">Focus</div><div class="value">Value</div><div class="sub">High-vol, low-cost entries</div></div>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr><th>Card</th><th>Type</th><th>Cost Each</th><th>Qty</th><th>Subtotal</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Drake Maye 2024 Prizm #329 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$44</td><td>5</td><td>$220</td></tr>
-              <tr><td>CJ Stroud 2023 Prizm #339 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$43</td><td>3</td><td>$129</td></tr>
-              <tr><td>Kon Knueppel 2025 Topps Chrome #254 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$46</td><td>4</td><td>$184</td></tr>
-              <tr><td>Victor Wembanyama 2023 Prizm #136 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$42</td><td>2</td><td>$84</td></tr>
-              <tr><td>CJ Stroud 2023 Prizm #339 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$13</td><td>3</td><td>$39</td></tr>
-              <tr><td>Caleb Williams 2024 Prizm #301 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$43</td><td>3</td><td>$129</td></tr>
-              <tr><td>Anthony Edwards 2020 Prizm #258 Base</td><td><span class="badge badge-psa10">Graded PSA 10</span></td><td>$109</td><td>1</td><td>$109</td></tr>
-              <tr><td>Donovan Mitchell 2017 Prizm #117 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$12</td><td>3</td><td>$36</td></tr>
-              <tr><td>Jordan Love 2020 Prizm #363 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$18</td><td>2</td><td>$36</td></tr>
-              <tr><td>Bo Nix 2024 Prizm #309 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$45</td><td>1</td><td>$45</td></tr>
-              <tr style="background:#161b22;font-weight:700;border-top:2px solid #30363d;">
-                <td colspan="4" style="text-align:right;color:#c9d1d9;">Total</td>
-                <td style="color:#58a6ff;">$1,011</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- $1.5K PORTFOLIO -->
-    <div id="p1500" class="sub-content">
-      <div class="section">
-        <div class="section-title">💰 $1,500 Portfolio <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Total: $1,497 · 13 allocations</span></div>
-        <div class="stats-row">
-          <div class="stat-card"><div class="label">Budget</div><div class="value">$1,500</div><div class="sub">Target allocation</div></div>
-          <div class="stat-card"><div class="label">Deployed</div><div class="value">$1,497</div><div class="sub">Total cost</div></div>
-          <div class="stat-card"><div class="label">Positions</div><div class="value">13</div><div class="sub">Allocations</div></div>
-          <div class="stat-card"><div class="label">Focus</div><div class="value">Balanced</div><div class="sub">Raw + graded mix</div></div>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr><th>Card</th><th>Type</th><th>Cost Each</th><th>Qty</th><th>Subtotal</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Drake Maye 2024 Prizm #329 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$44</td><td>6</td><td>$264</td></tr>
-              <tr><td>Drake Maye 2024 Optic #229 Holo</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$90</td><td>2</td><td>$180</td></tr>
-              <tr><td>Kon Knueppel 2025 Topps Chrome #254 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$46</td><td>5</td><td>$230</td></tr>
-              <tr><td>Cooper Flagg 2025 Topps Chrome #251 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$60</td><td>2</td><td>$120</td></tr>
-              <tr><td>Victor Wembanyama 2023 Prizm #136 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$42</td><td>3</td><td>$126</td></tr>
-              <tr><td>Anthony Edwards 2020 Prizm #258 Base</td><td><span class="badge badge-psa10">Graded PSA 10</span></td><td>$109</td><td>1</td><td>$109</td></tr>
-              <tr><td>Caleb Williams 2024 Optic #201 Holo</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$68</td><td>2</td><td>$136</td></tr>
-              <tr><td>Jayden Daniels 2024 Prizm #347 Base</td><td><span class="badge badge-psa10">Graded PSA 10</span></td><td>$65</td><td>1</td><td>$65</td></tr>
-              <tr><td>Brandon Miller 2023 Prizm #152 Silver</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$33</td><td>2</td><td>$66</td></tr>
-              <tr><td>Shai Gilgeous-Alexander 2018 Prizm #184 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$58</td><td>1</td><td>$58</td></tr>
-              <tr><td>Tyrese Maxey 2020 Prizm #256 Silver</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$55</td><td>1</td><td>$55</td></tr>
-              <tr><td>Donovan Mitchell 2017 Prizm #117 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$12</td><td>3</td><td>$36</td></tr>
-              <tr><td>CJ Stroud 2023 Prizm #339 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$13</td><td>4</td><td>$52</td></tr>
-              <tr style="background:#161b22;font-weight:700;border-top:2px solid #30363d;">
-                <td colspan="4" style="text-align:right;color:#c9d1d9;">Total</td>
-                <td style="color:#58a6ff;">$1,497</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- $2K PORTFOLIO -->
-    <div id="p2000" class="sub-content">
-      <div class="section">
-        <div class="section-title">💰 $2,000 Portfolio <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Total: $2,006 · 16 allocations</span></div>
-        <div class="stats-row">
-          <div class="stat-card"><div class="label">Budget</div><div class="value">$2,000</div><div class="sub">Target allocation</div></div>
-          <div class="stat-card"><div class="label">Deployed</div><div class="value">$2,006</div><div class="sub">Total cost</div></div>
-          <div class="stat-card"><div class="label">Positions</div><div class="value">16</div><div class="sub">Allocations</div></div>
-          <div class="stat-card"><div class="label">Focus</div><div class="value">Premium</div><div class="sub">Adds SGA + Flagg exposure</div></div>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr><th>Card</th><th>Type</th><th>Cost Each</th><th>Qty</th><th>Subtotal</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Drake Maye 2024 Prizm #329 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$44</td><td>8</td><td>$352</td></tr>
-              <tr><td>Drake Maye 2024 Optic #229 Holo</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$90</td><td>2</td><td>$180</td></tr>
-              <tr><td>Drake Maye 2024 Prizm #329 Silver</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$93</td><td>1</td><td>$93</td></tr>
-              <tr><td>Kon Knueppel 2025 Topps Chrome #254 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$46</td><td>5</td><td>$230</td></tr>
-              <tr><td>Cooper Flagg 2025 Topps Chrome #251 Base</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$60</td><td>3</td><td>$180</td></tr>
-              <tr><td>Caleb Williams 2024 Optic #201 Holo</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$68</td><td>2</td><td>$136</td></tr>
-              <tr><td>Victor Wembanyama 2023 Prizm #136 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$42</td><td>3</td><td>$126</td></tr>
-              <tr><td>Anthony Edwards 2020 Prizm #258 Base</td><td><span class="badge badge-psa10">Graded PSA 10</span></td><td>$109</td><td>1</td><td>$109</td></tr>
-              <tr><td>Shai Gilgeous-Alexander 2018 Prizm #184 Base</td><td><span class="badge badge-psa10">Graded PSA 10</span></td><td>$189</td><td>1</td><td>$189</td></tr>
-              <tr><td>Stephon Castle 2024 Prizm #234 Silver</td><td><span class="badge badge-raw">Raw→Grade</span></td><td>$70</td><td>1</td><td>$70</td></tr>
-              <tr><td>Jayden Daniels 2024 Prizm #347 Base</td><td><span class="badge badge-psa10">Graded PSA 10</span></td><td>$65</td><td>1</td><td>$65</td></tr>
-              <tr><td>Brandon Miller 2023 Prizm #152 Silver</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$33</td><td>2</td><td>$66</td></tr>
-              <tr><td>Bo Nix 2024 Prizm #309 Silver</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$86</td><td>1</td><td>$86</td></tr>
-              <tr><td>CJ Stroud 2023 Prizm #339 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$13</td><td>4</td><td>$52</td></tr>
-              <tr><td>Donovan Mitchell 2017 Prizm #117 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$12</td><td>3</td><td>$36</td></tr>
-              <tr><td>Jordan Love 2020 Prizm #363 Base</td><td><span class="badge badge-psa9">Graded PSA 9</span></td><td>$18</td><td>2</td><td>$36</td></tr>
-              <tr style="background:#161b22;font-weight:700;border-top:2px solid #30363d;">
-                <td colspan="4" style="text-align:right;color:#c9d1d9;">Total</td>
-                <td style="color:#58a6ff;">$2,006</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
+    <div id="p1000" class="sub-content active"><p class="empty-msg">Loading…</p></div>
+    <div id="p1500" class="sub-content"><p class="empty-msg">Loading…</p></div>
+    <div id="p2000" class="sub-content"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== CARD SHOW ===== -->
+  <!-- ===== CARD SHOW (DB-driven) ===== -->
   <div id="card-show" class="tab-content">
-
-    <div class="section">
-      <div class="section-title">🏈 Football — Card Show Buy Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Buy at or below these prices in-person</span></div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Card</th>
-              <th>Grade</th>
-              <th>Buy Under</th>
-              <th>Sell At</th>
-              <th>Upside</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td><td>Drake Maye 2024 Optic #229 Holo</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$73</td><td>$169</td><td><span class="ev-pos">+$96 (+132%)</span></td>
-              <td>MVP runner-up, SB QB</td>
-            </tr>
-            <tr>
-              <td>2</td><td>Jayden Daniels 2024 Prizm #347 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$56</td><td>$108</td><td><span class="ev-pos">+$52 (+93%)</span></td>
-              <td>Buy-low, elite talent</td>
-            </tr>
-            <tr>
-              <td>3</td><td>CJ Stroud 2023 Prizm #339 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$11</td><td>$31</td><td><span class="ev-pos">+$20 (+182%)</span></td>
-              <td>Cheapest elite QB on list</td>
-            </tr>
-            <tr>
-              <td>4</td><td>Caleb Williams 2024 Optic #201 Holo</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$45</td><td>$106</td><td><span class="ev-pos">+$61 (+136%)</span></td>
-              <td>Sophomore breakout incoming</td>
-            </tr>
-            <tr>
-              <td>5</td><td>Puka Nacua 2023 Prizm #357 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$53</td><td>$151</td><td><span class="ev-pos">+$98 (+185%)</span></td>
-              <td>OPOY finalist, contract ext</td>
-            </tr>
-            <tr>
-              <td>6</td><td>Bo Nix 2024 Prizm #309 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$73</td><td>$172</td><td><span class="ev-pos">+$99 (+136%)</span></td>
-              <td>25 wins in 2 years</td>
-            </tr>
-            <tr>
-              <td>7</td><td>Joe Burrow 2020 Prizm #307 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$75</td><td>$137</td><td><span class="ev-pos">+$62 (+83%)</span></td>
-              <td>Elite floor, buy on dips</td>
-            </tr>
-            <tr>
-              <td>8</td><td>Malik Nabers 2024 Prizm #370 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$25</td><td>$35</td><td><span class="ev-pos">+$10 (+40%)</span></td>
-              <td>ACL recovery play, age 22</td>
-            </tr>
-            <tr>
-              <td>9</td><td>Jordan Love 2020 Prizm #363 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$15</td><td>$34</td><td><span class="ev-pos">+$19 (+127%)</span></td>
-              <td>3x playoff QB, deep value</td>
-            </tr>
-            <tr>
-              <td>10</td><td>Marvin Harrison Jr. 2024 Prizm #375 Silver</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$59</td><td>$104</td><td><span class="ev-pos">+$45 (+76%)</span></td>
-              <td>Patience play, elite talent</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">🏀 Basketball — Card Show Buy Targets <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Buy at or below these prices in-person</span></div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Card</th>
-              <th>Grade</th>
-              <th>Buy Under</th>
-              <th>Sell At</th>
-              <th>Upside</th>
-              <th>Rationale</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td><td>Victor Wembanyama 2023 Prizm #136 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$36</td><td>$98</td><td><span class="ev-pos">+$62 (+172%)</span></td>
-              <td>DPOY frontrunner, generational</td>
-            </tr>
-            <tr>
-              <td>2</td><td>Anthony Edwards 2020 Prizm #258 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$95</td><td>$185</td><td><span class="ev-pos">+$90 (+95%)</span></td>
-              <td>Career year, 29.6 PPG</td>
-            </tr>
-            <tr>
-              <td>3</td><td>LaMelo Ball 2020 Prizm #278 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$28</td><td>$65</td><td><span class="ev-pos">+$37 (+132%)</span></td>
-              <td>Healthiest season, +112% trend</td>
-            </tr>
-            <tr>
-              <td>4</td><td>Tyrese Maxey 2020 Prizm #256 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$46</td><td>$104</td><td><span class="ev-pos">+$58 (+126%)</span></td>
-              <td>29 PPG, on MVP ladder</td>
-            </tr>
-            <tr>
-              <td>5</td><td>Jalen Brunson 2018 Prizm #250 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$87</td><td>$156</td><td><span class="ev-pos">+$69 (+79%)</span></td>
-              <td>MVP candidate, NYC market</td>
-            </tr>
-            <tr>
-              <td>6</td><td>Donovan Mitchell 2017 Prizm #117 Base</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$10</td><td>$23</td><td><span class="ev-pos">+$13 (+130%)</span></td>
-              <td>Harden trade, +81% trend</td>
-            </tr>
-            <tr>
-              <td>7</td><td>Brandon Miller 2023 Prizm #152 Silver</td>
-              <td><span class="badge badge-psa9">PSA 9</span></td>
-              <td>$28</td><td>$52</td><td><span class="ev-pos">+$24 (+86%)</span></td>
-              <td>Near All-Star, 20.6 PPG</td>
-            </tr>
-            <tr>
-              <td>8</td><td>Luka Doncic 2019 Prizm #75 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$20</td><td>$48</td><td><span class="ev-pos">+$28 (+140%)</span></td>
-              <td>Scoring leader, Lakers era</td>
-            </tr>
-            <tr>
-              <td>9</td><td>Brandon Miller 2023 Prizm #152 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$23</td><td>$58</td><td><span class="ev-pos">+$35 (+152%)</span></td>
-              <td>Steady rise, star path</td>
-            </tr>
-            <tr>
-              <td>10</td><td>Shai Gilgeous-Alexander 2018 Prizm #184 Base</td>
-              <td><span class="badge badge-psa10">PSA 10</span></td>
-              <td>$170</td><td>$325</td><td><span class="ev-pos">+$155 (+91%)</span></td>
-              <td>Back-to-back MVP chase</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
+    <div id="card-show-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== WATCHLIST ===== -->
+  <!-- ===== WATCHLIST (static) ===== -->
   <div id="watchlist" class="tab-content">
 
     <div class="section">
@@ -1139,70 +500,627 @@
 
   </div>
 
-</div>
+</div><!-- end .content -->
 
-<div class="footer">Brick Squad Sports Cards &middot; Investment Target List &middot; March 11, 2026</div>
+<div class="footer">Brick Squad Sports Cards &middot; Investment Target List &middot; Data synced to the cloud</div>
+
+</div><!-- end #mainContent -->
 
 <script>
-  function showTab(id) {
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','watchlist'];
-    const idx = ids.indexOf(id);
-    if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
-    setTimeout(attachSorting, 50);
+// ── Constants + Init ──────────────────────────────────────────────
+const SUPABASE_URL = 'https://azvoynuwnmejqwzscmnc.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zzhXo3XG5seQBYgADSAbmA_PyTWou2a';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+let authMode = 'login';
+
+// ── Auth UI ───────────────────────────────────────────────────────
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (mode === 'login' ? 0 : 1) === i);
+  });
+  document.getElementById('authBtn').textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+  const msg = document.getElementById('authMsg');
+  msg.className = 'auth-error';
+  msg.textContent = '';
+}
+
+async function authSubmit() {
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const msgEl    = document.getElementById('authMsg');
+  const btn      = document.getElementById('authBtn');
+  msgEl.textContent = '';
+
+  if (!email || !password) { msgEl.textContent = 'Email and password required.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = authMode === 'login' ? 'Signing in…' : 'Creating account…';
+
+  const result = authMode === 'login'
+    ? await sb.auth.signInWithPassword({ email, password })
+    : await sb.auth.signUp({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+
+  if (result.error) {
+    msgEl.className = 'auth-error';
+    msgEl.textContent = result.error.message;
+    return;
   }
 
-  function showSub(id) {
-    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    const idx = ['p1000','p1500','p2000'].indexOf(id);
-    if (idx >= 0) document.querySelectorAll('.sub-tab')[idx].classList.add('active');
-    setTimeout(attachSorting, 50);
+  if (authMode === 'signup' && !result.data.session) {
+    msgEl.className = 'auth-success';
+    msgEl.textContent = 'Check your email to confirm your account, then sign in.';
+    return;
   }
 
-  function parseVal(t) {
-    if (!t || t === 'N/A' || t === '—') return null;
-    const n = parseFloat(t.replace(/[~$,%×]/g, '').replace(/,/g, '').trim());
-    return isNaN(n) ? null : n;
+  currentUser = result.data.user;
+  await showApp();
+}
+
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await showApp();
+  } else {
+    document.getElementById('authOverlay').style.display = 'flex';
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('authOverlay').style.display = 'flex';
+  document.getElementById('authEmail').value    = '';
+  document.getElementById('authPassword').value = '';
+  document.getElementById('authMsg').textContent = '';
+}
+
+async function showApp() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('navEmail').textContent = currentUser.email;
+  await loadData();
+}
+
+// ── Data Layer ────────────────────────────────────────────────────
+async function loadData() {
+  const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }] = await Promise.all([
+    sb.from('investment_targets').select('*').eq('user_id', currentUser.id).order('rank'),
+    sb.from('portfolio_targets').select('*').eq('user_id', currentUser.id).order('budget_tier')
+  ]);
+
+  if (e1) console.error('Load targets error:', e1);
+  if (e2) console.error('Load portfolios error:', e2);
+
+  const t = targets || [];
+  const p = portfolios || [];
+
+  // Update "Updated" date from any record
+  const anyRec = t[0];
+  if (anyRec && anyRec.last_updated) {
+    document.getElementById('metaUpdated').textContent = '📅 Updated: ' + anyRec.last_updated;
   }
 
-  function sortTbl(table, col, dir) {
-    const tbody = table.querySelector('tbody');
-    if (!tbody) return;
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    rows.sort((a, b) => {
-      const at = ((a.querySelectorAll('td')[col] || {}).textContent || '').trim();
-      const bt = ((b.querySelectorAll('td')[col] || {}).textContent || '').trim();
-      const av = parseVal(at), bv = parseVal(bt);
-      if (av === null && bv === null) return at.localeCompare(bt) * (dir === 'asc' ? 1 : -1);
-      if (av === null) return 1;
-      if (bv === null) return -1;
-      return (av - bv) * (dir === 'asc' ? 1 : -1);
-    });
-    rows.forEach(r => tbody.appendChild(r));
+  renderFBTargets(t.filter(r => r.sport === 'football' && r.category === 'graded'));
+  renderBBTargets(t.filter(r => r.sport === 'basketball' && r.category === 'graded'));
+  renderFBRaw(t.filter(r => r.sport === 'football' && r.category === 'raw'));
+  renderBBRaw(t.filter(r => r.sport === 'basketball' && r.category === 'raw'));
+  renderCardShow(t.filter(r => r.category === 'graded'));
+  renderPortfolios(p);
+  attachSorting();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getPriority(r) {
+  // SGA premium special case: target $170+
+  if (r.card && r.card.startsWith('Shai Gilgeous-Alexander') && r.target >= 170) return 'premium';
+  if (r.trend > 50) return 'high';
+  if (r.trend >= 0) return 'med';
+  return 'watch';
+}
+
+function priorityBadge(p) {
+  switch(p) {
+    case 'premium': return '<span class="badge badge-premium">Premium</span>';
+    case 'high':    return '<span class="badge badge-high">High</span>';
+    case 'watch':   return '<span class="badge badge-med">Watch</span>';
+    default:        return '<span class="badge badge-med">Med</span>';
+  }
+}
+
+function gradeBadgeHTML(grade) {
+  if (grade === 'PSA 10') return '<span class="badge badge-psa10">PSA 10</span>';
+  return '<span class="badge badge-psa9">PSA 9</span>';
+}
+
+function trendHTML(trend) {
+  const v = parseFloat(trend) || 0;
+  const pct = (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+  const cls = v > 0 ? 'trend-up' : v < 0 ? 'trend-dn' : 'trend-flat';
+  return `<span class="${cls}">${pct}</span>`;
+}
+
+function noDataMsg(id) {
+  document.getElementById(id).innerHTML =
+    '<div class="rule-box" style="margin-top:8px;"><p style="color:#8b949e;">No data loaded. Click ⬆ Import JSON in the header to load target data.</p></div>';
+}
+
+// ── Render: Football Graded Targets ──────────────────────────────
+function renderFBTargets(rows) {
+  const id = 'fb-targets-container';
+  if (!rows.length) { noDataMsg(id); return; }
+
+  const priorities = rows.map(getPriority);
+  const high    = priorities.filter(p => p === 'high').length;
+  const med     = priorities.filter(p => p === 'med').length;
+  const watch   = priorities.filter(p => p === 'watch').length;
+
+  document.getElementById(id).innerHTML = `
+    <div class="section">
+      <div class="section-title">🏈 Football Graded Targets
+        <span style="font-size:.75rem;color:#8b949e;font-weight:400;">PSA 9 default · Upgrade to PSA 10 for $300+ cards</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Targets</div><div class="value">${rows.length}</div><div class="sub">Graded cards to acquire</div></div>
+        <div class="stat-card accent-red"><div class="label">High Priority</div><div class="value" style="color:#f85149">${high}</div><div class="sub">🔴 Buy now</div></div>
+        <div class="stat-card accent-amber"><div class="label">Med Priority</div><div class="value" style="color:#d2961e">${med}</div><div class="sub">🟡 Buy on value</div></div>
+        <div class="stat-card accent-gray"><div class="label">Watch</div><div class="value" style="color:#8b949e">${watch}</div><div class="sub">👀 ACL buy-low</div></div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-bar-label">Filter:</span>
+        <button class="filter-btn active" data-filter="all" onclick="filterPriority(this)">All ${rows.length}</button>
+        ${high   ? `<button class="filter-btn" data-filter="high"  onclick="filterPriority(this)">High ${high}</button>` : ''}
+        ${med    ? `<button class="filter-btn" data-filter="med"   onclick="filterPriority(this)">Med ${med}</button>` : ''}
+        ${watch  ? `<button class="filter-btn" data-filter="watch" onclick="filterPriority(this)">Watch ${watch}</button>` : ''}
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Card</th><th>Grade</th><th>Priority</th>
+            <th>Buy</th><th>Max</th><th>Sell At</th><th>Trend</th><th>Vol</th><th>Rationale</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `<tr>
+              <td>${r.rank}</td>
+              <td style="white-space:normal;min-width:180px">${esc(r.card)}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
+              <td>${gradeBadgeHTML(r.grade)}</td>
+              <td>${priorityBadge(getPriority(r))}</td>
+              <td>$${r.target}</td><td>$${r.max}</td><td>$${r.sell_at}</td>
+              <td>${trendHTML(r.trend)}</td>
+              <td>${r.vol}</td>
+              <td>${esc(r.rationale)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── Render: Basketball Graded Targets ────────────────────────────
+function renderBBTargets(rows) {
+  const id = 'bb-targets-container';
+  if (!rows.length) { noDataMsg(id); return; }
+
+  const priorities = rows.map(getPriority);
+  const high    = priorities.filter(p => p === 'high').length;
+  const med     = priorities.filter(p => p === 'med').length;
+  const premium = priorities.filter(p => p === 'premium').length;
+  const watch   = priorities.filter(p => p === 'watch').length;
+
+  document.getElementById(id).innerHTML = `
+    <div class="section">
+      <div class="section-title">🏀 Basketball Graded Targets
+        <span style="font-size:.75rem;color:#8b949e;font-weight:400;">PSA 10 default · Downgrade to PSA 9 for speculation only</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Targets</div><div class="value">${rows.length}</div><div class="sub">Graded cards to acquire</div></div>
+        <div class="stat-card accent-red"><div class="label">High Priority</div><div class="value" style="color:#f85149">${high}</div><div class="sub">🔴 Buy now</div></div>
+        <div class="stat-card accent-amber"><div class="label">Med Priority</div><div class="value" style="color:#d2961e">${med}</div><div class="sub">🟡 Buy on value</div></div>
+        <div class="stat-card accent-green"><div class="label">Premium Play</div><div class="value" style="color:#3fb950">${premium}</div><div class="sub">🟢 High-end hold</div></div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-bar-label">Filter:</span>
+        <button class="filter-btn active" data-filter="all" onclick="filterPriority(this)">All ${rows.length}</button>
+        ${high    ? `<button class="filter-btn" data-filter="high"    onclick="filterPriority(this)">High ${high}</button>` : ''}
+        ${med     ? `<button class="filter-btn" data-filter="med"     onclick="filterPriority(this)">Med ${med}</button>` : ''}
+        ${premium ? `<button class="filter-btn" data-filter="premium" onclick="filterPriority(this)">Premium ${premium}</button>` : ''}
+        ${watch   ? `<button class="filter-btn" data-filter="watch"   onclick="filterPriority(this)">Watch ${watch}</button>` : ''}
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Card</th><th>Grade</th><th>Priority</th>
+            <th>Buy</th><th>Max</th><th>Sell At</th><th>Trend</th><th>Vol</th><th>Rationale</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `<tr>
+              <td>${r.rank}</td>
+              <td style="white-space:normal;min-width:180px">${esc(r.card)}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
+              <td>${gradeBadgeHTML(r.grade)}</td>
+              <td>${priorityBadge(getPriority(r))}</td>
+              <td>$${r.target}</td><td>$${r.max}</td><td>$${r.sell_at}</td>
+              <td>${trendHTML(r.trend)}</td>
+              <td>${r.vol}</td>
+              <td>${esc(r.rationale)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── Render: Raw→Grade (shared) ────────────────────────────────────
+function renderRawSection(id, rows, emoji, sportLabel) {
+  if (!rows.length) { noDataMsg(id); return; }
+
+  const rois = rows.map(r => parseFloat(r.roi) || 0);
+  const avgROI = Math.round(rois.reduce((s, v) => s + v, 0) / rois.length);
+  const topROI = Math.max(...rois);
+  const topCard = rows.find(r => parseFloat(r.roi) === topROI);
+  const topLabel = topCard ? topCard.card.split(' ').slice(0, 4).join(' ') : '';
+
+  document.getElementById(id).innerHTML = `
+    <div class="section">
+      <div class="section-title">${emoji} ${sportLabel} Raw→Grade Targets</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">${sportLabel.substring(0,2)} Targets</div><div class="value">${rows.length}</div><div class="sub">Raw cards to grade</div></div>
+        <div class="stat-card accent-green"><div class="label">Avg ROI</div><div class="value" style="color:#3fb950">${avgROI}%</div><div class="sub">After $38 grading cost</div></div>
+        <div class="stat-card accent-green"><div class="label">Top ROI</div><div class="value" style="color:#3fb950">${topROI}%</div><div class="sub">${esc(topLabel)}</div></div>
+        <div class="stat-card"><div class="label">Grading Cost</div><div class="value">$38</div><div class="sub">PSA $30 + $8 shipping</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Card</th><th>Buy Raw</th><th>Max</th>
+            <th>PSA 9</th><th>PSA 10</th><th>Gem %</th><th>ROI</th>
+            <th>Vol</th><th>Sell At</th><th>Rationale</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `<tr>
+              <td>${r.rank}</td>
+              <td style="white-space:normal;min-width:180px">${esc(r.card)}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
+              <td>$${r.target_raw}</td><td>$${r.max_raw}</td>
+              <td>$${r.est_psa9}</td><td>$${r.est_psa10}</td>
+              <td>${r.gem_rate}%</td>
+              <td><span class="ev-pos">${r.roi}%</span></td>
+              <td>${r.vol}</td><td>$${r.sell_at}</td>
+              <td>${esc(r.rationale)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderFBRaw(rows) { renderRawSection('raw-grade-fb-container', rows, '🏈', 'Football'); }
+function renderBBRaw(rows) { renderRawSection('raw-grade-bb-container', rows, '🏀', 'Basketball'); }
+
+// ── Render: Card Show ─────────────────────────────────────────────
+function renderCardShow(rows) {
+  const id = 'card-show-container';
+  if (!rows.length) { noDataMsg(id); return; }
+
+  const fbRows = rows.filter(r => r.sport === 'football').sort((a,b) => (a.rank||0)-(b.rank||0));
+  const bbRows = rows.filter(r => r.sport === 'basketball').sort((a,b) => (a.rank||0)-(b.rank||0));
+
+  const renderCSSection = (emoji, sportLabel, sportRows) => {
+    if (!sportRows.length) return '';
+    return `
+      <div class="section">
+        <div class="section-title">${emoji} ${sportLabel} — Card Show Buy Targets
+          <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Buy at or below these prices in-person</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Card</th><th>Grade</th>
+              <th>Buy Under</th><th>Sell At</th><th>Upside</th><th>Rationale</th>
+            </tr></thead>
+            <tbody>
+              ${sportRows.map(r => {
+                const upside = (parseFloat(r.sell_at)||0) - (parseFloat(r.target)||0);
+                const upsidePct = r.target > 0 ? Math.round((upside / r.target) * 100) : 0;
+                return `<tr>
+                  <td>${r.rank}</td>
+                  <td style="white-space:normal;min-width:180px">${esc(r.card)}</td>
+                  <td>${gradeBadgeHTML(r.grade)}</td>
+                  <td>$${r.target}</td>
+                  <td>$${r.sell_at}</td>
+                  <td><span class="ev-pos">+$${upside} (+${upsidePct}%)</span></td>
+                  <td>${esc(r.rationale)}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  };
+
+  document.getElementById(id).innerHTML =
+    renderCSSection('🏈', 'Football', fbRows) +
+    renderCSSection('🏀', 'Basketball', bbRows);
+}
+
+// ── Render: Portfolios ────────────────────────────────────────────
+function renderPortfolios(rows) {
+  const tiers = [
+    { id: 'p1000', key: '1000', label: '$1,000', focus: 'Value',    focusSub: 'High-vol, low-cost entries' },
+    { id: 'p1500', key: '1500', label: '$1,500', focus: 'Balanced', focusSub: 'Raw + graded mix' },
+    { id: 'p2000', key: '2000', label: '$2,000', focus: 'Premium',  focusSub: 'Adds SGA + Flagg exposure' },
+  ];
+
+  const typeBadge = (type) => {
+    if (type === 'raw-to-grade')  return '<span class="badge badge-raw">Raw→Grade</span>';
+    if (type === 'graded PSA 9')  return '<span class="badge badge-psa9">Graded PSA 9</span>';
+    if (type === 'graded PSA 10') return '<span class="badge badge-psa10">Graded PSA 10</span>';
+    return `<span class="badge">${esc(type)}</span>`;
+  };
+
+  tiers.forEach(({ id, key, label, focus, focusSub }) => {
+    const el = document.getElementById(id);
+    const tierRows = rows.filter(r => r.budget_tier === key);
+
+    if (!tierRows.length) {
+      el.innerHTML = '<div class="rule-box" style="margin-top:8px;"><p style="color:#8b949e;">No data. Click ⬆ Import JSON to load portfolio data.</p></div>';
+      return;
+    }
+
+    const total = tierRows.reduce((s, r) => s + (parseFloat(r.subtotal) || 0), 0);
+
+    el.innerHTML = `
+      <div class="section">
+        <div class="section-title">💰 ${label} Portfolio
+          <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Total: $${total.toLocaleString()} · ${tierRows.length} allocations</span>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="label">Budget</div><div class="value">${label}</div><div class="sub">Target allocation</div></div>
+          <div class="stat-card"><div class="label">Deployed</div><div class="value">$${total.toLocaleString()}</div><div class="sub">Total cost</div></div>
+          <div class="stat-card"><div class="label">Positions</div><div class="value">${tierRows.length}</div><div class="sub">Allocations</div></div>
+          <div class="stat-card"><div class="label">Focus</div><div class="value">${focus}</div><div class="sub">${focusSub}</div></div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Card</th><th>Type</th><th>Cost Each</th><th>Qty</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              ${tierRows.map(r => `<tr>
+                <td style="white-space:normal;min-width:200px">${esc(r.card)}</td>
+                <td>${typeBadge(r.type)}</td>
+                <td>$${r.cost_each}</td>
+                <td>${r.qty}</td>
+                <td>$${r.subtotal}</td>
+              </tr>`).join('')}
+              <tr style="background:#161b22;font-weight:700;border-top:2px solid #30363d;">
+                <td colspan="4" style="text-align:right;color:#c9d1d9;">Total</td>
+                <td style="color:#58a6ff;">$${total.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  });
+}
+
+// ── Import Modal ──────────────────────────────────────────────────
+function openImportModal() {
+  document.getElementById('importModal').style.display = 'flex';
+  document.getElementById('importMsg').style.display = 'none';
+  document.getElementById('importMsg').textContent = '';
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').style.display = 'none';
+  document.getElementById('importJson').value = '';
+}
+
+async function doImport() {
+  const jsonText = document.getElementById('importJson').value.trim();
+  const btn = document.getElementById('importSubmitBtn');
+  const msg = document.getElementById('importMsg');
+
+  if (!jsonText) {
+    msg.style.color = '#f85149';
+    msg.textContent = 'Please paste JSON first.';
+    msg.style.display = 'inline';
+    return;
   }
 
-  function attachSorting() {
-    document.querySelectorAll('table').forEach(table => {
-      const ths = table.querySelectorAll('thead th');
-      ths.forEach((th, i) => {
-        if (th.dataset.sortBound) return;
-        th.dataset.sortBound = '1';
-        let dir = 'desc';
-        th.addEventListener('click', function() {
-          ths.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-          th.classList.add('sort-' + dir);
-          sortTbl(table, i, dir);
-          dir = dir === 'asc' ? 'desc' : 'asc';
-        });
+  let json;
+  try { json = JSON.parse(jsonText); }
+  catch(e) {
+    msg.style.color = '#f85149';
+    msg.textContent = 'Invalid JSON: ' + e.message;
+    msg.style.display = 'inline';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Importing…';
+  msg.style.display = 'none';
+
+  const uid = currentUser.id;
+  const lastUpdated = json.last_updated || '';
+
+  // Build investment_targets rows
+  const itRows = [];
+
+  (json.football_graded_targets || []).forEach(r => itRows.push({
+    user_id: uid, sport: 'football', category: 'graded',
+    rank: r.rank, card: r.card, grade: r.grade,
+    target: r.target, max: r.max, trend: r.trend, vol: r.vol,
+    sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
+    last_updated: lastUpdated
+  }));
+
+  (json.basketball_graded_targets || []).forEach(r => itRows.push({
+    user_id: uid, sport: 'basketball', category: 'graded',
+    rank: r.rank, card: r.card, grade: r.grade,
+    target: r.target, max: r.max, trend: r.trend, vol: r.vol,
+    sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
+    last_updated: lastUpdated
+  }));
+
+  (json.football_raw_targets || []).forEach(r => itRows.push({
+    user_id: uid, sport: 'football', category: 'raw',
+    rank: r.rank, card: r.card,
+    target_raw: r.target_raw, max_raw: r.max_raw, trend: r.trend, vol: r.vol,
+    est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: r.gem_rate,
+    roi: r.roi, sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
+    last_updated: lastUpdated
+  }));
+
+  (json.basketball_raw_targets || []).forEach(r => itRows.push({
+    user_id: uid, sport: 'basketball', category: 'raw',
+    rank: r.rank, card: r.card,
+    target_raw: r.target_raw, max_raw: r.max_raw, trend: r.trend, vol: r.vol,
+    est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: r.gem_rate,
+    roi: r.roi, sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
+    last_updated: lastUpdated
+  }));
+
+  // Build portfolio_targets rows
+  const ptRows = [];
+  const portfolios = json.portfolios || {};
+  for (const [tier, data] of Object.entries(portfolios)) {
+    (data.allocations || []).forEach(a => ptRows.push({
+      user_id: uid, budget_tier: tier,
+      card: a.card, type: a.type,
+      cost_each: a.cost_each, qty: a.qty, subtotal: a.subtotal
+    }));
+  }
+
+  // Delete existing data
+  const [r1, r2] = await Promise.all([
+    sb.from('investment_targets').delete().eq('user_id', uid),
+    sb.from('portfolio_targets').delete().eq('user_id', uid)
+  ]);
+
+  if (r1.error || r2.error) {
+    btn.disabled = false;
+    btn.textContent = 'Import';
+    msg.style.color = '#f85149';
+    msg.textContent = 'Delete error: ' + ((r1.error || r2.error).message);
+    msg.style.display = 'inline';
+    return;
+  }
+
+  // Insert new data
+  const inserts = [];
+  if (itRows.length) inserts.push(sb.from('investment_targets').insert(itRows));
+  if (ptRows.length) inserts.push(sb.from('portfolio_targets').insert(ptRows));
+
+  if (inserts.length) {
+    const results = await Promise.all(inserts);
+    const errResult = results.find(r => r.error);
+    if (errResult) {
+      btn.disabled = false;
+      btn.textContent = 'Import';
+      msg.style.color = '#f85149';
+      msg.textContent = 'Insert error: ' + errResult.error.message;
+      msg.style.display = 'inline';
+      return;
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Import';
+  msg.style.color = '#3fb950';
+  msg.textContent = `✓ Imported ${itRows.length} targets + ${ptRows.length} portfolio allocations`;
+  msg.style.display = 'inline';
+
+  await loadData();
+  setTimeout(() => closeImportModal(), 1800);
+}
+
+// ── Priority Filter ───────────────────────────────────────────────
+function filterPriority(btn) {
+  const bar = btn.closest('.filter-bar');
+  const filter = btn.dataset.filter;
+  bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const tblWrap = bar.nextElementSibling;
+  tblWrap.querySelectorAll('tbody tr').forEach(row => {
+    if (filter === 'all') {
+      row.style.display = '';
+    } else {
+      const priorityCell = row.querySelectorAll('td')[3];
+      const text = (priorityCell ? priorityCell.textContent : '').toLowerCase().trim();
+      row.style.display = text === filter ? '' : 'none';
+    }
+  });
+}
+
+// ── Tab Navigation ────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','watchlist'];
+  const idx = ids.indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+  setTimeout(attachSorting, 50);
+}
+
+function showSub(id) {
+  document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['p1000','p1500','p2000'].indexOf(id);
+  if (idx >= 0) document.querySelectorAll('.sub-tab')[idx].classList.add('active');
+  setTimeout(attachSorting, 50);
+}
+
+// ── Table Sorting ─────────────────────────────────────────────────
+function parseVal(t) {
+  if (!t || t === 'N/A' || t === '—') return null;
+  const n = parseFloat(t.replace(/[~$,%×]/g, '').replace(/,/g, '').trim());
+  return isNaN(n) ? null : n;
+}
+
+function sortTbl(table, col, dir) {
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const at = ((a.querySelectorAll('td')[col] || {}).textContent || '').trim();
+    const bt = ((b.querySelectorAll('td')[col] || {}).textContent || '').trim();
+    const av = parseVal(at), bv = parseVal(bt);
+    if (av === null && bv === null) return at.localeCompare(bt) * (dir === 'asc' ? 1 : -1);
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return (av - bv) * (dir === 'asc' ? 1 : -1);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+function attachSorting() {
+  document.querySelectorAll('table').forEach(table => {
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, i) => {
+      if (th.dataset.sortBound) return;
+      th.dataset.sortBound = '1';
+      let dir = 'desc';
+      th.addEventListener('click', function() {
+        ths.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add('sort-' + dir);
+        sortTbl(table, i, dir);
+        dir = dir === 'asc' ? 'desc' : 'asc';
       });
     });
-  }
+  });
+}
 
-  attachSorting();
+// ── Init ──────────────────────────────────────────────────────────
+checkAuth();
 </script>
 </body>
 </html>
