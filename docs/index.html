@@ -216,9 +216,15 @@
   .calc-empty { font-size: .82rem; color: #9ca3af; text-align: center; padding: 16px 0; }
 
   /* TREND ANALYSIS */
-  .trend-search { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .trend-search { display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; position: relative; }
   .trend-search input { flex: 1; min-width: 260px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 12px; font-size: .85rem; color: #111827; outline: none; transition: border-color .15s; }
   .trend-search input:focus { border-color: #2563eb; background: #fff; }
+  .trend-ac { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.1); z-index: 100; max-height: 220px; overflow-y: auto; display: none; margin-top: 2px; }
+  .trend-ac.open { display: block; }
+  .trend-ac-item { padding: 8px 12px; font-size: .8rem; color: #111827; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
+  .trend-ac-item:last-child { border-bottom: none; }
+  .trend-ac-item:hover, .trend-ac-item.active { background: #eff6ff; color: #1d4ed8; }
+  .trend-ac-none { padding: 8px 12px; font-size: .78rem; color: #9ca3af; }
   .trend-loading { text-align: center; padding: 24px; color: #6b7280; font-size: .82rem; }
   .trend-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #d1d5db; margin-bottom: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
   .trend-signals { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
@@ -460,16 +466,20 @@
         <div>
           <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏈 Football</div>
           <div class="trend-search">
-            <input type="text" id="trend-input-fb" list="trend-datalist-fb" placeholder="e.g. Patrick Mahomes 2017 Prizm…" autocomplete="off" onkeydown="if(event.key==='Enter')runTrendAnalysis('football')" onfocus="loadTrendAutocomplete('football')">
-            <datalist id="trend-datalist-fb"></datalist>
+            <input type="text" id="trend-input-fb" placeholder="e.g. Drake Maye 229 or Mahomes Prizm 2017…" autocomplete="off"
+              oninput="trendAcFilter('football')" onfocus="loadTrendAutocomplete('football');trendAcFilter('football')"
+              onkeydown="trendAcKey(event,'football')" onblur="setTimeout(()=>trendAcClose('football'),150)">
+            <div id="trend-ac-fb" class="trend-ac"></div>
             <button class="btn btn-primary" onclick="runTrendAnalysis('football')">Analyze</button>
           </div>
         </div>
         <div>
           <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏀 Basketball</div>
           <div class="trend-search">
-            <input type="text" id="trend-input-bb" list="trend-datalist-bb" placeholder="e.g. Victor Wembanyama 2023 Prizm…" autocomplete="off" onkeydown="if(event.key==='Enter')runTrendAnalysis('basketball')" onfocus="loadTrendAutocomplete('basketball')">
-            <datalist id="trend-datalist-bb"></datalist>
+            <input type="text" id="trend-input-bb" placeholder="e.g. Wembanyama 136 or Ant Edwards Prizm…" autocomplete="off"
+              oninput="trendAcFilter('basketball')" onfocus="loadTrendAutocomplete('basketball');trendAcFilter('basketball')"
+              onkeydown="trendAcKey(event,'basketball')" onblur="setTimeout(()=>trendAcClose('basketball'),150)">
+            <div id="trend-ac-bb" class="trend-ac"></div>
             <button class="btn btn-primary" onclick="runTrendAnalysis('basketball')">Analyze</button>
           </div>
         </div>
@@ -1312,6 +1322,8 @@ const WINDOWS = {
 
 const _csvCache = {};
 const _autocompleteLoaded = { football: false, basketball: false };
+const _cardNames = { football: [], basketball: [] };
+let _acActiveIdx = { football: -1, basketball: -1 };
 
 function parseCSVRow(line) {
   const out = []; let cur = ''; let inQ = false;
@@ -1362,11 +1374,66 @@ async function loadTrendAutocomplete(sport) {
   _autocompleteLoaded[sport] = true;
   try {
     const data = await fetchCSV(WINDOWS[sport][0].file);
-    const names = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
-    const dlId = sport === 'football' ? 'trend-datalist-fb' : 'trend-datalist-bb';
-    const dl = document.getElementById(dlId);
-    dl.innerHTML = names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+    _cardNames[sport] = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
   } catch(e) { /* autocomplete optional */ }
+}
+
+function trendAcFilter(sport) {
+  const inputId = sport === 'football' ? 'trend-input-fb' : 'trend-input-bb';
+  const acId    = sport === 'football' ? 'trend-ac-fb'    : 'trend-ac-bb';
+  const query   = document.getElementById(inputId).value.trim().toLowerCase();
+  const ac      = document.getElementById(acId);
+  _acActiveIdx[sport] = -1;
+
+  if (!query || !_cardNames[sport].length) { ac.classList.remove('open'); return; }
+
+  const tokens  = query.split(/\s+/).filter(Boolean);
+  const matches = _cardNames[sport]
+    .filter(n => tokens.every(t => n.toLowerCase().includes(t)))
+    .slice(0, 30);
+
+  if (!matches.length) {
+    ac.innerHTML = `<div class="trend-ac-none">No matches</div>`;
+  } else {
+    ac.innerHTML = matches.map((n, i) =>
+      `<div class="trend-ac-item" data-val="${esc(n)}" onmousedown="trendAcSelect('${sport}',this)">${esc(n)}</div>`
+    ).join('');
+  }
+  ac.classList.add('open');
+}
+
+function trendAcSelect(sport, el) {
+  const inputId = sport === 'football' ? 'trend-input-fb' : 'trend-input-bb';
+  document.getElementById(inputId).value = el.dataset.val;
+  trendAcClose(sport);
+  runTrendAnalysis(sport);
+}
+
+function trendAcClose(sport) {
+  const acId = sport === 'football' ? 'trend-ac-fb' : 'trend-ac-bb';
+  document.getElementById(acId).classList.remove('open');
+  _acActiveIdx[sport] = -1;
+}
+
+function trendAcKey(e, sport) {
+  const acId = sport === 'football' ? 'trend-ac-fb' : 'trend-ac-bb';
+  const ac   = document.getElementById(acId);
+  const items = ac.querySelectorAll('.trend-ac-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    _acActiveIdx[sport] = Math.min(_acActiveIdx[sport] + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('active', i === _acActiveIdx[sport]));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    _acActiveIdx[sport] = Math.max(_acActiveIdx[sport] - 1, -1);
+    items.forEach((el, i) => el.classList.toggle('active', i === _acActiveIdx[sport]));
+  } else if (e.key === 'Enter') {
+    const active = ac.querySelector('.trend-ac-item.active');
+    if (active) { e.preventDefault(); trendAcSelect(sport, active); }
+    else runTrendAnalysis(sport);
+  } else if (e.key === 'Escape') {
+    trendAcClose(sport);
+  }
 }
 
 async function runTrendAnalysis(sport) {
