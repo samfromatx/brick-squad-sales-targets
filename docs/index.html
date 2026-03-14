@@ -215,6 +215,29 @@
   .calc-overall .co-rec { font-size: .9rem; font-weight: 600; color: #1e40af; line-height: 1.5; }
   .calc-empty { font-size: .82rem; color: #9ca3af; text-align: center; padding: 16px 0; }
 
+  /* TREND ANALYSIS */
+  .trend-search { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .trend-search input { flex: 1; min-width: 260px; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 12px; font-size: .85rem; color: #111827; outline: none; transition: border-color .15s; }
+  .trend-search input:focus { border-color: #2563eb; background: #fff; }
+  .trend-loading { text-align: center; padding: 24px; color: #6b7280; font-size: .82rem; }
+  .trend-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #d1d5db; margin-bottom: 16px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .trend-signals { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .trend-signal { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; background: #fff; }
+  .trend-signal .ts-label { font-size: .68rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .trend-signal .ts-value { font-size: 1.2rem; font-weight: 700; color: #111827; margin-bottom: 3px; }
+  .trend-signal .ts-note  { font-size: .73rem; color: #6b7280; line-height: 1.4; }
+  .trend-signal.ts-green { border-top: 3px solid #22c55e; }
+  .trend-signal.ts-red   { border-top: 3px solid #ef4444; }
+  .trend-signal.ts-amber { border-top: 3px solid #f59e0b; }
+  .trend-signal.ts-gray  { border-top: 3px solid #d1d5db; }
+  .trend-rec { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px; margin-top: 4px; }
+  .trend-rec .tr-label { font-size: .7rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .trend-rec .tr-text  { font-size: .9rem; font-weight: 600; color: #1e40af; line-height: 1.5; }
+  .trend-card-name { font-size: .8rem; color: #6b7280; margin-bottom: 14px; font-style: italic; }
+  .ratio-up   { color: #16a34a; font-weight: 600; }
+  .ratio-down { color: #dc2626; font-weight: 600; }
+  .ratio-flat { color: #6b7280; }
+
   @media (max-width: 600px) {
     .callout { grid-template-columns: 1fr; }
     .sport-compare { grid-template-columns: 1fr; }
@@ -426,6 +449,22 @@
         <p><strong>Why Football = PSA 9, Basketball = PSA 10:</strong> Football Prizm cards tend to have lower gem rates, so PSA 10s carry a bigger premium that's harder to justify at most price points. Basketball Prizm gems are more liquid and the PSA 10 market is deeper — PSA 10 is the market standard.</p>
         <p style="margin-top:8px;"><strong>Watch:</strong> For rising star rookies, raw prices can compress fast — the window to grade profitably closes quickly as raw prices chase the PSA 9 comp.</p>
       </div>
+    </div>
+
+    <!-- TREND ANALYSIS -->
+    <div class="section">
+      <div class="section-title">📈 Trend Analysis <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Historical Sales Data</span></div>
+      <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/365-day windows — ratio expansion, velocity, and a buy signal.</p>
+
+      <div class="trend-search">
+        <input type="text" id="trend-input" list="trend-datalist" placeholder="e.g. Victor Wembanyama 2023 Prizm #136 Base" autocomplete="off" onkeydown="if(event.key==='Enter')runTrendAnalysis()" onfocus="loadTrendAutocomplete()">
+        <datalist id="trend-datalist"></datalist>
+        <button class="btn btn-primary" onclick="runTrendAnalysis()">Analyze</button>
+      </div>
+
+      <div id="trend-loading" class="trend-loading" style="display:none;">Loading sales data…</div>
+      <div id="trend-results" style="display:none;"></div>
+      <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Enter a card name above to see historical trend analysis.</div>
     </div>
 
     <!-- GRADE DECISION CALCULATOR -->
@@ -1239,6 +1278,280 @@ function attachSorting() {
 
 // ── Init ──────────────────────────────────────────────────────────
 checkAuth();
+
+// ── Trend Analysis ───────────────────────────────────────────────
+const WINDOWS = [
+  { key: '30',  label: '30d',  file: 'data/top-players-last-30-days.csv'  },
+  { key: '60',  label: '60d',  file: 'data/top-players-last-60-days.csv'  },
+  { key: '90',  label: '90d',  file: 'data/top-players-last-90-days.csv'  },
+  { key: '180', label: '180d', file: 'data/top-players-last-180-days.csv' },
+  { key: '365', label: '365d', file: 'data/top-players-last-365-days.csv' },
+];
+
+const _csvCache = {};
+let _autocompleteLoaded = false;
+
+function parseCSVRow(line) {
+  const out = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { out.push(cur.trim()); cur = ''; }
+    else { cur += c; }
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  const headers = parseCSVRow(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCSVRow(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+    return obj;
+  });
+}
+
+function parsePrice(str) {
+  if (!str) return null;
+  const n = parseFloat(str.replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+function parseNum(str) {
+  if (!str) return null;
+  const n = parseFloat(str.replace(/[^0-9.\-]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+async function fetchCSV(file) {
+  if (_csvCache[file]) return _csvCache[file];
+  const res = await fetch(file);
+  const text = await res.text();
+  const data = parseCSV(text);
+  _csvCache[file] = data;
+  return data;
+}
+
+async function loadTrendAutocomplete() {
+  if (_autocompleteLoaded) return;
+  _autocompleteLoaded = true;
+  try {
+    const data = await fetchCSV(WINDOWS[0].file);
+    const names = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
+    const dl = document.getElementById('trend-datalist');
+    dl.innerHTML = names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
+  } catch(e) { /* autocomplete optional */ }
+}
+
+async function runTrendAnalysis() {
+  const query = document.getElementById('trend-input').value.trim();
+  if (!query) return;
+
+  const loadEl    = document.getElementById('trend-loading');
+  const resultsEl = document.getElementById('trend-results');
+  const emptyEl   = document.getElementById('trend-empty');
+
+  loadEl.style.display = 'block';
+  resultsEl.style.display = 'none';
+  emptyEl.style.display = 'none';
+
+  try {
+    // Fetch all windows in parallel
+    const allData = await Promise.all(WINDOWS.map(w => fetchCSV(w.file)));
+
+    // For each window, find PSA 9, PSA 10, and Raw rows for this card
+    const windowRows = WINDOWS.map((w, i) => {
+      const rows = allData[i].filter(r => r['Card'] && r['Card'].toLowerCase() === query.toLowerCase());
+      return {
+        label: w.label,
+        psa9:  rows.find(r => r['Grade'] === 'PSA 9'),
+        psa10: rows.find(r => r['Grade'] === 'PSA 10'),
+        raw:   rows.find(r => r['Grade'] === 'Raw'),
+      };
+    });
+
+    // Check if we found anything
+    const found = windowRows.some(w => w.psa9 || w.psa10 || w.raw);
+    if (!found) {
+      // Try case-insensitive partial match suggestion
+      const data30 = allData[0];
+      const suggestions = [...new Set(data30.map(r => r['Card']).filter(Boolean))]
+        .filter(n => n.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 5);
+      loadEl.style.display = 'none';
+      emptyEl.textContent = suggestions.length
+        ? `No exact match. Did you mean: ${suggestions.join(' | ')}?`
+        : `No data found for "${query}". Check the card name and try again.`;
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    // Build ratio series (only windows where both PSA 9 and PSA 10 exist)
+    const ratioSeries = windowRows.map(w => {
+      const p9  = parsePrice(w.psa9?.['Avg']);
+      const p10 = parsePrice(w.psa10?.['Avg']);
+      return { label: w.label, p9, p10, ratio: (p9 && p10) ? p10 / p9 : null };
+    });
+
+    // Trend: compare most recent (30d) ratio vs oldest available ratio
+    const withRatio = ratioSeries.filter(r => r.ratio !== null);
+    const newest = withRatio[0];
+    const oldest = withRatio[withRatio.length - 1];
+    let ratioTrend = 'stable', ratioTrendLabel = 'Stable';
+    if (withRatio.length >= 2 && newest && oldest && newest !== oldest) {
+      const delta = newest.ratio - oldest.ratio;
+      if (delta > 0.2)       { ratioTrend = 'expanding'; ratioTrendLabel = '↑ Expanding'; }
+      else if (delta < -0.2) { ratioTrend = 'compressing'; ratioTrendLabel = '↓ Compressing'; }
+      else                   { ratioTrend = 'stable'; ratioTrendLabel = '→ Stable'; }
+    }
+
+    // Velocity: PSA 9 vs PSA 10 sales in 30d
+    const v9  = parseNum(windowRows[0].psa9?.['# of Sales'])  || 0;
+    const v10 = parseNum(windowRows[0].psa10?.['# of Sales']) || 0;
+    const liquidityOk = v10 >= 5; // at least 5 sales/month = liquid enough
+
+    // Player momentum: price trend in 30d window
+    const trend9  = parseNum(windowRows[0].psa9?.['Price Change %']);
+    const trend10 = parseNum(windowRows[0].psa10?.['Price Change %']);
+    const playerHot = (trend9 !== null && trend9 > 10) || (trend10 !== null && trend10 > 10);
+    const playerCooling = (trend9 !== null && trend9 < -10) || (trend10 !== null && trend10 < -10);
+
+    // Raw price from 30d
+    const rawAvg = parsePrice(windowRows[0].raw?.['Avg']);
+    const p9_30  = parsePrice(windowRows[0].psa9?.['Avg']);
+    const p10_30 = parsePrice(windowRows[0].psa10?.['Avg']);
+
+    // ── Recommendation logic ──────────────────────────────────────
+    let rec = '', recColor = 'blue';
+    if (ratioTrend === 'expanding' && !playerCooling) {
+      if (v10 < 5) {
+        rec = '⚠️ Ratio expanding but PSA 10 is illiquid (<5 sales/mo) — buy PSA 9 for faster flip.';
+        recColor = 'amber';
+      } else {
+        rec = '💎 Buy / chase PSA 10 — ratio is expanding and player momentum supports it.';
+        recColor = 'green';
+      }
+    } else if (ratioTrend === 'expanding' && playerCooling) {
+      rec = '⚖️ Ratio expanding but player is cooling — hold off. Wait for momentum to recover.';
+      recColor = 'amber';
+    } else if (ratioTrend === 'compressing' && playerHot) {
+      rec = '🏅 Buy the PSA 9 — ratio compressing even as player heats up. Value hunters prefer 9s here.';
+      recColor = 'green';
+    } else if (ratioTrend === 'compressing' && playerCooling) {
+      rec = '🚫 Avoid both — ratio compressing AND player cooling. Wait for a better entry point.';
+      recColor = 'red';
+    } else if (ratioTrend === 'compressing') {
+      rec = '🏅 Buy the PSA 9 — ratio compressing, market prefers 9s at this price point.';
+      recColor = 'green';
+    } else {
+      // Stable ratio — fall back to multiplier logic
+      if (newest && newest.ratio < 2) {
+        rec = '🏅 Stable ratio under 2× — PSA 9 is the clear value play.';
+        recColor = 'green';
+      } else if (newest && newest.ratio >= 2 && newest.ratio < 3) {
+        rec = '🏅 Stable ratio 2–3× — PSA 9 still favored. Check gem rate before upgrading.';
+        recColor = 'green';
+      } else if (newest && newest.ratio >= 3) {
+        rec = '⚖️ Stable ratio above 3× — situational. Use gem rate and player trajectory to decide.';
+        recColor = 'amber';
+      } else {
+        rec = '⚖️ Insufficient data to give a clear signal across windows.';
+        recColor = 'amber';
+      }
+    }
+
+    // ── Build HTML ────────────────────────────────────────────────
+    // Price table
+    const tableRows = ratioSeries.map(r => {
+      const ratioClass = r.ratio === null ? 'ratio-flat'
+        : (r === withRatio[0] && ratioTrend === 'expanding') ? 'ratio-up'
+        : (r === withRatio[0] && ratioTrend === 'compressing') ? 'ratio-down'
+        : '';
+      return `<tr>
+        <td><strong>${r.label}</strong></td>
+        <td>${r.p9  ? '$' + r.p9.toFixed(2)  : '—'}</td>
+        <td>${r.p10 ? '$' + r.p10.toFixed(2) : '—'}</td>
+        <td class="${ratioClass}">${r.ratio ? r.ratio.toFixed(2) + '×' : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    // Raw row if available
+    const rawRow = windowRows[0].raw ? `
+      <tr><td colspan="4" style="padding:6px 12px;font-size:.72rem;color:#9ca3af;">
+        Raw (30d avg): <strong>$${(parsePrice(windowRows[0].raw['Avg'])||0).toFixed(2)}</strong>
+        &nbsp;·&nbsp; ${windowRows[0].raw['# of Sales']} sales
+        &nbsp;·&nbsp; Trend: ${windowRows[0].raw['Price Change %']}%
+      </td></tr>` : '';
+
+    // Trend direction indicator
+    const trendIcon = ratioTrend === 'expanding' ? '↑' : ratioTrend === 'compressing' ? '↓' : '→';
+    const trendClass = ratioTrend === 'expanding' ? 'ts-green' : ratioTrend === 'compressing' ? 'ts-red' : 'ts-gray';
+
+    // Velocity signal
+    const velClass = liquidityOk ? 'ts-green' : 'ts-amber';
+    const velNote = v10 === 0 && v9 === 0 ? 'No 30d data' : `PSA 9: ${v9} sales · PSA 10: ${v10} sales (30d)`;
+
+    // Price momentum
+    const momClass = playerHot ? 'ts-green' : playerCooling ? 'ts-red' : 'ts-gray';
+    const momVal  = trend10 !== null ? (trend10 >= 0 ? '+' : '') + trend10.toFixed(1) + '%'
+                  : trend9 !== null  ? (trend9  >= 0 ? '+' : '') + trend9.toFixed(1)  + '%'
+                  : '—';
+    const momNote = playerHot ? 'Player heating up' : playerCooling ? 'Player cooling' : '30d price momentum';
+
+    const recBg = recColor === 'green' ? '#f0fdf4' : recColor === 'red' ? '#fef2f2' : recColor === 'amber' ? '#fffbeb' : '#eff6ff';
+    const recBorder = recColor === 'green' ? '#86efac' : recColor === 'red' ? '#fca5a5' : recColor === 'amber' ? '#fcd34d' : '#bfdbfe';
+    const recTextColor = recColor === 'green' ? '#14532d' : recColor === 'red' ? '#991b1b' : recColor === 'amber' ? '#78350f' : '#1e40af';
+
+    resultsEl.innerHTML = `
+      <div class="trend-card-name">${esc(query)}</div>
+
+      <div class="trend-table-wrap">
+        <table>
+          <thead><tr><th>Window</th><th>PSA 9 Avg</th><th>PSA 10 Avg</th><th>10/9 Ratio</th></tr></thead>
+          <tbody>${tableRows}${rawRow}</tbody>
+        </table>
+      </div>
+
+      <div class="trend-signals">
+        <div class="trend-signal ${trendClass}">
+          <div class="ts-label">Ratio Trend</div>
+          <div class="ts-value">${trendIcon} ${ratioTrendLabel}</div>
+          <div class="ts-note">${withRatio.length >= 2 ? `${oldest.label}: ${oldest.ratio.toFixed(2)}× → ${newest.label}: ${newest.ratio.toFixed(2)}×` : 'Insufficient data across windows'}</div>
+        </div>
+        <div class="trend-signal ${velClass}">
+          <div class="ts-label">Liquidity (30d)</div>
+          <div class="ts-value">${v10 > 0 ? v10 + ' PSA 10s' : '—'}</div>
+          <div class="ts-note">${velNote}</div>
+        </div>
+        <div class="trend-signal ${momClass}">
+          <div class="ts-label">30d Price Trend</div>
+          <div class="ts-value">${momVal}</div>
+          <div class="ts-note">${momNote}</div>
+        </div>
+        ${newest && newest.ratio ? `<div class="trend-signal ts-gray">
+          <div class="ts-label">Current Ratio</div>
+          <div class="ts-value">${newest.ratio.toFixed(2)}×</div>
+          <div class="ts-note">PSA 10 vs PSA 9 (30d avg)</div>
+        </div>` : ''}
+      </div>
+
+      <div class="trend-rec" style="background:${recBg};border-color:${recBorder};">
+        <div class="tr-label" style="color:#6b7280;">Trend Signal Recommendation</div>
+        <div class="tr-text" style="color:${recTextColor};">${rec}</div>
+      </div>`;
+
+    loadEl.style.display = 'none';
+    resultsEl.style.display = 'block';
+
+  } catch(e) {
+    loadEl.style.display = 'none';
+    emptyEl.textContent = 'Error loading data: ' + e.message;
+    emptyEl.style.display = 'block';
+  }
+}
 
 // ── Grade Decision Calculator ─────────────────────────────────────
 function runCalc() {

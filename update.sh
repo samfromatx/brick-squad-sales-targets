@@ -11,5 +11,10 @@ source .venv/bin/activate
 python3 generate_report.py --csv "$CSV" --output docs/index.html
 
 echo ""
+echo "📂 Copying CSV data to docs/data/ for browser access…"
+mkdir -p docs/data
+cp data/*.csv docs/data/
+
+echo ""
 echo "✅ Done. Push to update the live page:"
 echo "   git add -A && git commit -m \"Update report $(date +%Y-%m-%d)\" && git push"
