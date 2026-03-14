@@ -454,17 +454,30 @@
     <!-- TREND ANALYSIS -->
     <div class="section">
       <div class="section-title">📈 Trend Analysis <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Historical Sales Data</span></div>
-      <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/365-day windows — ratio expansion, velocity, and a buy signal.</p>
+      <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/360-day windows — ratio expansion, velocity, and a buy signal.</p>
 
-      <div class="trend-search">
-        <input type="text" id="trend-input" list="trend-datalist" placeholder="e.g. Victor Wembanyama 2023 Prizm #136 Base" autocomplete="off" onkeydown="if(event.key==='Enter')runTrendAnalysis()" onfocus="loadTrendAutocomplete()">
-        <datalist id="trend-datalist"></datalist>
-        <button class="btn btn-primary" onclick="runTrendAnalysis()">Analyze</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏈 Football</div>
+          <div class="trend-search">
+            <input type="text" id="trend-input-fb" list="trend-datalist-fb" placeholder="e.g. Patrick Mahomes 2017 Prizm…" autocomplete="off" onkeydown="if(event.key==='Enter')runTrendAnalysis('football')" onfocus="loadTrendAutocomplete('football')">
+            <datalist id="trend-datalist-fb"></datalist>
+            <button class="btn btn-primary" onclick="runTrendAnalysis('football')">Analyze</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏀 Basketball</div>
+          <div class="trend-search">
+            <input type="text" id="trend-input-bb" list="trend-datalist-bb" placeholder="e.g. Victor Wembanyama 2023 Prizm…" autocomplete="off" onkeydown="if(event.key==='Enter')runTrendAnalysis('basketball')" onfocus="loadTrendAutocomplete('basketball')">
+            <datalist id="trend-datalist-bb"></datalist>
+            <button class="btn btn-primary" onclick="runTrendAnalysis('basketball')">Analyze</button>
+          </div>
+        </div>
       </div>
 
       <div id="trend-loading" class="trend-loading" style="display:none;">Loading sales data…</div>
       <div id="trend-results" style="display:none;"></div>
-      <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Enter a card name above to see historical trend analysis.</div>
+      <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Search a card above to see historical trend analysis.</div>
     </div>
 
     <!-- GRADE DECISION CALCULATOR -->
@@ -1280,16 +1293,25 @@ function attachSorting() {
 checkAuth();
 
 // ── Trend Analysis ───────────────────────────────────────────────
-const WINDOWS = [
-  { key: '30',  label: '30d',  file: 'data/top-players-last-30-days.csv'  },
-  { key: '60',  label: '60d',  file: 'data/top-players-last-60-days.csv'  },
-  { key: '90',  label: '90d',  file: 'data/top-players-last-90-days.csv'  },
-  { key: '180', label: '180d', file: 'data/top-players-last-180-days.csv' },
-  { key: '365', label: '365d', file: 'data/top-players-last-365-days.csv' },
-];
+const WINDOWS = {
+  football: [
+    { key: '30',  label: '30d',  file: 'data/football-all-players-last-30-days.csv'  },
+    { key: '60',  label: '60d',  file: 'data/football-all-players-last-60-days.csv'  },
+    { key: '90',  label: '90d',  file: 'data/football-all-players-last-90-days.csv'  },
+    { key: '180', label: '180d', file: 'data/football-all-players-last-180-days.csv' },
+    { key: '360', label: '360d', file: 'data/football-all-players-last-360-days.csv' },
+  ],
+  basketball: [
+    { key: '30',  label: '30d',  file: 'data/basketball-all-players-last-30-days.csv'  },
+    { key: '60',  label: '60d',  file: 'data/basketball-all-players-last-60-days.csv'  },
+    { key: '90',  label: '90d',  file: 'data/basketball-all-players-last-90-days.csv'  },
+    { key: '180', label: '180d', file: 'data/basketball-all-players-last-180-days.csv' },
+    { key: '360', label: '360d', file: 'data/basketball-all-players-last-360-days.csv' },
+  ],
+};
 
 const _csvCache = {};
-let _autocompleteLoaded = false;
+const _autocompleteLoaded = { football: false, basketball: false };
 
 function parseCSVRow(line) {
   const out = []; let cur = ''; let inQ = false;
@@ -1335,19 +1357,21 @@ async function fetchCSV(file) {
   return data;
 }
 
-async function loadTrendAutocomplete() {
-  if (_autocompleteLoaded) return;
-  _autocompleteLoaded = true;
+async function loadTrendAutocomplete(sport) {
+  if (_autocompleteLoaded[sport]) return;
+  _autocompleteLoaded[sport] = true;
   try {
-    const data = await fetchCSV(WINDOWS[0].file);
+    const data = await fetchCSV(WINDOWS[sport][0].file);
     const names = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
-    const dl = document.getElementById('trend-datalist');
+    const dlId = sport === 'football' ? 'trend-datalist-fb' : 'trend-datalist-bb';
+    const dl = document.getElementById(dlId);
     dl.innerHTML = names.map(n => `<option value="${n.replace(/"/g,'&quot;')}">`).join('');
   } catch(e) { /* autocomplete optional */ }
 }
 
-async function runTrendAnalysis() {
-  const query = document.getElementById('trend-input').value.trim();
+async function runTrendAnalysis(sport) {
+  const inputId = sport === 'football' ? 'trend-input-fb' : 'trend-input-bb';
+  const query = document.getElementById(inputId).value.trim();
   if (!query) return;
 
   const loadEl    = document.getElementById('trend-loading');
@@ -1360,10 +1384,11 @@ async function runTrendAnalysis() {
 
   try {
     // Fetch all windows in parallel
-    const allData = await Promise.all(WINDOWS.map(w => fetchCSV(w.file)));
+    const windows = WINDOWS[sport];
+    const allData = await Promise.all(windows.map(w => fetchCSV(w.file)));
 
     // For each window, find PSA 9, PSA 10, and Raw rows for this card
-    const windowRows = WINDOWS.map((w, i) => {
+    const windowRows = windows.map((w, i) => {
       const rows = allData[i].filter(r => r['Card'] && r['Card'].toLowerCase() === query.toLowerCase());
       return {
         label: w.label,
