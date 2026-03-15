@@ -291,8 +291,8 @@
           <th onclick="sortTable(8)">Profit</th>
           <th onclick="sortTable(9)">ROI</th>
           <th onclick="sortTable(10)">Date</th>
-          <th>Notes</th>
           <th></th>
+          <th>Notes</th>
         </tr>
       </thead>
       <tbody id="portfolioBody">
@@ -699,11 +699,11 @@ function renderTable() {
       <td class="${profitCls}">${profit !== null ? (profit >= 0 ? '+' : '') + fmt(profit) : '—'}</td>
       <td class="${profitCls}">${roi !== null ? (roi >= 0 ? '+' : '') + roi + '%' : '—'}</td>
       <td>${e.date || '—'}</td>
-      <td style="color:#6b7280;font-size:.75rem;">${esc(e.notes)}</td>
       <td style="white-space:nowrap;">
         <button class="btn-edit btn-sm" onclick="editEntry(${e.id})">✏️</button>
         <button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})" style="margin-left:4px;">✕</button>
       </td>
+      <td style="color:#6b7280;font-size:.75rem;">${esc(e.notes)}</td>
     </tr>`;
   }).join('');
 }
