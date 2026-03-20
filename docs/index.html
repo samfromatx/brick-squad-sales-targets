@@ -799,7 +799,7 @@ async function loadData() {
   const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }, { data: ebayRows, error: e3 }] = await Promise.all([
     sb.from('investment_targets').select('*').eq('user_id', currentUser.id).order('rank'),
     sb.from('portfolio_targets').select('*').eq('user_id', currentUser.id).order('budget_tier'),
-    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('sport').order('category')
+    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('rank', { nullsFirst: false }).order('sport').order('category')
   ]);
 
   if (e1) console.error('Load targets error:', e1);
@@ -1129,21 +1129,32 @@ function renderEbaySearches(rows) {
   ];
 
   el.innerHTML = sections.map(({ sport, category, label }) => {
-    const sRows = rows.filter(r => r.sport === sport && r.category === category);
+    let sRows = rows.filter(r => r.sport === sport && r.category === category);
     if (!sRows.length) return '';
+    // sort by rank (nulls last)
+    sRows = sRows.slice().sort((a, b) => {
+      if (a.rank == null && b.rank == null) return 0;
+      if (a.rank == null) return 1;
+      if (b.rank == null) return -1;
+      return a.rank - b.rank;
+    });
     return `
       <div class="section">
         <div class="section-title">${label}</div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Search Term</th><th>Active</th><th>Sold</th></tr></thead>
+            <thead><tr><th>#</th><th>Card</th><th>Copy</th><th>Active</th><th>Sold</th></tr></thead>
             <tbody>
               ${sRows.map(r => {
                 const base = 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(r.search_text);
                 const activeUrl = base;
                 const soldUrl = base + '&LH_Sold=1&LH_Complete=1';
+                const cardLabel = r.card ? esc(r.card) : `<span style="color:#8b949e;font-family:monospace;font-size:.8rem">${esc(r.search_text)}</span>`;
+                const rankLabel = r.rank != null ? r.rank : '—';
                 return `<tr>
-                  <td style="white-space:normal;min-width:240px;font-family:monospace;font-size:.85rem">${esc(r.search_text)}</td>
+                  <td style="color:#8b949e;text-align:center;width:36px">${rankLabel}</td>
+                  <td style="white-space:normal;min-width:220px">${cardLabel}</td>
+                  <td style="text-align:center;width:64px"><button onclick="navigator.clipboard.writeText(${JSON.stringify(r.search_text)}).then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copy'},1200)})" style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8rem">Copy</button></td>
                   <td><a href="${activeUrl}" target="_blank" rel="noopener" style="color:#58a6ff;text-decoration:none;">Active ↗</a></td>
                   <td><a href="${soldUrl}" target="_blank" rel="noopener" style="color:#8b949e;text-decoration:none;">Sold ↗</a></td>
                 </tr>`;
@@ -1280,8 +1291,21 @@ async function doImport() {
       { key: 'basketball_raw',    sport: 'basketball', category: 'raw' },
     ];
     ebayMap.forEach(({ key, sport, category }) => {
-      (ebaySearches[key] || []).forEach(searchText => {
-        esRows.push({ user_id: uid, sport, category, search_text: searchText });
+      (ebaySearches[key] || []).forEach(item => {
+        if (typeof item === 'string') {
+          // old format: plain search string
+          esRows.push({ user_id: uid, sport, category, search_text: item });
+        } else {
+          // new format: { rank, card, search }
+          esRows.push({
+            user_id: uid,
+            sport,
+            category,
+            search_text: item.search || '',
+            card: item.card || null,
+            rank: item.rank != null ? item.rank : null,
+          });
+        }
       });
     });
   }
