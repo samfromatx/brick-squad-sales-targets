@@ -260,6 +260,10 @@
   /* Prevent any element from causing page-level horizontal scroll */
   body, #mainContent { overflow-x: hidden; }
 
+  /* TAB SELECT (mobile dropdown nav) */
+  .tab-select-wrap { display: none; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 10px 16px; }
+  .tab-select { width: 100%; padding: 9px 12px; font-size: .88rem; font-weight: 500; color: #111827; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 8px; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+
   @media (max-width: 768px) {
     /* Header */
     .header { padding: 14px 16px 10px; }
@@ -269,10 +273,7 @@
     .nav-user { width: 100%; margin-left: 0; margin-top: 4px; }
     .nav-email { font-size: .7rem; }
 
-    /* Tabs — horizontal scroll instead of wrapping */
-    .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 12px; scrollbar-width: none; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab { padding: 10px 12px; font-size: .78rem; flex-shrink: 0; }
+    /* Tabs still visible at 768px; dropdown handled separately below */
 
     /* Content */
     .content { padding: 12px; }
@@ -305,6 +306,12 @@
     /* Modal */
     .modal-box { padding: 16px; margin: 10px; }
     .modal-box textarea { height: 160px; }
+  }
+
+  /* Tab bar → dropdown only on phone-sized screens */
+  @media (max-width: 600px) {
+    .tabs { display: none; }
+    .tab-select-wrap { display: block; }
   }
 </style>
 </head>
@@ -375,6 +382,17 @@
   <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
   <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
   <div class="tab" onclick="showTab('ebay-searches')">🔍 eBay Searches</div>
+</div>
+<div class="tab-select-wrap">
+  <select id="tabSelect" class="tab-select" onchange="showTab(this.value)">
+    <option value="overview">📊 Overview</option>
+    <option value="football-targets">🏈 Football Targets</option>
+    <option value="basketball-targets">🏀 Basketball Targets</option>
+    <option value="raw-grade">📦 Raw→Grade</option>
+    <option value="portfolios">💰 Portfolios</option>
+    <option value="card-show">🛒 Card Show</option>
+    <option value="ebay-searches">🔍 eBay Searches</option>
+  </select>
 </div>
 
 <div class="content">
@@ -1294,6 +1312,8 @@ function showTab(id) {
   const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','ebay-searches'];
   const idx = ids.indexOf(id);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
+  const sel = document.getElementById('tabSelect');
+  if (sel) sel.value = id;
   setTimeout(attachSorting, 50);
 }
 
