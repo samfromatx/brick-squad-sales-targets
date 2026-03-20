@@ -1755,12 +1755,16 @@ async function runTrendAnalysis(sport) {
       : (trend === 'downtrend' || total_90d < 5) ? 'Medium' : 'High';
 
     // ── Final verdict ─────────────────────────────────────────────
+    // "Pass" only if there's genuinely no slab to buy.
+    // When grading doesn't pencil, fall back to buying the PSA 9 slab.
     let verdict, verdictColor;
     if (raw_ratio !== null && raw_ratio > 0.60) {
+      // Raw too expensive to grade — buy the slab
       verdict = 'Buy PSA 9'; verdictColor = 'blue';
     } else if (grade_verdict === 'Buy raw & grade') {
       verdict = 'Buy raw & grade'; verdictColor = 'green';
-    } else if (net_ev === null && psa9_anchor) {
+    } else if (psa9_anchor) {
+      // Grading doesn't pencil (EV below floor or no raw data) — buy the slab instead
       verdict = 'Buy PSA 9'; verdictColor = 'blue';
     } else {
       verdict = 'Pass'; verdictColor = 'gray';
