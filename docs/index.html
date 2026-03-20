@@ -1552,10 +1552,16 @@ async function fetchGemRate(cardName, sport) {
 async function loadTrendAutocomplete(sport) {
   if (_autocompleteLoaded[sport]) return;
   _autocompleteLoaded[sport] = true;
-  try {
-    const data = await fetchCSV(WINDOWS[sport][0].file);
-    _cardNames[sport] = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
-  } catch(e) { /* autocomplete optional */ }
+  // Try each window in order until one loads (7d may be missing locally)
+  for (const w of WINDOWS[sport]) {
+    try {
+      const data = await fetchCSV(w.file);
+      if (data.length > 0) {
+        _cardNames[sport] = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
+        break;
+      }
+    } catch(e) { /* try next window */ }
+  }
 }
 
 function trendAcFilter(sport) {
