@@ -320,6 +320,7 @@
   <div class="tab" onclick="showTab('raw-grade')">📦 Raw→Grade</div>
   <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
   <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
+  <div class="tab" onclick="showTab('ebay-searches')">🔍 eBay Searches</div>
   <div class="tab" onclick="showTab('watchlist')">📈 Watchlist</div>
 </div>
 
@@ -558,6 +559,10 @@
   </div>
 
   <!-- ===== WATCHLIST (static) ===== -->
+  <div id="ebay-searches" class="tab-content">
+    <div id="ebay-searches-container"><p class="empty-msg">Loading…</p></div>
+  </div>
+
   <div id="watchlist" class="tab-content">
 
     <div class="section">
@@ -770,16 +775,19 @@ async function showApp() {
 
 // ── Data Layer ────────────────────────────────────────────────────
 async function loadData() {
-  const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }] = await Promise.all([
+  const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }, { data: ebayRows, error: e3 }] = await Promise.all([
     sb.from('investment_targets').select('*').eq('user_id', currentUser.id).order('rank'),
-    sb.from('portfolio_targets').select('*').eq('user_id', currentUser.id).order('budget_tier')
+    sb.from('portfolio_targets').select('*').eq('user_id', currentUser.id).order('budget_tier'),
+    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('sport').order('category')
   ]);
 
   if (e1) console.error('Load targets error:', e1);
   if (e2) console.error('Load portfolios error:', e2);
+  if (e3) console.error('Load ebay searches error:', e3);
 
   const t = targets || [];
   const p = portfolios || [];
+  const e = ebayRows || [];
 
   // Update "Updated" date from any record
   const anyRec = t[0];
@@ -793,6 +801,7 @@ async function loadData() {
   renderBBRaw(t.filter(r => r.sport === 'basketball' && r.category === 'raw'));
   renderCardShow(t.filter(r => r.category === 'graded'));
   renderPortfolios(p);
+  renderEbaySearches(e);
   attachSorting();
 }
 
@@ -1034,19 +1043,12 @@ function renderCardShow(rows) {
 // ── Render: Portfolios ────────────────────────────────────────────
 function renderPortfolios(rows) {
   const tiers = [
-    { id: 'p1000', key: '1000', label: '$1,000', focus: 'Value',    focusSub: 'High-vol, low-cost entries' },
-    { id: 'p1500', key: '1500', label: '$1,500', focus: 'Balanced', focusSub: 'Raw + graded mix' },
-    { id: 'p2000', key: '2000', label: '$2,000', focus: 'Premium',  focusSub: 'Adds SGA + Flagg exposure' },
+    { id: 'p1000', key: '1000', label: '$1,000' },
+    { id: 'p1500', key: '1500', label: '$1,500' },
+    { id: 'p2000', key: '2000', label: '$2,000' },
   ];
 
-  const typeBadge = (type) => {
-    if (type === 'raw-to-grade')  return '<span class="badge badge-raw">Raw→Grade</span>';
-    if (type === 'graded PSA 9')  return '<span class="badge badge-psa9">Graded PSA 9</span>';
-    if (type === 'graded PSA 10') return '<span class="badge badge-psa10">Graded PSA 10</span>';
-    return `<span class="badge">${esc(type)}</span>`;
-  };
-
-  tiers.forEach(({ id, key, label, focus, focusSub }) => {
+  tiers.forEach(({ id, key, label }) => {
     const el = document.getElementById(id);
     const tierRows = rows.filter(r => r.budget_tier === key);
 
@@ -1055,39 +1057,98 @@ function renderPortfolios(rows) {
       return;
     }
 
-    const total = tierRows.reduce((s, r) => s + (parseFloat(r.subtotal) || 0), 0);
+    const total = tierRows.reduce((s, r) => s + (parseFloat(r.budget) || 0), 0);
+    const description = tierRows[0].description || '';
 
     el.innerHTML = `
       <div class="section">
         <div class="section-title">💰 ${label} Portfolio
-          <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Total: $${total.toLocaleString()} · ${tierRows.length} allocations</span>
+          <span style="font-size:.75rem;color:#8b949e;font-weight:400;">${esc(description)}</span>
         </div>
         <div class="stats-row">
           <div class="stat-card"><div class="label">Budget</div><div class="value">${label}</div><div class="sub">Target allocation</div></div>
-          <div class="stat-card"><div class="label">Deployed</div><div class="value">$${total.toLocaleString()}</div><div class="sub">Total cost</div></div>
+          <div class="stat-card"><div class="label">Allocated</div><div class="value">$${total.toLocaleString()}</div><div class="sub">Sum of budgets</div></div>
           <div class="stat-card"><div class="label">Positions</div><div class="value">${tierRows.length}</div><div class="sub">Allocations</div></div>
-          <div class="stat-card"><div class="label">Focus</div><div class="value">${focus}</div><div class="sub">${focusSub}</div></div>
         </div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Card</th><th>Type</th><th>Cost Each</th><th>Qty</th><th>Subtotal</th></tr></thead>
+            <thead><tr><th>Card</th><th>Budget</th><th>Thesis</th></tr></thead>
             <tbody>
               ${tierRows.map(r => `<tr>
-                <td style="white-space:normal;min-width:200px">${esc(r.card)}</td>
-                <td>${typeBadge(r.type)}</td>
-                <td>$${r.cost_each}</td>
-                <td>${r.qty}</td>
-                <td>$${r.subtotal}</td>
+                <td style="white-space:normal;min-width:220px">${esc(r.card)}</td>
+                <td>$${r.budget}</td>
+                <td style="white-space:normal;color:#8b949e;font-size:.85rem">${esc(r.thesis)}</td>
               </tr>`).join('')}
               <tr style="background:#161b22;font-weight:700;border-top:2px solid #30363d;">
-                <td colspan="4" style="text-align:right;color:#c9d1d9;">Total</td>
+                <td style="text-align:right;color:#c9d1d9;">Total</td>
                 <td style="color:#58a6ff;">$${total.toLocaleString()}</td>
+                <td></td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>`;
   });
+}
+
+// ── Render: eBay Searches ─────────────────────────────────────────
+function renderEbaySearches(rows) {
+  const id = 'ebay-searches-container';
+  const el = document.getElementById(id);
+  if (!rows.length) {
+    el.innerHTML = '<p class="empty-msg">No data. Click ⬆ Import JSON to load eBay searches.</p>';
+    return;
+  }
+
+  const sections = [
+    { sport: 'football',   category: 'graded', label: '🏈 Football — Graded' },
+    { sport: 'football',   category: 'raw',    label: '🏈 Football — Raw' },
+    { sport: 'basketball', category: 'graded', label: '🏀 Basketball — Graded' },
+    { sport: 'basketball', category: 'raw',    label: '🏀 Basketball — Raw' },
+  ];
+
+  el.innerHTML = sections.map(({ sport, category, label }) => {
+    const sRows = rows.filter(r => r.sport === sport && r.category === category);
+    if (!sRows.length) return '';
+    return `
+      <div class="section">
+        <div class="section-title">${label}</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Search Term</th><th>eBay Link</th></tr></thead>
+            <tbody>
+              ${sRows.map(r => {
+                const ebayUrl = 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(r.search_text) + '&LH_Sold=1&LH_Complete=1';
+                return `<tr>
+                  <td style="white-space:normal;min-width:240px;font-family:monospace;font-size:.85rem">${esc(r.search_text)}</td>
+                  <td><a href="${ebayUrl}" target="_blank" rel="noopener" style="color:#58a6ff;text-decoration:none;">View Sold ↗</a></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Import Helpers ────────────────────────────────────────────────
+function parseTrend(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return v;
+  return parseFloat(String(v).replace('%', '')) || 0;
+}
+
+function parseGemRate(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return v;
+  return parseInt(String(v).replace(/[^0-9]/g, ''), 10) || null;
+}
+
+function parseRoi(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return v;
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+  return isNaN(n) ? null : n;
 }
 
 // ── Import Modal ──────────────────────────────────────────────────
@@ -1128,67 +1189,86 @@ async function doImport() {
   msg.style.display = 'none';
 
   const uid = currentUser.id;
-  const lastUpdated = json.last_updated || '';
+  const today = new Date().toISOString().slice(0, 10);
+  const lastUpdated = json.last_updated || today;
 
-  // Build investment_targets rows
+  // Build investment_targets rows (support both old and new key names)
   const itRows = [];
 
-  (json.football_graded_targets || []).forEach(r => itRows.push({
+  (json.football_graded || json.football_graded_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'football', category: 'graded',
     rank: r.rank, card: r.card, grade: r.grade,
-    target: r.target, max: r.max, trend: r.trend, vol: r.vol,
+    target: r.target, max: r.max, trend: parseTrend(r.trend), vol: r.vol,
     sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
   }));
 
-  (json.basketball_graded_targets || []).forEach(r => itRows.push({
+  (json.basketball_graded || json.basketball_graded_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'basketball', category: 'graded',
     rank: r.rank, card: r.card, grade: r.grade,
-    target: r.target, max: r.max, trend: r.trend, vol: r.vol,
+    target: r.target, max: r.max, trend: parseTrend(r.trend), vol: r.vol,
     sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
   }));
 
-  (json.football_raw_targets || []).forEach(r => itRows.push({
+  (json.football_raw_to_grade || json.football_raw_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'football', category: 'raw',
     rank: r.rank, card: r.card,
-    target_raw: r.target_raw, max_raw: r.max_raw, trend: r.trend, vol: r.vol,
-    est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: r.gem_rate,
-    roi: r.roi, sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
+    target_raw: r.target_raw, max_raw: r.max_raw, trend: parseTrend(r.trend), vol: r.vol,
+    est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: parseGemRate(r.gem_rate),
+    roi: parseRoi(r.roi), sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
   }));
 
-  (json.basketball_raw_targets || []).forEach(r => itRows.push({
+  (json.basketball_raw_to_grade || json.basketball_raw_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'basketball', category: 'raw',
     rank: r.rank, card: r.card,
-    target_raw: r.target_raw, max_raw: r.max_raw, trend: r.trend, vol: r.vol,
-    est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: r.gem_rate,
-    roi: r.roi, sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
+    target_raw: r.target_raw, max_raw: r.max_raw, trend: parseTrend(r.trend), vol: r.vol,
+    est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: parseGemRate(r.gem_rate),
+    roi: parseRoi(r.roi), sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
   }));
 
-  // Build portfolio_targets rows
+  // Build portfolio_targets rows (new format: budget + thesis)
   const ptRows = [];
   const portfolios = json.portfolios || {};
   for (const [tier, data] of Object.entries(portfolios)) {
     (data.allocations || []).forEach(a => ptRows.push({
       user_id: uid, budget_tier: tier,
-      card: a.card, type: a.type,
-      cost_each: a.cost_each, qty: a.qty, subtotal: a.subtotal
+      card: a.card,
+      budget: a.budget ?? a.subtotal ?? null,
+      thesis: a.thesis || null,
+      description: data.description || null
     }));
   }
 
+  // Build ebay_searches rows
+  const esRows = [];
+  const ebaySearches = json.ebay_searches || {};
+  const ebayMap = [
+    { key: 'football_graded',   sport: 'football',   category: 'graded' },
+    { key: 'football_raw',      sport: 'football',   category: 'raw' },
+    { key: 'basketball_graded', sport: 'basketball', category: 'graded' },
+    { key: 'basketball_raw',    sport: 'basketball', category: 'raw' },
+  ];
+  ebayMap.forEach(({ key, sport, category }) => {
+    (ebaySearches[key] || []).forEach(searchText => {
+      esRows.push({ user_id: uid, sport, category, search_text: searchText });
+    });
+  });
+
   // Delete existing data
-  const [r1, r2] = await Promise.all([
+  const [r1, r2, r3] = await Promise.all([
     sb.from('investment_targets').delete().eq('user_id', uid),
-    sb.from('portfolio_targets').delete().eq('user_id', uid)
+    sb.from('portfolio_targets').delete().eq('user_id', uid),
+    sb.from('ebay_searches').delete().eq('user_id', uid)
   ]);
 
-  if (r1.error || r2.error) {
+  if (r1.error || r2.error || r3.error) {
     btn.disabled = false;
     btn.textContent = 'Import';
     msg.style.color = '#f85149';
-    msg.textContent = 'Delete error: ' + ((r1.error || r2.error).message);
+    msg.textContent = 'Delete error: ' + ((r1.error || r2.error || r3.error).message);
     msg.style.display = 'inline';
     return;
   }
@@ -1197,6 +1277,7 @@ async function doImport() {
   const inserts = [];
   if (itRows.length) inserts.push(sb.from('investment_targets').insert(itRows));
   if (ptRows.length) inserts.push(sb.from('portfolio_targets').insert(ptRows));
+  if (esRows.length) inserts.push(sb.from('ebay_searches').insert(esRows));
 
   if (inserts.length) {
     const results = await Promise.all(inserts);
@@ -1214,7 +1295,7 @@ async function doImport() {
   btn.disabled = false;
   btn.textContent = 'Import';
   msg.style.color = '#3fb950';
-  msg.textContent = `✓ Imported ${itRows.length} targets + ${ptRows.length} portfolio allocations`;
+  msg.textContent = `✓ Imported ${itRows.length} targets + ${ptRows.length} allocations + ${esRows.length} eBay searches`;
   msg.style.display = 'inline';
 
   await loadData();
@@ -1244,7 +1325,7 @@ function showTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','watchlist'];
+  const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','ebay-searches','watchlist'];
   const idx = ids.indexOf(id);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   setTimeout(attachSorting, 50);
