@@ -253,6 +253,11 @@
   .conf-badge { display: inline-block; color: #fff; font-size: .72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
   .ba-low-conf { margin-top: 8px; font-size: .75rem; color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 7px 10px; }
   .gem-source { font-size: .7rem; font-weight: 400; color: #9ca3af; }
+  .ba-suggested { background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 8px 10px; margin-top: 6px; }
+  .ba-suggested .ba-label { color: #15803d; font-weight: 700; }
+  .ba-suggested .ba-val   { color: #166534; font-size: .83rem; }
+  .price-window-note { font-size: .68rem; color: #6b7280; margin-left: 6px; font-weight: 400; }
+  .price-thin { color: #b45309; font-size: .68rem; margin-left: 4px; }
   .ratio-up   { color: #16a34a; font-weight: 600; }
   .ratio-down { color: #dc2626; font-weight: 600; }
   .ratio-flat { color: #6b7280; }
@@ -1735,6 +1740,42 @@ async function runTrendAnalysis(sport) {
       verdict = 'Pass'; verdictColor = 'gray';
     }
 
+    // ── Suggested Buy Target ──────────────────────────────────────
+    // Walk windows shortest→longest; take first with ≥ MIN_SALES for the target grade.
+    // Fall back to any sales (flagged as thin), then derive raw from PSA 9 if truly empty.
+    let sugPrice = null, sugGrade = null, sugWin = null, sugSales = 0, sugThin = false, sugDerived = false;
+    if (verdict !== 'Pass') {
+      const gradeKey = verdict === 'Buy PSA 10' ? 'psa10' : verdict === 'Buy PSA 9' ? 'psa9' : 'raw';
+      sugGrade = verdict === 'Buy PSA 10' ? 'PSA 10' : verdict === 'Buy PSA 9' ? 'PSA 9' : 'Raw card';
+
+      // First pass: confident window (>= MIN_SALES)
+      for (const w of wr) {
+        const row = w[gradeKey]; const s = nsales(row); const p = avg(row);
+        if (p && s >= BA.MIN_SALES) { sugPrice = p; sugWin = w.label; sugSales = s; break; }
+      }
+      // Second pass: any data (thin)
+      if (!sugPrice) {
+        for (const w of wr) {
+          const row = w[gradeKey]; const s = nsales(row); const p = avg(row);
+          if (p && s > 0) { sugPrice = p; sugWin = w.label; sugSales = s; sugThin = true; break; }
+        }
+      }
+      // Third pass for raw: derive from PSA 9 break-even threshold (40%)
+      if (!sugPrice && verdict === 'Buy raw & grade' && psa9_anchor) {
+        sugPrice = psa9_anchor * 0.40; sugGrade = 'Raw (max)'; sugDerived = true;
+      }
+    }
+
+    const suggestedRow = sugPrice ? (() => {
+      const note = sugDerived
+        ? `<span class="price-window-note">derived — no raw sales found (40% of PSA 9)</span>`
+        : `<span class="price-window-note">${sugWin} avg · ${sugSales} sale${sugSales !== 1 ? 's' : ''}</span>${sugThin ? '<span class="price-thin">⚠ thin data</span>' : ''}`;
+      return `<div class="ba-row ba-suggested">
+        <span class="ba-label">💰 Suggested Buy Target</span>
+        <span class="ba-val">${sugGrade}: <strong>${dollar(sugPrice)}</strong> ${note}</span>
+      </div>`;
+    })() : '';
+
     // ── Build Price Table ─────────────────────────────────────────
     const tableRows = wr.map((w, i) => {
       const r   = avg(w.raw);
@@ -1828,6 +1869,7 @@ async function runTrendAnalysis(sport) {
         ${matrixRow}
         ${beRow}
         ${gemRow}
+        ${suggestedRow}
         <div class="ba-verdict">
           <span class="verdict-badge" style="background:${verdictBg}">${verdict}</span>
           <span class="conf-badge" style="background:${confBg}">${confidence} Confidence</span>
