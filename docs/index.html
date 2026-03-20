@@ -240,6 +240,27 @@
   .trend-rec .tr-label { font-size: .7rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
   .trend-rec .tr-text  { font-size: .9rem; font-weight: 600; color: #1e40af; line-height: 1.5; }
   .trend-card-name { font-size: .8rem; color: #6b7280; margin-bottom: 14px; font-style: italic; }
+  .trend-table-wrap table thead th { background: #f9fafb; font-size: .72rem; padding: 8px 10px; }
+  .trend-table-wrap table td { font-size: .78rem; padding: 7px 10px; }
+  .anchor-row td { background: #eff6ff !important; }
+  .anchor-badge { font-size: .6rem; background: #2563eb; color: #fff; border-radius: 3px; padding: 1px 4px; margin-left: 4px; vertical-align: middle; font-style: normal; }
+  .buy-analysis-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .ba-header { font-size: .72rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 10px; }
+  .ba-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #f3f4f6; font-size: .82rem; gap: 12px; }
+  .ba-row:last-of-type { border-bottom: none; }
+  .ba-label { color: #6b7280; flex-shrink: 0; }
+  .ba-val { font-weight: 600; color: #111827; text-align: right; }
+  .ba-val.v-green { color: #15803d; }
+  .ba-val.v-amber { color: #b45309; }
+  .ba-val.v-red   { color: #dc2626; }
+  .ba-val.v-gray  { color: #6b7280; }
+  .ba-val.ev-pos  { color: #15803d; }
+  .ba-val.ev-neg  { color: #dc2626; }
+  .ba-verdict { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .verdict-badge { display: inline-block; color: #fff; font-size: .78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: .3px; }
+  .conf-badge { display: inline-block; color: #fff; font-size: .72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .ba-low-conf { margin-top: 8px; font-size: .75rem; color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 7px 10px; }
+  .gem-source { font-size: .7rem; font-weight: 400; color: #9ca3af; }
   .ratio-up   { color: #16a34a; font-weight: 600; }
   .ratio-down { color: #dc2626; font-weight: 600; }
   .ratio-flat { color: #6b7280; }
@@ -1387,8 +1408,23 @@ function attachSorting() {
 checkAuth();
 
 // ── Trend Analysis ───────────────────────────────────────────────
+
+// ── Buy Analysis Constants (edit here to tune) ────────────────────
+const BA = {
+  GRADING_COST:       38.00,  // $30 PSA + $8 shipping
+  EBAY_FEE_MULT:      0.87,   // 1 - 13% fees
+  MIN_PROFIT_FLOOR:   20.00,  // min net EV above cost to recommend grading
+  MIN_SALES:          3,      // min 90d sales for confident price signal
+  DOWNTREND_PENALTY:  10.00,  // added to cost basis when card in downtrend
+  PSA8_MULT:          0.50,   // PSA 8 estimated as 50% of raw price
+  GEM_FALLBACK_FB:    38,     // Football Prizm Base fallback gem rate %
+  GEM_FALLBACK_BB:    55,     // Basketball Prizm Base fallback gem rate %
+};
+
 const WINDOWS = {
   football: [
+    { key: '7',   label: '7d',   file: 'data/football-all-players-last-7-days.csv'   },
+    { key: '14',  label: '14d',  file: 'data/football-all-players-last-14-days.csv'  },
     { key: '30',  label: '30d',  file: 'data/football-all-players-last-30-days.csv'  },
     { key: '60',  label: '60d',  file: 'data/football-all-players-last-60-days.csv'  },
     { key: '90',  label: '90d',  file: 'data/football-all-players-last-90-days.csv'  },
@@ -1396,6 +1432,8 @@ const WINDOWS = {
     { key: '360', label: '360d', file: 'data/football-all-players-last-360-days.csv' },
   ],
   basketball: [
+    { key: '7',   label: '7d',   file: 'data/basketball-all-players-last-7-days.csv'  },
+    { key: '14',  label: '14d',  file: 'data/basketball-all-players-last-14-day.csv'  },
     { key: '30',  label: '30d',  file: 'data/basketball-all-players-last-30-days.csv'  },
     { key: '60',  label: '60d',  file: 'data/basketball-all-players-last-60-days.csv'  },
     { key: '90',  label: '90d',  file: 'data/basketball-all-players-last-90-days.csv'  },
@@ -1403,6 +1441,8 @@ const WINDOWS = {
     { key: '360', label: '360d', file: 'data/basketball-all-players-last-360-days.csv' },
   ],
 };
+// Window index constants (0-based, after adding 7d/14d)
+const W_30=2, W_90=4, W_180=5;
 
 const _csvCache = {};
 const _autocompleteLoaded = { football: false, basketball: false };
@@ -1451,6 +1491,62 @@ async function fetchCSV(file) {
   const data = parseCSV(text);
   _csvCache[file] = data;
   return data;
+}
+
+// Gem rate CSVs have 2-row header: row0=CardLadder branding, row1=column names
+function parseGemRateCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length < 3) return [];
+  const headers = parseCSVRow(lines[1]);
+  return lines.slice(2).map(line => {
+    const vals = parseCSVRow(line);
+    const obj = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] ?? '').trim(); });
+    return obj;
+  }).filter(r => r['Card #']);
+}
+
+async function fetchGemRate(cardName, sport) {
+  // Extract player name: words before first 4-digit year
+  const yearMatch = cardName.match(/\b(\d{4})\b/);
+  const playerPart = yearMatch ? cardName.slice(0, cardName.indexOf(yearMatch[0])).trim() : cardName;
+  // Extract card number
+  const numMatch = cardName.match(/#(\d+)/);
+  const cardNum = numMatch ? numMatch[1] : null;
+
+  // Build filename candidates (capitalized then lowercase)
+  const parts = playerPart.split(/\s+/);
+  const capName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('-');
+  const lowName = parts.map(p => p.toLowerCase()).join('-');
+
+  let rows = null, source = 'estimated';
+  for (const fname of [`${capName}.csv`, `${lowName}.csv`]) {
+    const path = `data/${fname}`;
+    if (_csvCache[path] !== undefined) {
+      rows = _csvCache[path]; source = 'file'; break;
+    }
+    try {
+      const res = await fetch(path);
+      if (!res.ok) continue;
+      const text = await res.text();
+      rows = parseGemRateCSV(text);
+      _csvCache[path] = rows;
+      source = 'file'; break;
+    } catch(e) { /* try next candidate */ }
+  }
+
+  if (rows && cardNum) {
+    const match = rows.find(r => r['Card #'] === cardNum);
+    if (match && match['Gem Rate']) {
+      const pct = parseInt(match['Gem Rate'].replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(pct)) return { gemRate: pct, source };
+    }
+    // If file found but no card# match, still mark as file-sourced fallback
+    if (rows.length > 0) source = 'file (no match)';
+  }
+
+  const fallback = sport === 'basketball' ? BA.GEM_FALLBACK_BB : BA.GEM_FALLBACK_FB;
+  return { gemRate: fallback, source: rows ? 'file (no match — using fallback)' : 'estimated' };
 }
 
 async function loadTrendAutocomplete(sport) {
@@ -1534,29 +1630,24 @@ async function runTrendAnalysis(sport) {
   emptyEl.style.display = 'none';
 
   try {
-    // Fetch all windows in parallel
     const windows = WINDOWS[sport];
     const allData = await Promise.all(windows.map(w => fetchCSV(w.file)));
 
-    // For each window, find PSA 9, PSA 10, and Raw rows for this card
-    const windowRows = windows.map((w, i) => {
+    // Per-window rows (case-insensitive match)
+    const wr = windows.map((w, i) => {
       const rows = allData[i].filter(r => r['Card'] && r['Card'].toLowerCase() === query.toLowerCase());
       return {
         label: w.label,
+        raw:   rows.find(r => r['Grade'] === 'Raw'),
         psa9:  rows.find(r => r['Grade'] === 'PSA 9'),
         psa10: rows.find(r => r['Grade'] === 'PSA 10'),
-        raw:   rows.find(r => r['Grade'] === 'Raw'),
       };
     });
 
-    // Check if we found anything
-    const found = windowRows.some(w => w.psa9 || w.psa10 || w.raw);
+    const found = wr.some(w => w.raw || w.psa9 || w.psa10);
     if (!found) {
-      // Try case-insensitive partial match suggestion
-      const data30 = allData[0];
-      const suggestions = [...new Set(data30.map(r => r['Card']).filter(Boolean))]
-        .filter(n => n.toLowerCase().includes(query.toLowerCase()))
-        .slice(0, 5);
+      const suggestions = [...new Set(allData[0].map(r => r['Card']).filter(Boolean))]
+        .filter(n => n.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
       loadEl.style.display = 'none';
       emptyEl.textContent = suggestions.length
         ? `No exact match. Did you mean: ${suggestions.join(' | ')}?`
@@ -1565,158 +1656,207 @@ async function runTrendAnalysis(sport) {
       return;
     }
 
-    // Build ratio series (only windows where both PSA 9 and PSA 10 exist)
-    const ratioSeries = windowRows.map(w => {
-      const p9  = parsePrice(w.psa9?.['Avg']);
-      const p10 = parsePrice(w.psa10?.['Avg']);
-      return { label: w.label, p9, p10, ratio: (p9 && p10) ? p10 / p9 : null };
-    });
+    // Helpers
+    const avg    = row => parsePrice(row?.['Avg']);
+    const nsales = row => parseNum(row?.['# of Sales']) ?? 0;
+    const dollar = v  => v != null ? '$' + v.toFixed(2) : '—';
 
-    // Trend: compare most recent (30d) ratio vs oldest available ratio
-    const withRatio = ratioSeries.filter(r => r.ratio !== null);
-    const newest = withRatio[0];
-    const oldest = withRatio[withRatio.length - 1];
-    let ratioTrend = 'stable', ratioTrendLabel = 'Stable';
-    if (withRatio.length >= 2 && newest && oldest && newest !== oldest) {
-      const delta = newest.ratio - oldest.ratio;
-      if (delta > 0.2)       { ratioTrend = 'expanding'; ratioTrendLabel = '↑ Expanding'; }
-      else if (delta < -0.2) { ratioTrend = 'compressing'; ratioTrendLabel = '↓ Compressing'; }
-      else                   { ratioTrend = 'stable'; ratioTrendLabel = '→ Stable'; }
-    }
+    // ── Step 1: Price anchors (90d primary, 180d fallback) ────────
+    const w90 = wr[W_90], w180 = wr[W_180], w30 = wr[W_30];
+    const raw90_sales  = nsales(w90.raw);
+    const psa9_90_sales = nsales(w90.psa9);
+    const use180_raw   = raw90_sales  < BA.MIN_SALES;
+    const use180_psa9  = psa9_90_sales < BA.MIN_SALES;
+    const raw_anchor   = avg(use180_raw  ? w180.raw  : w90.raw)  ?? avg(w180.raw);
+    const psa9_anchor  = avg(use180_psa9 ? w180.psa9 : w90.psa9) ?? avg(w180.psa9);
+    const psa10_anchor = avg(w90.psa10) ?? avg(w180.psa10);
 
-    // Velocity: PSA 9 vs PSA 10 sales in 30d
-    const v9  = parseNum(windowRows[0].psa9?.['# of Sales'])  || 0;
-    const v10 = parseNum(windowRows[0].psa10?.['# of Sales']) || 0;
-    const liquidityOk = v10 >= 5; // at least 5 sales/month = liquid enough
+    // ── Step 2: Data quality ──────────────────────────────────────
+    const low_confidence = raw90_sales < BA.MIN_SALES || psa9_90_sales < BA.MIN_SALES;
 
-    // Player momentum: price trend in 30d window
-    const trend9  = parseNum(windowRows[0].psa9?.['Price Change %']);
-    const trend10 = parseNum(windowRows[0].psa10?.['Price Change %']);
-    const playerHot = (trend9 !== null && trend9 > 10) || (trend10 !== null && trend10 > 10);
-    const playerCooling = (trend9 !== null && trend9 < -10) || (trend10 !== null && trend10 < -10);
-
-    // Raw price from 30d
-    const rawAvg = parsePrice(windowRows[0].raw?.['Avg']);
-    const p9_30  = parsePrice(windowRows[0].psa9?.['Avg']);
-    const p10_30 = parsePrice(windowRows[0].psa10?.['Avg']);
-
-    // ── Recommendation logic ──────────────────────────────────────
-    let rec = '', recColor = 'blue';
-    if (ratioTrend === 'expanding' && !playerCooling) {
-      if (v10 < 5) {
-        rec = '⚠️ Ratio expanding but PSA 10 is illiquid (<5 sales/mo) — buy PSA 9 for faster flip.';
-        recColor = 'amber';
-      } else {
-        rec = '💎 Buy / chase PSA 10 — ratio is expanding and player momentum supports it.';
-        recColor = 'green';
-      }
-    } else if (ratioTrend === 'expanding' && playerCooling) {
-      rec = '⚖️ Ratio expanding but player is cooling — hold off. Wait for momentum to recover.';
-      recColor = 'amber';
-    } else if (ratioTrend === 'compressing' && playerHot) {
-      rec = '🏅 Buy the PSA 9 — ratio compressing even as player heats up. Value hunters prefer 9s here.';
-      recColor = 'green';
-    } else if (ratioTrend === 'compressing' && playerCooling) {
-      rec = '🚫 Avoid both — ratio compressing AND player cooling. Wait for a better entry point.';
-      recColor = 'red';
-    } else if (ratioTrend === 'compressing') {
-      rec = '🏅 Buy the PSA 9 — ratio compressing, market prefers 9s at this price point.';
-      recColor = 'green';
+    // ── Step 3: Trend signal ──────────────────────────────────────
+    let trend = 'stable', trend_source = 'raw';
+    const raw30 = avg(w30.raw), raw90 = avg(w90.raw);
+    if (raw30 && raw90) {
+      const tr = raw30 / raw90;
+      if (tr > 1.10) trend = 'uptrend';
+      else if (tr < 0.90) trend = 'downtrend';
     } else {
-      // Stable ratio — fall back to multiplier logic
-      if (newest && newest.ratio < 2) {
-        rec = '🏅 Stable ratio under 2× — PSA 9 is the clear value play.';
-        recColor = 'green';
-      } else if (newest && newest.ratio >= 2 && newest.ratio < 3) {
-        rec = '🏅 Stable ratio 2–3× — PSA 9 still favored. Check gem rate before upgrading.';
-        recColor = 'green';
-      } else if (newest && newest.ratio >= 3) {
-        rec = '⚖️ Stable ratio above 3× — situational. Use gem rate and player trajectory to decide.';
-        recColor = 'amber';
-      } else {
-        rec = '⚖️ Insufficient data to give a clear signal across windows.';
-        recColor = 'amber';
+      trend_source = 'psa9';
+      const p9_30 = avg(w30.psa9), p9_90 = avg(w90.psa9);
+      if (p9_30 && p9_90) {
+        const tr = p9_30 / p9_90;
+        if (tr > 1.10) trend = 'uptrend';
+        else if (tr < 0.90) trend = 'downtrend';
       }
     }
 
-    // ── Build HTML ────────────────────────────────────────────────
-    // Price table
-    const tableRows = ratioSeries.map(r => {
-      const ratioClass = r.ratio === null ? 'ratio-flat'
-        : (r === withRatio[0] && ratioTrend === 'expanding') ? 'ratio-up'
-        : (r === withRatio[0] && ratioTrend === 'compressing') ? 'ratio-down'
-        : '';
-      return `<tr>
-        <td><strong>${r.label}</strong></td>
-        <td>${r.p9  ? '$' + r.p9.toFixed(2)  : '—'}</td>
-        <td>${r.p10 ? '$' + r.p10.toFixed(2) : '—'}</td>
-        <td class="${ratioClass}">${r.ratio ? r.ratio.toFixed(2) + '×' : '—'}</td>
+    // ── Step 4: Net prices ────────────────────────────────────────
+    const net_raw   = raw_anchor   ? raw_anchor   * BA.EBAY_FEE_MULT : null;
+    const net_psa9  = psa9_anchor  ? psa9_anchor  * BA.EBAY_FEE_MULT : null;
+    const net_psa10 = psa10_anchor ? psa10_anchor * BA.EBAY_FEE_MULT : null;
+    const net_psa8  = raw_anchor   ? raw_anchor   * BA.PSA8_MULT     : null;
+
+    // ── Step 5: Raw viability ratio ───────────────────────────────
+    const raw_ratio = (raw_anchor && psa9_anchor) ? raw_anchor / psa9_anchor : null;
+    let viability_label, viability_class;
+    if (raw_ratio === null)        { viability_label = 'No raw data';                   viability_class = 'v-gray'; }
+    else if (raw_ratio < 0.40)     { viability_label = 'Viable grade candidate';         viability_class = 'v-green'; }
+    else if (raw_ratio <= 0.60)    { viability_label = 'Marginal — near-perfect only';   viability_class = 'v-amber'; }
+    else                           { viability_label = 'Skip grading — buy the slab';    viability_class = 'v-red'; }
+
+    // ── Gem rate ──────────────────────────────────────────────────
+    const { gemRate, source: gemSource } = await fetchGemRate(query, sport);
+
+    // ── Step 6: EV model ──────────────────────────────────────────
+    let net_ev = null, grade_verdict = null, ev_detail = null;
+    const canEV = raw_ratio !== null && raw_ratio <= 0.60 && raw_anchor && net_psa9 && net_psa10 && net_psa8;
+    if (canEV) {
+      const p10   = gemRate / 100;
+      const p9    = 0.40;
+      const p_low = Math.max(0, 1 - p10 - p9);
+      let cost_basis = raw_anchor + BA.GRADING_COST;
+      if (trend === 'downtrend') cost_basis += BA.DOWNTREND_PENALTY;
+      const EV = (p10 * net_psa10) + (p9 * net_psa9) + (p_low * net_psa8);
+      net_ev = EV - cost_basis;
+      grade_verdict = net_ev >= BA.MIN_PROFIT_FLOOR ? 'Buy raw & grade' : 'Pass';
+      ev_detail = { p10, p9, p_low, cost_basis, EV };
+    }
+
+    // ── Step 7: PSA 10/9 multiplier matrix ───────────────────────
+    const multiplier = (psa10_anchor && psa9_anchor) ? psa10_anchor / psa9_anchor : null;
+    let matrix_verdict = null;
+    if (multiplier !== null) {
+      const gr = gemRate;
+      if      (multiplier < 1.5)  matrix_verdict = gr < 15 ? 'Buy PSA 9' : gr <= 35 ? 'Buy PSA 9' : 'Buy raw / PSA 9';
+      else if (multiplier <= 3.5) matrix_verdict = gr < 15 ? 'Strong grade play' : gr <= 35 ? 'Run EV model' : 'Grade for PSA 9';
+      else                        matrix_verdict = gr < 15 ? 'PSA 10 scarcity real' : gr <= 35 ? 'Caution — fragile premium' : 'Avoid PSA 10 play';
+    }
+
+    // ── Step 8: Break-even grade ──────────────────────────────────
+    let break_even_label = null;
+    if (ev_detail) {
+      const be_gross = (ev_detail.cost_basis + BA.MIN_PROFIT_FLOOR) / BA.EBAY_FEE_MULT;
+      if (psa9_anchor  && be_gross <= psa9_anchor)  break_even_label = 'Needs PSA 9';
+      else if (psa10_anchor && be_gross <= psa10_anchor) break_even_label = 'Needs PSA 10';
+      else break_even_label = 'No grade covers cost';
+    }
+
+    // ── Step 9: Confidence ────────────────────────────────────────
+    const total_90d = raw90_sales + psa9_90_sales + nsales(w90.psa10);
+    const confidence = low_confidence ? 'Low'
+      : (trend === 'downtrend' || total_90d < 5) ? 'Medium' : 'High';
+
+    // ── Final verdict ─────────────────────────────────────────────
+    let verdict, verdictColor;
+    if (raw_ratio !== null && raw_ratio > 0.60) {
+      verdict = 'Buy PSA 9'; verdictColor = 'blue';
+    } else if (grade_verdict === 'Buy raw & grade') {
+      verdict = 'Buy raw & grade'; verdictColor = 'green';
+    } else if (net_ev === null && psa9_anchor) {
+      verdict = 'Buy PSA 9'; verdictColor = 'blue';
+    } else {
+      verdict = 'Pass'; verdictColor = 'gray';
+    }
+
+    // ── Build Price Table ─────────────────────────────────────────
+    const tableRows = wr.map((w, i) => {
+      const r   = avg(w.raw);
+      const p9  = avg(w.psa9);
+      const p10 = avg(w.psa10);
+      const r9   = (r && p9)   ? (r / p9).toFixed(2)   + '×' : '—';
+      const p910 = (p9 && p10) ? (p10 / p9).toFixed(2) + '×' : '—';
+      const isAnchor = (i === W_90) || (i === W_180 && (use180_raw || use180_psa9));
+      return `<tr${isAnchor ? ' class="anchor-row"' : ''}>
+        <td><strong>${w.label}</strong>${isAnchor ? ' <span class="anchor-badge">anchor</span>' : ''}</td>
+        <td>${dollar(r)}</td><td>${dollar(p9)}</td><td>${dollar(p10)}</td>
+        <td>${r9}</td><td>${p910}</td>
       </tr>`;
     }).join('');
 
-    // Raw row if available
-    const rawRow = windowRows[0].raw ? `
-      <tr><td colspan="4" style="padding:6px 12px;font-size:.72rem;color:#9ca3af;">
-        Raw (30d avg): <strong>$${(parsePrice(windowRows[0].raw['Avg'])||0).toFixed(2)}</strong>
-        &nbsp;·&nbsp; ${windowRows[0].raw['# of Sales']} sales
-        &nbsp;·&nbsp; Trend: ${windowRows[0].raw['Price Change %']}%
-      </td></tr>` : '';
+    // ── Signal cards ──────────────────────────────────────────────
+    const trendIcon  = trend === 'uptrend' ? '↑' : trend === 'downtrend' ? '↓' : '→';
+    const trendClass = trend === 'uptrend' ? 'ts-green' : trend === 'downtrend' ? 'ts-red' : 'ts-gray';
+    const trendLabel = trend === 'uptrend' ? 'Uptrend' : trend === 'downtrend' ? 'Downtrend' : 'Stable';
 
-    // Trend direction indicator
-    const trendIcon = ratioTrend === 'expanding' ? '↑' : ratioTrend === 'compressing' ? '↓' : '→';
-    const trendClass = ratioTrend === 'expanding' ? 'ts-green' : ratioTrend === 'compressing' ? 'ts-red' : 'ts-gray';
+    const p10_30_sales = nsales(w30.psa10);
+    const liquClass = p10_30_sales >= 5 ? 'ts-green' : p10_30_sales > 0 ? 'ts-amber' : 'ts-gray';
 
-    // Velocity signal
-    const velClass = liquidityOk ? 'ts-green' : 'ts-amber';
-    const velNote = v10 === 0 && v9 === 0 ? 'No 30d data' : `PSA 9: ${v9} sales · PSA 10: ${v10} sales (30d)`;
+    const price30 = parseNum(w30.psa9?.['Price Change %']) ?? parseNum(w30.psa10?.['Price Change %']);
+    const momClass = price30 > 10 ? 'ts-green' : price30 < -10 ? 'ts-red' : 'ts-gray';
+    const momStr   = price30 != null ? (price30 >= 0 ? '+' : '') + price30.toFixed(1) + '%' : '—';
 
-    // Price momentum
-    const momClass = playerHot ? 'ts-green' : playerCooling ? 'ts-red' : 'ts-gray';
-    const momVal  = trend10 !== null ? (trend10 >= 0 ? '+' : '') + trend10.toFixed(1) + '%'
-                  : trend9 !== null  ? (trend9  >= 0 ? '+' : '') + trend9.toFixed(1)  + '%'
-                  : '—';
-    const momNote = playerHot ? 'Player heating up' : playerCooling ? 'Player cooling' : '30d price momentum';
+    const r9Class = raw_ratio == null ? 'ts-gray' : raw_ratio < 0.40 ? 'ts-green' : raw_ratio > 0.60 ? 'ts-red' : 'ts-amber';
+    const r9Str   = raw_ratio != null ? raw_ratio.toFixed(2) + '×' : '—';
 
-    const recBg = recColor === 'green' ? '#f0fdf4' : recColor === 'red' ? '#fef2f2' : recColor === 'amber' ? '#fffbeb' : '#eff6ff';
-    const recBorder = recColor === 'green' ? '#86efac' : recColor === 'red' ? '#fca5a5' : recColor === 'amber' ? '#fcd34d' : '#bfdbfe';
-    const recTextColor = recColor === 'green' ? '#14532d' : recColor === 'red' ? '#991b1b' : recColor === 'amber' ? '#78350f' : '#1e40af';
+    // ── Buy Analysis card rows ────────────────────────────────────
+    const viabilityRow = `<div class="ba-row"><span class="ba-label">Raw Viability</span><span class="ba-val ${viability_class}">${viability_label}${raw_ratio != null ? ' (' + raw_ratio.toFixed(2) + '×)' : ''}</span></div>`;
+
+    const evRow = net_ev !== null
+      ? `<div class="ba-row"><span class="ba-label">Net EV (if graded)</span><span class="ba-val ${net_ev >= BA.MIN_PROFIT_FLOOR ? 'ev-pos' : 'ev-neg'}">${net_ev >= 0 ? '+' : ''}${dollar(net_ev)} <span style="font-weight:400;color:#6b7280;font-size:.72rem;">(p10=${(ev_detail.p10*100).toFixed(0)}% · p9=40% · cost=${dollar(ev_detail.cost_basis)})</span></span></div>`
+      : '';
+
+    const matrixRow = matrix_verdict
+      ? `<div class="ba-row"><span class="ba-label">PSA 10/9 Matrix</span><span class="ba-val">${multiplier.toFixed(2)}× mult — ${matrix_verdict}</span></div>`
+      : '';
+
+    const beRow = break_even_label
+      ? `<div class="ba-row"><span class="ba-label">Break-even</span><span class="ba-val">${break_even_label}</span></div>`
+      : '';
+
+    const gemRow = `<div class="ba-row"><span class="ba-label">Gem Rate</span><span class="ba-val">${gemRate}% <span class="gem-source">(${gemSource})</span></span></div>`;
+
+    // Verdict & confidence badges
+    const verdictBg = verdictColor === 'green' ? '#166534' : verdictColor === 'blue' ? '#1e40af' : verdictColor === 'purple' ? '#6b21a8' : '#374151';
+    const confBg    = confidence === 'High' ? '#15803d' : confidence === 'Medium' ? '#b45309' : '#dc2626';
+    const lowConfHtml = confidence === 'Low'
+      ? `<div class="ba-low-conf">⚠️ Low confidence — limited sales data. Treat this as directional only.</div>` : '';
 
     resultsEl.innerHTML = `
       <div class="trend-card-name">${esc(query)}</div>
 
       <div class="trend-table-wrap">
         <table>
-          <thead><tr><th>Window</th><th>PSA 9 Avg</th><th>PSA 10 Avg</th><th>10/9 Ratio</th></tr></thead>
-          <tbody>${tableRows}${rawRow}</tbody>
+          <thead><tr><th>Window</th><th>Raw Avg</th><th>PSA 9 Avg</th><th>PSA 10 Avg</th><th>Raw/9</th><th>9/10</th></tr></thead>
+          <tbody>${tableRows}</tbody>
         </table>
       </div>
 
       <div class="trend-signals">
         <div class="trend-signal ${trendClass}">
-          <div class="ts-label">Ratio Trend</div>
-          <div class="ts-value">${trendIcon} ${ratioTrendLabel}</div>
-          <div class="ts-note">${withRatio.length >= 2 ? `${oldest.label}: ${oldest.ratio.toFixed(2)}× → ${newest.label}: ${newest.ratio.toFixed(2)}×` : 'Insufficient data across windows'}</div>
+          <div class="ts-label">Price Trend (30d vs 90d)</div>
+          <div class="ts-value">${trendIcon} ${trendLabel}</div>
+          <div class="ts-note">Based on ${trend_source} prices</div>
         </div>
-        <div class="trend-signal ${velClass}">
-          <div class="ts-label">Liquidity (30d)</div>
-          <div class="ts-value">${v10 > 0 ? v10 + ' PSA 10s' : '—'}</div>
-          <div class="ts-note">${velNote}</div>
+        <div class="trend-signal ${liquClass}">
+          <div class="ts-label">Liquidity (30d PSA 10)</div>
+          <div class="ts-value">${p10_30_sales > 0 ? p10_30_sales + ' sales' : '—'}</div>
+          <div class="ts-note">${p10_30_sales >= 5 ? 'Liquid' : p10_30_sales > 0 ? 'Low volume' : 'No 30d data'}</div>
         </div>
         <div class="trend-signal ${momClass}">
-          <div class="ts-label">30d Price Trend</div>
-          <div class="ts-value">${momVal}</div>
-          <div class="ts-note">${momNote}</div>
+          <div class="ts-label">30d Price Change</div>
+          <div class="ts-value">${momStr}</div>
+          <div class="ts-note">PSA 9/10 momentum</div>
         </div>
-        ${newest && newest.ratio ? `<div class="trend-signal ts-gray">
-          <div class="ts-label">Current Ratio</div>
-          <div class="ts-value">${newest.ratio.toFixed(2)}×</div>
-          <div class="ts-note">PSA 10 vs PSA 9 (30d avg)</div>
-        </div>` : ''}
+        <div class="trend-signal ${r9Class}">
+          <div class="ts-label">Raw / PSA 9 Ratio</div>
+          <div class="ts-value">${r9Str}</div>
+          <div class="ts-note">${raw_ratio == null ? 'No raw data' : raw_ratio < 0.40 ? 'Strong grade play' : raw_ratio > 0.60 ? 'Buy the slab' : 'Marginal'}</div>
+        </div>
       </div>
 
-      <div class="trend-rec" style="background:${recBg};border-color:${recBorder};">
-        <div class="tr-label" style="color:#6b7280;">Trend Signal Recommendation</div>
-        <div class="tr-text" style="color:${recTextColor};">${rec}</div>
+      <div class="buy-analysis-card">
+        <div class="ba-header">Buy Analysis</div>
+        ${viabilityRow}
+        ${evRow}
+        ${matrixRow}
+        ${beRow}
+        ${gemRow}
+        <div class="ba-verdict">
+          <span class="verdict-badge" style="background:${verdictBg}">${verdict}</span>
+          <span class="conf-badge" style="background:${confBg}">${confidence} Confidence</span>
+        </div>
+        ${lowConfHtml}
       </div>`;
 
     loadEl.style.display = 'none';
