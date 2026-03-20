@@ -257,7 +257,10 @@
   .ratio-down { color: #dc2626; font-weight: 600; }
   .ratio-flat { color: #6b7280; }
 
-  @media (max-width: 640px) {
+  /* Prevent any element from causing page-level horizontal scroll */
+  body, #mainContent { overflow-x: hidden; }
+
+  @media (max-width: 768px) {
     /* Header */
     .header { padding: 14px 16px 10px; }
     .header h1 { font-size: 1.1rem; }
@@ -281,17 +284,20 @@
     .calc-verdict-grid { grid-template-columns: 1fr 1fr; }
     .trend-signals { grid-template-columns: 1fr 1fr; }
 
+    /* Trend analysis — stack Football/Basketball dropdowns on two rows */
+    .trend-grid { grid-template-columns: 1fr !important; }
+    .trend-search { flex-wrap: wrap; }
+    .trend-search input { min-width: 0; width: 100%; flex: 1 1 100%; }
+
     /* Stats row — 2-up on small screens */
     .stat-card { min-width: calc(50% - 6px); }
     .stat-card .value { font-size: 1.15rem; }
 
-    /* Tables */
+    /* Tables — constrain to viewport */
+    .tbl-wrap { max-width: 100%; }
     table { font-size: .76rem; }
     thead th { padding: 8px 8px; font-size: .66rem; }
     tbody td { padding: 9px 8px; }
-
-    /* Trend search input */
-    .trend-search input { min-width: 0; }
 
     /* Buy analysis cards */
     .ba-row { font-size: .78rem; }
@@ -510,7 +516,7 @@
       <div class="section-title">📈 Trend Analysis <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Historical Sales Data</span></div>
       <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/360-day windows — ratio expansion, velocity, and a buy signal.</p>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
+      <div class="trend-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
         <div>
           <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏈 Football</div>
           <div class="trend-search">
