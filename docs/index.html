@@ -799,7 +799,7 @@ async function loadData() {
   const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }, { data: ebayRows, error: e3 }] = await Promise.all([
     sb.from('investment_targets').select('*').eq('user_id', currentUser.id).order('rank'),
     sb.from('portfolio_targets').select('*').eq('user_id', currentUser.id).order('budget_tier'),
-    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('rank', { nullsFirst: false }).order('sport').order('category')
+    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('sport').order('category')
   ]);
 
   if (e1) console.error('Load targets error:', e1);
@@ -1154,7 +1154,7 @@ function renderEbaySearches(rows) {
                 return `<tr>
                   <td style="color:#8b949e;text-align:center;width:36px">${rankLabel}</td>
                   <td style="white-space:normal;min-width:220px">${cardLabel}</td>
-                  <td style="text-align:center;width:64px"><button onclick="navigator.clipboard.writeText(${JSON.stringify(r.search_text)}).then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copy'},1200)})" style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8rem">Copy</button></td>
+                  <td style="text-align:center;width:64px"><button data-search="${esc(r.search_text)}" onclick="navigator.clipboard.writeText(this.dataset.search).then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copy'},1200)})" style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8rem">Copy</button></td>
                   <td><a href="${activeUrl}" target="_blank" rel="noopener" style="color:#58a6ff;text-decoration:none;">Active ↗</a></td>
                   <td><a href="${soldUrl}" target="_blank" rel="noopener" style="color:#8b949e;text-decoration:none;">Sold ↗</a></td>
                 </tr>`;
