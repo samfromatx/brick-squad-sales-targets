@@ -146,14 +146,6 @@
   .sub-content { display: none; }
   .sub-content.active { display: block; }
 
-  /* WATCHLIST */
-  .watchlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .watch-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; }
-  .watch-card .player { font-weight: 600; font-size: .9rem; color: #111827; margin-bottom: 2px; }
-  .watch-card .team { font-size: .75rem; color: #6b7280; margin-bottom: 6px; }
-  .watch-card .why { font-size: .78rem; color: #374151; margin-bottom: 4px; }
-  .watch-card .targets { font-size: .72rem; color: #2563eb; }
-
   /* FOOTER */
   .footer { text-align: center; padding: 24px; color: #9ca3af; font-size: .75rem; border-top: 1px solid #f3f4f6; margin-top: 20px; }
 
@@ -265,13 +257,48 @@
   .ratio-down { color: #dc2626; font-weight: 600; }
   .ratio-flat { color: #6b7280; }
 
-  @media (max-width: 600px) {
+  @media (max-width: 640px) {
+    /* Header */
+    .header { padding: 14px 16px 10px; }
+    .header h1 { font-size: 1.1rem; }
+    .header .meta { gap: 8px; font-size: .72rem; }
+    .nav { gap: 6px; }
+    .nav-user { width: 100%; margin-left: 0; margin-top: 4px; }
+    .nav-email { font-size: .7rem; }
+
+    /* Tabs — horizontal scroll instead of wrapping */
+    .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 12px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { padding: 10px 12px; font-size: .78rem; flex-shrink: 0; }
+
+    /* Content */
+    .content { padding: 12px; }
+
+    /* Grids → single column */
     .callout { grid-template-columns: 1fr; }
     .sport-compare { grid-template-columns: 1fr; }
     .cs-grid { grid-template-columns: 1fr; }
-    .header h1 { font-size: 1.2rem; }
-    .tabs { padding: 0 16px; }
-    .content { padding: 16px; }
+    .calc-verdict-grid { grid-template-columns: 1fr 1fr; }
+    .trend-signals { grid-template-columns: 1fr 1fr; }
+
+    /* Stats row — 2-up on small screens */
+    .stat-card { min-width: calc(50% - 6px); }
+    .stat-card .value { font-size: 1.15rem; }
+
+    /* Tables */
+    table { font-size: .76rem; }
+    thead th { padding: 8px 8px; font-size: .66rem; }
+    tbody td { padding: 9px 8px; }
+
+    /* Trend search input */
+    .trend-search input { min-width: 0; }
+
+    /* Buy analysis cards */
+    .ba-row { font-size: .78rem; }
+
+    /* Modal */
+    .modal-box { padding: 16px; margin: 10px; }
+    .modal-box textarea { height: 160px; }
   }
 </style>
 </head>
@@ -342,7 +369,6 @@
   <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
   <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
   <div class="tab" onclick="showTab('ebay-searches')">🔍 eBay Searches</div>
-  <div class="tab" onclick="showTab('watchlist')">📈 Watchlist</div>
 </div>
 
 <div class="content">
@@ -584,127 +610,6 @@
     <div id="ebay-searches-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <div id="watchlist" class="tab-content">
-
-    <div class="section">
-      <div class="section-title" style="font-size:.85rem;">🏈 Football (8 Players)</div>
-      <div class="watchlist-grid">
-        <div class="watch-card">
-          <div class="player">Drake Maye</div>
-          <div class="team">New England Patriots</div>
-          <div class="why">MVP runner-up, SB QB — multiple card angles available</div>
-          <div class="targets">Optic Holo PSA 9 · Prizm Base Raw→Grade · Optic Holo Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Jayden Daniels</div>
-          <div class="team">Washington Commanders</div>
-          <div class="why">Buy-low on elite talent — dip from OROY peak</div>
-          <div class="targets">Prizm Base PSA 10</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">CJ Stroud</div>
-          <div class="team">Houston Texans</div>
-          <div class="why">Cheapest elite QB on the board — +101% trend recovery</div>
-          <div class="targets">Prizm Base PSA 9 · Prizm Silver Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Caleb Williams</div>
-          <div class="team">Chicago Bears</div>
-          <div class="why">Year 2 breakout incoming — Bears weapons upgraded</div>
-          <div class="targets">Optic Holo PSA 9 · Prizm Base Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Puka Nacua</div>
-          <div class="team">Los Angeles Rams</div>
-          <div class="why">OPOY finalist, contract extension — multi-year hold</div>
-          <div class="targets">Prizm Base PSA 10 · Optic Holo Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Bo Nix</div>
-          <div class="team">Denver Broncos</div>
-          <div class="why">25 wins in 2 seasons — record-setting performance</div>
-          <div class="targets">Prizm Silver PSA 9 · Optic Holo Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Sam Darnold</div>
-          <div class="team">Minnesota Vikings</div>
-          <div class="why">SB champion — 2018 rookie cards revalued with ring</div>
-          <div class="targets">Optic Holo Raw→Grade · Prizm Base Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Jaxon Smith-Njigba</div>
-          <div class="team">Seattle Seahawks</div>
-          <div class="why">OPOY + SB champ — 50% gem rate, highest FB sell target</div>
-          <div class="targets">Prizm Silver Raw→Grade (Sell At $313)</div>
-        </div>
-      </div>
-
-      <div class="section-title" style="font-size:.85rem;">🏀 Basketball (10 Players)</div>
-      <div class="watchlist-grid">
-        <div class="watch-card">
-          <div class="player">Victor Wembanyama</div>
-          <div class="team">San Antonio Spurs</div>
-          <div class="why">DPOY frontrunner — generational talent, +82% trend</div>
-          <div class="targets">Prizm Base PSA 9 · Chrome Base Raw→Grade · Cosmic Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Anthony Edwards</div>
-          <div class="team">Minnesota Timberwolves</div>
-          <div class="why">Career year — 29.6 PPG, ascending MVP market</div>
-          <div class="targets">Prizm Base PSA 10 · Optic Holo Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">LaMelo Ball</div>
-          <div class="team">Charlotte Hornets</div>
-          <div class="why">Healthiest season — +111.7% trend, buy now window</div>
-          <div class="targets">Prizm Base PSA 10</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Tyrese Maxey</div>
-          <div class="team">Philadelphia 76ers</div>
-          <div class="why">29 PPG, on MVP ladder — +83% trend</div>
-          <div class="targets">Prizm Silver PSA 9 · Prizm Silver Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Jalen Brunson</div>
-          <div class="team">New York Knicks</div>
-          <div class="why">MVP candidate — NYC market premium, +69% trend</div>
-          <div class="targets">Prizm Base PSA 10</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Donovan Mitchell</div>
-          <div class="team">Cleveland Cavaliers</div>
-          <div class="why">Harden trade boost — +81% trend, lowest entry on list</div>
-          <div class="targets">Prizm Base PSA 9 (Buy at $10)</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Brandon Miller</div>
-          <div class="team">Charlotte Hornets</div>
-          <div class="why">Near All-Star, 20.6 PPG — both silver and base viable</div>
-          <div class="targets">Prizm Silver PSA 9 · Prizm Base PSA 10 · Silver Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Shai Gilgeous-Alexander</div>
-          <div class="team">Oklahoma City Thunder</div>
-          <div class="why">Back-to-back MVP chase — premium hold, high-value floor</div>
-          <div class="targets">Prizm Base PSA 10 (Buy at $170) · Prizm Base Raw→Grade</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Luka Doncic</div>
-          <div class="team">Los Angeles Lakers</div>
-          <div class="why">Scoring leader, Lakers era — +53.9% trend, deep value</div>
-          <div class="targets">Prizm Base PSA 10 (Buy at $20)</div>
-        </div>
-        <div class="watch-card">
-          <div class="player">Cade Cunningham</div>
-          <div class="team">Detroit Pistons</div>
-          <div class="why">MVP candidate — buy-low after dip, 40% gem rate</div>
-          <div class="targets">Optic Holo Raw→Grade</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
 
 </div><!-- end .content -->
 
@@ -1380,7 +1285,7 @@ function showTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','ebay-searches','watchlist'];
+  const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','ebay-searches'];
   const idx = ids.indexOf(id);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   setTimeout(attachSorting, 50);
