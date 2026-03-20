@@ -1755,17 +1755,20 @@ async function runTrendAnalysis(sport) {
       : (trend === 'downtrend' || total_90d < 5) ? 'Medium' : 'High';
 
     // ── Final verdict ─────────────────────────────────────────────
-    // "Pass" only if there's genuinely no slab to buy.
-    // When grading doesn't pencil, fall back to buying the PSA 9 slab.
+    // When buying a slab, use the multiplier matrix to choose PSA 9 vs PSA 10.
+    // "PSA 10 scarcity real" = multiplier > 3.5× AND gem rate < 15%.
+    const suggestPsa10 = multiplier !== null && multiplier > 3.5 && gemRate < 15;
     let verdict, verdictColor;
     if (raw_ratio !== null && raw_ratio > 0.60) {
       // Raw too expensive to grade — buy the slab
-      verdict = 'Buy PSA 9'; verdictColor = 'blue';
+      verdict = suggestPsa10 ? 'Buy PSA 10' : 'Buy PSA 9';
+      verdictColor = suggestPsa10 ? 'purple' : 'blue';
     } else if (grade_verdict === 'Buy raw & grade') {
       verdict = 'Buy raw & grade'; verdictColor = 'green';
-    } else if (psa9_anchor) {
-      // Grading doesn't pencil (EV below floor or no raw data) — buy the slab instead
-      verdict = 'Buy PSA 9'; verdictColor = 'blue';
+    } else if (psa9_anchor || psa10_anchor) {
+      // Grading doesn't pencil — buy the slab instead
+      verdict = suggestPsa10 ? 'Buy PSA 10' : 'Buy PSA 9';
+      verdictColor = suggestPsa10 ? 'purple' : 'blue';
     } else {
       verdict = 'Pass'; verdictColor = 'gray';
     }
