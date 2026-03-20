@@ -400,6 +400,71 @@
   <!-- ===== OVERVIEW (static) ===== -->
   <div id="overview" class="tab-content active">
 
+    <!-- TREND ANALYSIS -->
+    <div class="section">
+      <div class="section-title">📈 Trend Analysis <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Historical Sales Data</span></div>
+      <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/360-day windows — ratio expansion, velocity, and a buy signal.</p>
+
+      <div class="trend-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏈 Football</div>
+          <div class="trend-search">
+            <input type="text" id="trend-input-fb" placeholder="e.g. Drake Maye 229 or Mahomes Prizm 2017…" autocomplete="off"
+              oninput="trendAcFilter('football')" onfocus="loadTrendAutocomplete('football');trendAcFilter('football')"
+              onkeydown="trendAcKey(event,'football')" onblur="setTimeout(()=>trendAcClose('football'),150)">
+            <div id="trend-ac-fb" class="trend-ac"></div>
+            <button class="btn btn-primary" onclick="runTrendAnalysis('football')">Analyze</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏀 Basketball</div>
+          <div class="trend-search">
+            <input type="text" id="trend-input-bb" placeholder="e.g. Wembanyama 136 or Ant Edwards Prizm…" autocomplete="off"
+              oninput="trendAcFilter('basketball')" onfocus="loadTrendAutocomplete('basketball');trendAcFilter('basketball')"
+              onkeydown="trendAcKey(event,'basketball')" onblur="setTimeout(()=>trendAcClose('basketball'),150)">
+            <div id="trend-ac-bb" class="trend-ac"></div>
+            <button class="btn btn-primary" onclick="runTrendAnalysis('basketball')">Analyze</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="trend-loading" class="trend-loading" style="display:none;">Loading sales data…</div>
+      <div id="trend-results" style="display:none;"></div>
+      <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Search a card above to see historical trend analysis.</div>
+    </div>
+
+    <!-- GRADE DECISION CALCULATOR -->
+    <div class="section">
+      <div class="section-title">🧮 Grade Decision Calculator</div>
+      <div class="calc-wrap">
+        <div class="calc-inputs">
+          <div class="calc-field">
+            <label>Raw Card Price</label>
+            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-raw" placeholder="0" min="0" oninput="runCalc()"></div>
+          </div>
+          <div class="calc-field">
+            <label>PSA 9 Market Value</label>
+            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-psa9" placeholder="0" min="0" oninput="runCalc()"></div>
+          </div>
+          <div class="calc-field">
+            <label>PSA 10 Market Value</label>
+            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-psa10" placeholder="0" min="0" oninput="runCalc()"></div>
+          </div>
+          <div class="calc-field">
+            <label>Grading Cost</label>
+            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-grading" value="38" min="0" oninput="runCalc()"></div>
+          </div>
+          <div class="calc-field">
+            <label>Gem Rate (PSA 10 %)</label>
+            <div class="calc-input-prefix"><span>%</span><input type="number" id="calc-gem" placeholder="e.g. 35" min="0" max="100" oninput="runCalc()"></div>
+          </div>
+        </div>
+        <div id="calc-verdict-grid" class="calc-verdict-grid" style="display:none;"></div>
+        <div id="calc-overall" style="display:none;"></div>
+        <div id="calc-empty" class="calc-empty">Enter at least two prices above to get a recommendation.</div>
+      </div>
+    </div>
+
     <!-- EXECUTIVE SUMMARY -->
     <div class="section">
       <div class="section-title">📊 Executive Summary</div>
@@ -526,71 +591,6 @@
       <div class="rule-box" style="margin-top:16px;">
         <p><strong>Why Football = PSA 9, Basketball = PSA 10:</strong> Football Prizm cards tend to have lower gem rates, so PSA 10s carry a bigger premium that's harder to justify at most price points. Basketball Prizm gems are more liquid and the PSA 10 market is deeper — PSA 10 is the market standard.</p>
         <p style="margin-top:8px;"><strong>Watch:</strong> For rising star rookies, raw prices can compress fast — the window to grade profitably closes quickly as raw prices chase the PSA 9 comp.</p>
-      </div>
-    </div>
-
-    <!-- TREND ANALYSIS -->
-    <div class="section">
-      <div class="section-title">📈 Trend Analysis <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Historical Sales Data</span></div>
-      <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/360-day windows — ratio expansion, velocity, and a buy signal.</p>
-
-      <div class="trend-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
-        <div>
-          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏈 Football</div>
-          <div class="trend-search">
-            <input type="text" id="trend-input-fb" placeholder="e.g. Drake Maye 229 or Mahomes Prizm 2017…" autocomplete="off"
-              oninput="trendAcFilter('football')" onfocus="loadTrendAutocomplete('football');trendAcFilter('football')"
-              onkeydown="trendAcKey(event,'football')" onblur="setTimeout(()=>trendAcClose('football'),150)">
-            <div id="trend-ac-fb" class="trend-ac"></div>
-            <button class="btn btn-primary" onclick="runTrendAnalysis('football')">Analyze</button>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏀 Basketball</div>
-          <div class="trend-search">
-            <input type="text" id="trend-input-bb" placeholder="e.g. Wembanyama 136 or Ant Edwards Prizm…" autocomplete="off"
-              oninput="trendAcFilter('basketball')" onfocus="loadTrendAutocomplete('basketball');trendAcFilter('basketball')"
-              onkeydown="trendAcKey(event,'basketball')" onblur="setTimeout(()=>trendAcClose('basketball'),150)">
-            <div id="trend-ac-bb" class="trend-ac"></div>
-            <button class="btn btn-primary" onclick="runTrendAnalysis('basketball')">Analyze</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="trend-loading" class="trend-loading" style="display:none;">Loading sales data…</div>
-      <div id="trend-results" style="display:none;"></div>
-      <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Search a card above to see historical trend analysis.</div>
-    </div>
-
-    <!-- GRADE DECISION CALCULATOR -->
-    <div class="section">
-      <div class="section-title">🧮 Grade Decision Calculator</div>
-      <div class="calc-wrap">
-        <div class="calc-inputs">
-          <div class="calc-field">
-            <label>Raw Card Price</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-raw" placeholder="0" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>PSA 9 Market Value</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-psa9" placeholder="0" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>PSA 10 Market Value</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-psa10" placeholder="0" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>Grading Cost</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-grading" value="38" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>Gem Rate (PSA 10 %)</label>
-            <div class="calc-input-prefix"><span>%</span><input type="number" id="calc-gem" placeholder="e.g. 35" min="0" max="100" oninput="runCalc()"></div>
-          </div>
-        </div>
-        <div id="calc-verdict-grid" class="calc-verdict-grid" style="display:none;"></div>
-        <div id="calc-overall" style="display:none;"></div>
-        <div id="calc-empty" class="calc-empty">Enter at least two prices above to get a recommendation.</div>
       </div>
     </div>
 
