@@ -1253,46 +1253,51 @@ async function doImport() {
     last_updated: lastUpdated
   }));
 
-  // Build portfolio_targets rows (new format: budget + thesis)
+  // Build portfolio_targets rows (only if key present in JSON)
+  const hasPortfolios = 'portfolios' in json;
   const ptRows = [];
-  const portfolios = json.portfolios || {};
-  for (const [tier, data] of Object.entries(portfolios)) {
-    (data.allocations || []).forEach(a => ptRows.push({
-      user_id: uid, budget_tier: tier,
-      card: a.card,
-      budget: a.budget ?? a.subtotal ?? null,
-      thesis: a.thesis || null,
-      description: data.description || null
-    }));
+  if (hasPortfolios) {
+    for (const [tier, data] of Object.entries(json.portfolios || {})) {
+      (data.allocations || []).forEach(a => ptRows.push({
+        user_id: uid, budget_tier: tier,
+        card: a.card,
+        budget: a.budget ?? a.subtotal ?? null,
+        thesis: a.thesis || null,
+        description: data.description || null
+      }));
+    }
   }
 
-  // Build ebay_searches rows
+  // Build ebay_searches rows (only if key present in JSON)
+  const hasEbay = 'ebay_searches' in json;
   const esRows = [];
-  const ebaySearches = json.ebay_searches || {};
-  const ebayMap = [
-    { key: 'football_graded',   sport: 'football',   category: 'graded' },
-    { key: 'football_raw',      sport: 'football',   category: 'raw' },
-    { key: 'basketball_graded', sport: 'basketball', category: 'graded' },
-    { key: 'basketball_raw',    sport: 'basketball', category: 'raw' },
-  ];
-  ebayMap.forEach(({ key, sport, category }) => {
-    (ebaySearches[key] || []).forEach(searchText => {
-      esRows.push({ user_id: uid, sport, category, search_text: searchText });
+  if (hasEbay) {
+    const ebaySearches = json.ebay_searches || {};
+    const ebayMap = [
+      { key: 'football_graded',   sport: 'football',   category: 'graded' },
+      { key: 'football_raw',      sport: 'football',   category: 'raw' },
+      { key: 'basketball_graded', sport: 'basketball', category: 'graded' },
+      { key: 'basketball_raw',    sport: 'basketball', category: 'raw' },
+    ];
+    ebayMap.forEach(({ key, sport, category }) => {
+      (ebaySearches[key] || []).forEach(searchText => {
+        esRows.push({ user_id: uid, sport, category, search_text: searchText });
+      });
     });
-  });
+  }
 
-  // Delete existing data
-  const [r1, r2, r3] = await Promise.all([
-    sb.from('investment_targets').delete().eq('user_id', uid),
-    sb.from('portfolio_targets').delete().eq('user_id', uid),
-    sb.from('ebay_searches').delete().eq('user_id', uid)
-  ]);
+  // Delete + re-insert targets always; portfolios/ebay only if present in JSON
+  const deletes = [sb.from('investment_targets').delete().eq('user_id', uid)];
+  if (hasPortfolios) deletes.push(sb.from('portfolio_targets').delete().eq('user_id', uid));
+  if (hasEbay)       deletes.push(sb.from('ebay_searches').delete().eq('user_id', uid));
 
-  if (r1.error || r2.error || r3.error) {
+  const delResults = await Promise.all(deletes);
+  const delErr = delResults.find(r => r.error);
+  if (delErr) {
     btn.disabled = false;
     btn.textContent = 'Import';
     msg.style.color = '#f85149';
-    msg.textContent = 'Delete error: ' + ((r1.error || r2.error || r3.error).message);
+    msg.textContent = 'Delete error: ' + delErr.error.message;
     msg.style.display = 'inline';
     return;
   }
@@ -1319,7 +1324,9 @@ async function doImport() {
   btn.disabled = false;
   btn.textContent = 'Import';
   msg.style.color = '#3fb950';
-  msg.textContent = `✓ Imported ${itRows.length} targets + ${ptRows.length} allocations + ${esRows.length} eBay searches`;
+  const ptNote = hasPortfolios ? ` + ${ptRows.length} allocations` : ' (portfolios unchanged)';
+  const esNote = hasEbay ? ` + ${esRows.length} eBay searches` : ' (eBay searches unchanged)';
+  msg.textContent = `✓ Imported ${itRows.length} targets${ptNote}${esNote}`;
   msg.style.display = 'inline';
 
   await loadData();
