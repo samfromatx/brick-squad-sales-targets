@@ -531,7 +531,7 @@
           </div>
           <div class="calc-field">
             <label>Grading Cost</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-grading" value="42" min="0" oninput="runCalc()"></div>
+            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-grading" value="38" min="0" oninput="runCalc()"></div>
           </div>
           <div class="calc-field">
             <label>Gem Rate (PSA 10 %)</label>
@@ -1874,7 +1874,7 @@ function runCalc() {
   const raw     = parseFloat(document.getElementById('calc-raw').value);
   const psa9    = parseFloat(document.getElementById('calc-psa9').value);
   const psa10   = parseFloat(document.getElementById('calc-psa10').value);
-  const grading = parseFloat(document.getElementById('calc-grading').value) || 42;
+  const grading = parseFloat(document.getElementById('calc-grading').value) || BA.GRADING_COST;
   const gem     = parseFloat(document.getElementById('calc-gem').value);
 
   const hasRaw  = !isNaN(raw)  && raw  > 0;
@@ -1886,109 +1886,123 @@ function runCalc() {
   const overallEl = document.getElementById('calc-overall');
   const emptyEl   = document.getElementById('calc-empty');
 
-  const anyInput = hasRaw || hasPsa9 || hasPsa10;
-  const canCalc  = (hasRaw && hasPsa9) || (hasPsa9 && hasPsa10);
-
-  if (!anyInput || !canCalc) {
+  const canCalc = (hasRaw && hasPsa9) || (hasPsa9 && hasPsa10);
+  if (!canCalc) {
     gridEl.style.display = 'none';
     overallEl.style.display = 'none';
     emptyEl.style.display = 'block';
     return;
   }
 
+  // Net prices after eBay fees (spec: EBAY_FEE_MULT = 0.87)
+  const net_psa9  = hasPsa9  ? psa9  * BA.EBAY_FEE_MULT : null;
+  const net_psa10 = hasPsa10 ? psa10 * BA.EBAY_FEE_MULT : null;
+  const net_psa8  = hasRaw   ? raw   * BA.PSA8_MULT      : null; // PSA 8 downside
+
   const cards = [];
   const signals = [];
 
-  // Raw vs PSA 9
+  // ── Raw viability ratio (spec Step 5) ────────────────────────────
   if (hasRaw && hasPsa9) {
     const ratio = raw / psa9;
-    const pct = (ratio * 100).toFixed(0);
     let color, rec;
     if (ratio < 0.40) {
-      color = 'v-green'; rec = 'Strong candidate to grade — EV favors grading if card is clean.';
+      color = 'v-green'; rec = 'Viable grade candidate — raw is cheap enough relative to PSA 9 that grading makes sense.';
       signals.push('grade');
-    } else if (ratio < 0.60) {
-      color = 'v-amber'; rec = 'Marginal — card must be near-perfect to be worth grading.';
+    } else if (ratio <= 0.60) {
+      color = 'v-amber'; rec = 'Marginal — card must be near-perfect to justify grading cost.';
       signals.push('marginal');
     } else {
-      color = 'v-red'; rec = 'Skip grading — raw price is too close to PSA 9. Buy the slab.';
+      color = 'v-red'; rec = 'Skip grading — buy the slab. Raw is too close to PSA 9 price.';
       signals.push('slab');
     }
-    cards.push({ label: 'Raw vs PSA 9 Ratio', value: pct + '%', rec, color });
+    cards.push({ label: 'Raw / PSA 9 Ratio', value: ratio.toFixed(2) + '×', rec, color });
+  }
 
-    const profit9 = psa9 - grading - raw;
-    const p9str = (profit9 >= 0 ? '+' : '') + '$' + profit9.toFixed(0);
+  // ── EV model (spec Step 6) — requires raw, psa9, psa10, gem ─────
+  if (hasRaw && hasPsa9 && hasPsa10 && hasGem) {
+    const p10   = gem / 100;
+    const p9    = 0.40;
+    const p_low = Math.max(0, 1 - p10 - p9);
+    const cost_basis = raw + grading;
+    const EV    = (p10 * net_psa10) + (p9 * net_psa9) + (p_low * net_psa8);
+    const net_ev = EV - cost_basis;
+    const evStr  = (net_ev >= 0 ? '+' : '') + '$' + net_ev.toFixed(0);
+    const color  = net_ev >= BA.MIN_PROFIT_FLOOR ? 'v-green' : net_ev >= 0 ? 'v-amber' : 'v-red';
+    const rec    = net_ev >= BA.MIN_PROFIT_FLOOR
+      ? `Positive grading EV. p10=${(p10*100).toFixed(0)}% · p9=40% · p8/below=${(p_low*100).toFixed(0)}% · cost basis $${cost_basis.toFixed(0)}.`
+      : net_ev >= 0
+      ? `Marginal EV — below $${BA.MIN_PROFIT_FLOOR} profit floor. Needs a very clean card.`
+      : `Negative EV — don't grade at these prices.`;
+    if (net_ev >= BA.MIN_PROFIT_FLOOR) signals.push('grade_ev');
+    cards.push({ label: 'Net EV (after eBay fees)', value: evStr, rec, color });
+  } else if (hasRaw && hasPsa9) {
+    // Simplified: no PSA 10 or gem rate — show PSA 9 net profit only
+    const cost_basis = raw + grading;
+    const net9 = net_psa9 - cost_basis;
+    const net9str = (net9 >= 0 ? '+' : '') + '$' + net9.toFixed(0);
     cards.push({
-      label: 'Profit if Grades PSA 9',
-      value: p9str,
-      rec: `After $${grading} grading cost. ${profit9 >= 0 ? 'Positive EV on grading.' : 'Negative — needs to grade 10 to profit.'}`,
-      color: profit9 >= 0 ? 'v-green' : 'v-red'
+      label: 'Net if Grades PSA 9',
+      value: net9str,
+      rec: `After $${grading} grading + 13% eBay fees. ${net9 >= BA.MIN_PROFIT_FLOOR ? 'Profitable.' : 'Below profit floor — needs PSA 10.'}`,
+      color: net9 >= BA.MIN_PROFIT_FLOOR ? 'v-green' : net9 >= 0 ? 'v-amber' : 'v-red'
     });
-
-    if (hasPsa10) {
-      const profit10 = psa10 - grading - raw;
-      const p10str = (profit10 >= 0 ? '+' : '') + '$' + profit10.toFixed(0);
-      let evNote = '';
-      if (hasGem) {
-        const ev = (gem / 100) * profit10 + (1 - gem / 100) * profit9;
-        evNote = ` Expected value: ${ev >= 0 ? '+' : ''}$${ev.toFixed(0)} at ${gem}% gem rate.`;
-      }
+    if (hasRaw && hasPsa10) {
+      const net10 = net_psa10 - cost_basis;
+      const net10str = (net10 >= 0 ? '+' : '') + '$' + net10.toFixed(0);
       cards.push({
-        label: 'Profit if Grades PSA 10',
-        value: p10str,
-        rec: `After $${grading} grading cost.${evNote}`,
-        color: profit10 >= 0 ? 'v-green' : 'v-amber'
+        label: 'Net if Grades PSA 10',
+        value: net10str,
+        rec: `After $${grading} grading + 13% eBay fees.`,
+        color: net10 >= BA.MIN_PROFIT_FLOOR ? 'v-green' : net10 >= 0 ? 'v-amber' : 'v-red'
       });
     }
   }
 
-  // PSA 9 vs PSA 10
+  // ── PSA 10/9 multiplier matrix (spec Step 7) ─────────────────────
   if (hasPsa9 && hasPsa10) {
     const mult = psa10 / psa9;
+    const gr   = hasGem ? gem : null;
     let color, rec;
-    if (mult < 2) {
-      color = 'v-green'; rec = 'Buy PSA 9 — PSA 10 premium is not worth it.'; signals.push('psa9');
-    } else if (mult < 3) {
-      color = 'v-green'; rec = 'PSA 9 still favored unless gem rate is very low.'; signals.push('psa9');
-    } else if (mult < 5) {
-      color = 'v-amber'; rec = hasGem && gem < 20 ? 'Situational — low gem rate may justify PSA 10.' : 'Situational — check gem rate and player trajectory.'; signals.push('situational');
+    if (mult < 1.5) {
+      color = 'v-green';
+      rec = gr > 35 ? 'Buy raw / PSA 9 — low multiplier + high gem rate, PSA 10 adds no premium.' : 'Buy PSA 9 — multiplier too low to justify chasing PSA 10.';
+      signals.push('psa9');
+    } else if (mult <= 3.5) {
+      if (gr !== null && gr < 15)       { color = 'v-amber'; rec = 'Strong grade play — low gem rate + healthy multiplier.'; signals.push('grade'); }
+      else if (gr !== null && gr <= 35) { color = 'v-amber'; rec = 'Run EV model — mid-range gem rate, multiplier supports grading.'; }
+      else                               { color = 'v-green'; rec = 'Grade for PSA 9 — high gem rate means PSA 10 premium isn\'t defensible.'; signals.push('psa9'); }
     } else {
-      const lowGem = hasGem && gem < 20;
-      color = lowGem ? 'v-amber' : 'v-red';
-      rec = lowGem ? 'PSA 10 may be justified — low gem rate creates real scarcity.' : 'High premium + high gem rate = PSA 10 overpriced.';
-      signals.push(lowGem ? 'psa10' : 'situational');
+      if (gr !== null && gr < 15)       { color = 'v-amber'; rec = 'PSA 10 scarcity is real — low gem rate supports the large premium.'; signals.push('psa10'); }
+      else if (gr !== null && gr <= 35) { color = 'v-red';   rec = 'Caution — fragile premium. High multiplier but gem rate isn\'t low enough.'; }
+      else                               { color = 'v-red';   rec = 'Avoid PSA 10 play — high gem rate will compress this premium.'; signals.push('psa9'); }
     }
-    cards.push({ label: 'PSA 10 / PSA 9 Multiplier', value: mult.toFixed(1) + '×', rec, color });
+    cards.push({ label: 'PSA 10 / PSA 9 Multiplier', value: mult.toFixed(2) + '×', rec, color });
 
     if (hasGem) {
       let gemColor, gemRec;
-      if (gem > 40 && mult < 3) {
-        gemColor = 'v-green'; gemRec = 'High gem rate will compress the PSA 10 premium over time. PSA 9 is the smart play.';
-      } else if (gem < 20 && mult > 4) {
-        gemColor = 'v-amber'; gemRec = 'Low gem rate + high multiplier = PSA 10s are genuinely scarce. Premium may hold.';
-      } else if (gem > 40 && mult > 3) {
-        gemColor = 'v-amber'; gemRec = 'High gem rate will likely compress this premium. Lean toward PSA 9.';
-      } else {
-        gemColor = 'v-gray'; gemRec = 'Gem rate is within normal range. Use multiplier and player trajectory to decide.';
-      }
+      if      (gem > 35 && mult < 1.5)  { gemColor = 'v-green'; gemRec = 'High gem rate + low mult = PSA 9 is the value play.'; }
+      else if (gem < 15 && mult > 3.5)  { gemColor = 'v-amber'; gemRec = 'Low gem rate + high mult = genuine PSA 10 scarcity. Premium may hold.'; }
+      else if (gem > 35 && mult > 3.5)  { gemColor = 'v-red';   gemRec = 'High gem rate will compress this large premium. Lean PSA 9.'; }
+      else                               { gemColor = 'v-gray';  gemRec = 'Gem rate within normal range. Use EV model and player trajectory.'; }
       cards.push({ label: 'Gem Rate Signal', value: gem + '%', rec: gemRec, color: gemColor });
     }
   }
 
-  // Overall recommendation
-  const hasGrade = signals.includes('grade');
-  const hasSlab  = signals.includes('slab');
-  const hasPsa9s = signals.includes('psa9');
-  const hasPsa10s= signals.includes('psa10');
+  // ── Overall recommendation ────────────────────────────────────────
+  const hasGrade  = signals.includes('grade') || signals.includes('grade_ev');
+  const hasSlab   = signals.includes('slab');
+  const hasPsa9s  = signals.includes('psa9');
+  const hasPsa10s = signals.includes('psa10');
   let overall = '';
-  if      (hasGrade && hasPsa9s)  overall = '📦 Buy raw and grade it — strong grading EV with PSA 9 as the target.';
-  else if (hasGrade)              overall = '📦 Raw card has good grading EV — buy raw and grade if condition is solid.';
-  else if (hasSlab  && hasPsa9s)  overall = '🏅 Buy the PSA 9 — raw is priced too high to grade, and PSA 9 beats PSA 10 on value here.';
-  else if (hasSlab  && hasPsa10s) overall = '🏅 Buy the PSA 10 — raw is too expensive to grade, and low gem rate supports the PSA 10 premium.';
-  else if (hasSlab)               overall = '🏅 Buy the slab — raw price is too close to graded to make grading worthwhile.';
-  else if (hasPsa9s)              overall = '🏅 Buy the PSA 9 — the PSA 10 multiplier is not justified at this price.';
+  if      (hasGrade && hasPsa9s)  overall = '📦 Buy raw and grade — strong EV with PSA 9 as the target outcome.';
+  else if (hasGrade)              overall = '📦 Buy raw and grade — grading EV clears the profit floor. Card condition matters.';
+  else if (hasSlab && hasPsa9s)   overall = '🏅 Buy the PSA 9 — raw is too expensive to grade and PSA 9 beats PSA 10 on value.';
+  else if (hasSlab && hasPsa10s)  overall = '🏅 Buy the PSA 10 — raw is too expensive to grade and low gem rate supports the premium.';
+  else if (hasSlab)               overall = '🏅 Buy the slab — raw price is too close to graded for grading to pencil out.';
+  else if (hasPsa9s)              overall = '🏅 Buy the PSA 9 — PSA 10 multiplier or gem rate doesn\'t justify the upgrade.';
   else if (hasPsa10s)             overall = '💎 Chase the PSA 10 — low gem rate creates genuine scarcity that supports the premium.';
-  else                            overall = '⚖️ Situational — check player trajectory, gem rate, and your hold timeline before committing.';
+  else                            overall = '⚖️ Situational — run the full EV model with gem rate to get a clear signal.';
 
   gridEl.innerHTML = cards.map(c => `
     <div class="calc-verdict ${c.color}">
