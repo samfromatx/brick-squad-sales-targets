@@ -1552,8 +1552,9 @@ async function fetchGemRate(cardName, sport) {
 async function loadTrendAutocomplete(sport) {
   if (_autocompleteLoaded[sport]) return;
   _autocompleteLoaded[sport] = true;
-  // Try each window in order until one loads (7d may be missing locally)
-  for (const w of WINDOWS[sport]) {
+  // Load from 30d first (most cards), fall back through remaining windows
+  const ordered = [WINDOWS[sport][W_30], ...WINDOWS[sport].filter((_, i) => i !== W_30)];
+  for (const w of ordered) {
     try {
       const data = await fetchCSV(w.file);
       if (data.length > 0) {
