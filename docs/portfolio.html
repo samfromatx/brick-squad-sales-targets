@@ -39,7 +39,7 @@
   .btn-signout:hover { color: #dc2626; border-color: rgba(220,38,38,.35); }
 
   /* CONTENT */
-  .content { padding: 24px; max-width: 1400px; }
+  .content { padding: 24px 20px; width: 100%; max-width: 100%; box-sizing: border-box; }
 
   /* STATS ROW */
   .stats-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
@@ -124,7 +124,7 @@
 
   @media (max-width: 600px) {
     .header h1 { font-size: 1.2rem; }
-    .content { padding: 16px; }
+    .content { padding: 16px; width: 100%; box-sizing: border-box; }
     .form-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
