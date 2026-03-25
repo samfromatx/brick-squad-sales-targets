@@ -292,7 +292,7 @@
           <th onclick="sortTable(9)">ROI</th>
           <th onclick="sortTable(10)">Date</th>
           <th></th>
-          <th>Notes</th>
+          <th onclick="sortTable(11)">Notes</th>
         </tr>
       </thead>
       <tbody id="portfolioBody">
@@ -725,13 +725,14 @@ function sortVal(e, col) {
     case 8:  return profit;
     case 9:  return roi;
     case 10: return e.date;
+    case 11: return e.notes;
     default: return null;
   }
 }
 
 function sortTable(col) {
   if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
-  else { sortCol = col; sortDir = col >= 3 ? 'desc' : 'asc'; }
+  else { sortCol = col; sortDir = (col >= 3 && col <= 10) ? 'desc' : 'asc'; }
   document.querySelectorAll('thead th').forEach((th, i) => {
     th.classList.remove('sort-asc', 'sort-desc');
     if (i === col) th.classList.add('sort-' + sortDir);
