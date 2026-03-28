@@ -1167,7 +1167,7 @@ async function doImport() {
   (json.football_graded || json.football_graded_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'football', category: 'graded',
     rank: r.rank, card: r.card, grade: r.grade,
-    target: r.target, max: r.max, trend: parseTrend(r.trend), vol: r.vol,
+    target: r.target, max: r.max, trend: parseTrend(r.trend), vol: r.vol != null ? String(r.vol) : null,
     sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
   }));
@@ -1175,7 +1175,7 @@ async function doImport() {
   (json.basketball_graded || json.basketball_graded_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'basketball', category: 'graded',
     rank: r.rank, card: r.card, grade: r.grade,
-    target: r.target, max: r.max, trend: parseTrend(r.trend), vol: r.vol,
+    target: r.target, max: r.max, trend: parseTrend(r.trend), vol: r.vol != null ? String(r.vol) : null,
     sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
   }));
@@ -1183,7 +1183,7 @@ async function doImport() {
   (json.football_raw_to_grade || json.football_raw_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'football', category: 'raw',
     rank: r.rank, card: r.card,
-    target_raw: r.target_raw, max_raw: r.max_raw, trend: parseTrend(r.trend), vol: r.vol,
+    target_raw: r.target_raw, max_raw: r.max_raw, trend: parseTrend(r.trend), vol: r.vol != null ? String(r.vol) : null,
     est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: parseGemRate(r.gem_rate),
     roi: parseRoi(r.roi), sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
@@ -1192,7 +1192,7 @@ async function doImport() {
   (json.basketball_raw_to_grade || json.basketball_raw_targets || []).forEach(r => itRows.push({
     user_id: uid, sport: 'basketball', category: 'raw',
     rank: r.rank, card: r.card,
-    target_raw: r.target_raw, max_raw: r.max_raw, trend: parseTrend(r.trend), vol: r.vol,
+    target_raw: r.target_raw, max_raw: r.max_raw, trend: parseTrend(r.trend), vol: r.vol != null ? String(r.vol) : null,
     est_psa9: r.est_psa9, est_psa10: r.est_psa10, gem_rate: parseGemRate(r.gem_rate),
     roi: parseRoi(r.roi), sell_at: r.sell_at, rationale: r.rationale, new: r.new || false,
     last_updated: lastUpdated
