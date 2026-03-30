@@ -384,6 +384,7 @@
   <div class="tab" onclick="showTab('football-targets')">🏈 Football Targets</div>
   <div class="tab" onclick="showTab('basketball-targets')">🏀 Basketball Targets</div>
   <div class="tab" onclick="showTab('raw-grade')">📦 Raw→Grade</div>
+  <div class="tab" onclick="showTab('bounce-back')">🔄 Bounce Back</div>
   <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
   <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
   <div class="tab" onclick="showTab('ebay-searches')">🔍 eBay Searches</div>
@@ -394,6 +395,7 @@
     <option value="football-targets">🏈 Football Targets</option>
     <option value="basketball-targets">🏀 Basketball Targets</option>
     <option value="raw-grade">📦 Raw→Grade</option>
+    <option value="bounce-back">🔄 Bounce Back</option>
     <option value="portfolios">💰 Portfolios</option>
     <option value="card-show">🛒 Card Show</option>
     <option value="ebay-searches">🔍 eBay Searches</option>
@@ -617,6 +619,11 @@
     <div id="raw-grade-bb-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
+  <!-- ===== BOUNCE BACK (DB-driven) ===== -->
+  <div id="bounce-back" class="tab-content">
+    <div id="bounce-back-container"><p class="empty-msg">Loading…</p></div>
+  </div>
+
   <!-- ===== PORTFOLIOS (DB-driven) ===== -->
   <div id="portfolios" class="tab-content">
     <div class="sub-tabs">
@@ -754,6 +761,7 @@ async function loadData() {
   renderBBTargets(t.filter(r => r.sport === 'basketball' && r.category === 'graded'));
   renderFBRaw(t.filter(r => r.sport === 'football' && r.category === 'raw'));
   renderBBRaw(t.filter(r => r.sport === 'basketball' && r.category === 'raw'));
+  renderBounceBack(t.filter(r => r.category === 'bounce_back'));
   renderCardShow(t.filter(r => r.category === 'graded'));
   renderPortfolios(p);
   renderEbaySearches(e);
@@ -946,6 +954,52 @@ function renderRawSection(id, rows, emoji, sportLabel) {
     </div>`;
 }
 
+// ── Render: Bounce Back ───────────────────────────────────────────
+function renderBounceBack(rows) {
+  const id = 'bounce-back-container';
+  if (!rows.length) { noDataMsg(id); return; }
+
+  const trends = rows.map(r => parseFloat(r.trend) || 0);
+  const avgDip = Math.round(trends.reduce((s, v) => s + v, 0) / trends.length);
+  const avgBuy = Math.round(rows.reduce((s, r) => s + (parseFloat(r.target) || 0), 0) / rows.length);
+  const newCount = rows.filter(r => r.new).length;
+
+  document.getElementById(id).innerHTML = `
+    <div class="section">
+      <div class="section-title">🔄 Bounce Back Targets
+        <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Post-dip entries — buy the selloff, sell the recovery</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="label">Total Targets</div><div class="value">${rows.length}</div><div class="sub">Cards in dip</div></div>
+        <div class="stat-card accent-red"><div class="label">Avg Dip</div><div class="value" style="color:#f85149">${avgDip}%</div><div class="sub">From recent peak</div></div>
+        <div class="stat-card accent-amber"><div class="label">Avg Buy</div><div class="value" style="color:#d2961e">$${avgBuy}</div><div class="sub">Target entry price</div></div>
+        <div class="stat-card accent-green"><div class="label">New This Week</div><div class="value" style="color:#3fb950">${newCount}</div><div class="sub">Fresh additions</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Card</th><th>Grade</th>
+            <th>Buy</th><th>Max</th><th>Sell At</th><th>Trend</th><th>Vol</th><th>Rationale</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => {
+              const sportBadge = r.sport === 'football' ? ' 🏈' : r.sport === 'basketball' ? ' 🏀' : '';
+              return `<tr>
+                <td>${r.rank}</td>
+                <td style="white-space:normal;min-width:180px">${esc(r.card)}${sportBadge}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
+                <td>${gradeBadgeHTML(r.grade)}</td>
+                <td>$${r.target}</td><td>$${r.max}</td><td>$${r.sell_at}</td>
+                <td>${trendHTML(r.trend)}</td>
+                <td>${r.vol}</td>
+                <td>${esc(r.rationale)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
 function renderFBRaw(rows) { renderRawSection('raw-grade-fb-container', rows, '🏈', 'Football'); }
 function renderBBRaw(rows) { renderRawSection('raw-grade-bb-container', rows, '🏀', 'Basketball'); }
 
@@ -1056,14 +1110,15 @@ function renderEbaySearches(rows) {
   }
 
   const sections = [
-    { sport: 'football',   category: 'graded', label: '🏈 Football — Graded' },
-    { sport: 'football',   category: 'raw',    label: '🏈 Football — Raw' },
-    { sport: 'basketball', category: 'graded', label: '🏀 Basketball — Graded' },
-    { sport: 'basketball', category: 'raw',    label: '🏀 Basketball — Raw' },
+    { sport: 'football',   category: 'graded',       label: '🏈 Football — Graded' },
+    { sport: 'football',   category: 'raw',           label: '🏈 Football — Raw' },
+    { sport: 'basketball', category: 'graded',        label: '🏀 Basketball — Graded' },
+    { sport: 'basketball', category: 'raw',           label: '🏀 Basketball — Raw' },
+    { sport: null,         category: 'bounce_back',   label: '🔄 Bounce Back' },
   ];
 
   el.innerHTML = sections.map(({ sport, category, label }) => {
-    let sRows = rows.filter(r => r.sport === sport && r.category === category);
+    let sRows = rows.filter(r => r.category === category && (sport === null || r.sport === sport));
     if (!sRows.length) return '';
     // sort by rank (nulls last)
     sRows = sRows.slice().sort((a, b) => {
@@ -1198,6 +1253,15 @@ async function doImport() {
     last_updated: lastUpdated
   }));
 
+  (json.bounce_back || []).forEach((r, i) => itRows.push({
+    user_id: uid, sport: r.sport || null, category: 'bounce_back',
+    rank: r.rank ?? i + 1, card: r.card, grade: r.grade || null,
+    target: r.target ?? null, max: r.max ?? null, trend: parseTrend(r.trend),
+    vol: r.vol != null ? String(r.vol) : null,
+    sell_at: r.sell_at ?? null, rationale: r.rationale || null, new: r.new || false,
+    last_updated: lastUpdated
+  }));
+
   // Build portfolio_targets rows (only if key present in JSON)
   const hasPortfolios = 'portfolios' in json;
   const ptRows = [];
@@ -1223,6 +1287,7 @@ async function doImport() {
       { key: 'football_raw',      sport: 'football',   category: 'raw' },
       { key: 'basketball_graded', sport: 'basketball', category: 'graded' },
       { key: 'basketball_raw',    sport: 'basketball', category: 'raw' },
+      { key: 'bounce_back',       sport: null,         category: 'bounce_back' },
     ];
     ebayMap.forEach(({ key, sport, category }) => {
       (ebaySearches[key] || []).forEach(item => {
