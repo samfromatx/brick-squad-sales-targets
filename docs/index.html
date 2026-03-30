@@ -961,37 +961,110 @@ function renderBounceBack(rows) {
 
   const trends = rows.map(r => parseFloat(r.trend) || 0);
   const avgDip = Math.round(trends.reduce((s, v) => s + v, 0) / trends.length);
-  const avgBuy = Math.round(rows.reduce((s, r) => s + (parseFloat(r.target) || 0), 0) / rows.length);
   const newCount = rows.filter(r => r.new).length;
+  const qualCount = rows.filter(r => (r.score || 0) >= 3 && r.s1_cheap).length;
+
+  function bbScoreBadge(score) {
+    if (score == null) return '<span style="color:#8b949e">—</span>';
+    const color = score >= 4 ? '#3fb950' : score >= 3 ? '#d2961e' : '#f85149';
+    return `<span style="color:${color};font-weight:700;font-size:1rem">${score}/5</span>`;
+  }
+
+  function signalDots(r) {
+    return [
+      { key: 's1_cheap',         label: 'S1' },
+      { key: 's2_stable',        label: 'S2' },
+      { key: 's3_not_priced_in', label: 'S3' },
+      { key: 's4_volume',        label: 'S4' },
+      { key: 's5_no_spike',      label: 'S5' },
+    ].map(s => {
+      const val = r[s.key];
+      const color = val === true ? '#3fb950' : val === false ? '#f85149' : '#8b949e';
+      const dot = val != null ? '●' : '○';
+      return `<span style="color:${color};font-size:.72rem;white-space:nowrap">${s.label}<span style="font-size:.6rem">${dot}</span></span>`;
+    }).join(' ');
+  }
+
+  function avgGrid(r) {
+    const fmt = v => v != null ? `$${v}` : '<span style="color:#8b949e">—</span>';
+    return `<div style="display:grid;grid-template-columns:auto auto;gap:0 10px;font-size:.72rem;line-height:1.6">
+      <span style="color:#8b949e">180d</span><span style="color:#8b949e">30d</span>
+      <span>${fmt(r.avg_180)}</span><span>${fmt(r.avg_30)}</span>
+      <span style="color:#8b949e">14d</span><span style="color:#8b949e">7d</span>
+      <span>${fmt(r.avg_14)}</span><span>${fmt(r.avg_7)}</span>
+    </div>`;
+  }
 
   document.getElementById(id).innerHTML = `
     <div class="section">
       <div class="section-title">🔄 Bounce Back Targets
         <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Post-dip entries — buy the selloff, sell the recovery</span>
       </div>
+
+      <details style="margin:0 0 16px;background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden">
+        <summary style="padding:10px 14px;cursor:pointer;color:#58a6ff;font-size:.85rem;font-weight:600;list-style:none;display:flex;align-items:center;gap:6px">
+          📊 5-Signal Bounce-Back Scoring Model <span style="color:#8b949e;font-weight:400;font-size:.8rem;margin-left:4px">▸ click to expand</span>
+        </summary>
+        <div style="padding:12px 16px 16px;border-top:1px solid #21262d">
+          <p style="margin:0 0 10px;font-size:.82rem;color:#c9d1d9">A card qualifies if it scores <strong>3 or more signals</strong> and <strong style="color:#f85149">S1 is mandatory</strong> regardless of total score.</p>
+          <div class="tbl-wrap">
+            <table style="font-size:.78rem">
+              <thead><tr><th style="width:40px">#</th><th style="min-width:150px">Signal</th><th>Rule</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td><strong style="color:#f85149">S1*</strong></td><td><strong>Cheap vs norm</strong></td><td>30-day avg ≥15% below 180-day avg</td><td>Genuinely undervalued vs established range, not just below a one-time spike</td></tr>
+                <tr><td>S2</td><td><strong>Stabilizing</strong></td><td>14-day avg ≥ 30-day avg (within 3% tolerance)</td><td>Price has stopped falling and is leveling off or recovering</td></tr>
+                <tr><td>S3</td><td><strong>Recovery not priced in</strong></td><td>7-day avg &lt; 90% of 180-day avg</td><td>The bounce hasn't already happened — room left to run</td></tr>
+                <tr><td>S4</td><td><strong>Market still active</strong></td><td>30-day volume ≥ 25% of monthly 360-day pace</td><td>Real buyers still transacting; card hasn't gone dead</td></tr>
+                <tr><td>S5</td><td><strong>No spike distortion</strong></td><td>180-day max &lt; 3× the 180-day average</td><td>High ceiling is real, not an outlier auction inflating the dip calculation</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin:10px 0 0;font-size:.78rem;color:#8b949e">Min threshold: 3/5 (S1 + any two others) &nbsp;·&nbsp; S3 is the recovery filter — a card can look like a great dip on 30d data but already be fully recovered. Always check 7d vs 180d avg before acting. &nbsp;·&nbsp; Do not use 365d max sale as the dip baseline.</p>
+        </div>
+      </details>
+
       <div class="stats-row">
         <div class="stat-card"><div class="label">Total Targets</div><div class="value">${rows.length}</div><div class="sub">Cards in dip</div></div>
-        <div class="stat-card accent-red"><div class="label">Avg Dip</div><div class="value" style="color:#f85149">${avgDip}%</div><div class="sub">From recent peak</div></div>
-        <div class="stat-card accent-amber"><div class="label">Avg Buy</div><div class="value" style="color:#d2961e">$${avgBuy}</div><div class="sub">Target entry price</div></div>
-        <div class="stat-card accent-green"><div class="label">New This Week</div><div class="value" style="color:#3fb950">${newCount}</div><div class="sub">Fresh additions</div></div>
+        <div class="stat-card accent-green"><div class="label">Qualify (≥3/5)</div><div class="value" style="color:#3fb950">${qualCount}</div><div class="sub">S1 + 2 signals met</div></div>
+        <div class="stat-card accent-red"><div class="label">Avg Dip</div><div class="value" style="color:#f85149">${avgDip}%</div><div class="sub">30d trend</div></div>
+        <div class="stat-card accent-amber"><div class="label">New This Week</div><div class="value" style="color:#d2961e">${newCount}</div><div class="sub">Fresh additions</div></div>
       </div>
+
       <div class="tbl-wrap">
         <table>
           <thead><tr>
-            <th>#</th><th>Card</th><th>Grade</th>
-            <th>Buy</th><th>Max</th><th>Sell At</th><th>Trend</th><th>Vol</th><th>Rationale</th>
+            <th>#</th>
+            <th>Card</th>
+            <th>Buy → Sell</th>
+            <th>Trend</th>
+            <th>Vol</th>
+            <th>Price Avgs</th>
+            <th>Score</th>
+            <th>Rationale</th>
           </tr></thead>
           <tbody>
             ${rows.map(r => {
               const sportBadge = r.sport === 'football' ? ' 🏈' : r.sport === 'basketball' ? ' 🏀' : '';
               return `<tr>
-                <td>${r.rank}</td>
-                <td style="white-space:normal;min-width:180px">${esc(r.card)}${sportBadge}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
-                <td>${gradeBadgeHTML(r.grade)}</td>
-                <td>$${r.target}</td><td>$${r.max}</td><td>$${r.sell_at}</td>
-                <td>${trendHTML(r.trend)}</td>
-                <td>${r.vol}</td>
-                <td>${esc(r.rationale)}</td>
+                <td style="text-align:center">${r.rank}</td>
+                <td style="white-space:normal;min-width:160px">
+                  ${esc(r.card)}${sportBadge}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}
+                  <div style="margin-top:3px">${gradeBadgeHTML(r.grade)}</div>
+                </td>
+                <td style="white-space:nowrap;text-align:center">
+                  <span style="color:#3fb950;font-weight:600">$${r.target}</span>
+                  <span style="color:#8b949e;font-size:.8rem"> → </span>
+                  <span style="color:#58a6ff;font-weight:600">$${r.sell_at}</span>
+                  <div style="font-size:.72rem;color:#8b949e">max $${r.max}</div>
+                </td>
+                <td style="text-align:center">${trendHTML(r.trend)}</td>
+                <td style="text-align:center;white-space:nowrap;font-size:.85rem">${r.vol}</td>
+                <td>${avgGrid(r)}</td>
+                <td style="text-align:center;min-width:90px">
+                  ${bbScoreBadge(r.score)}
+                  <div style="margin-top:4px;display:flex;gap:3px;justify-content:center;flex-wrap:wrap">${signalDots(r)}</div>
+                </td>
+                <td style="white-space:normal;min-width:160px;font-size:.8rem;color:#8b949e">${esc(r.rationale)}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -1259,6 +1332,12 @@ async function doImport() {
     target: r.target ?? null, max: r.max ?? null, trend: parseTrend(r.trend),
     vol: r.vol != null ? String(r.vol) : null,
     sell_at: r.sell_at ?? null, rationale: r.rationale || null, new: r.new || false,
+    avg_180: r.avg_180 ?? null, avg_30: r.avg_30 ?? null,
+    avg_14: r.avg_14 ?? null, avg_7: r.avg_7 ?? null,
+    score: r.score ?? null,
+    s1_cheap: r.s1_cheap ?? null, s2_stable: r.s2_stable ?? null,
+    s3_not_priced_in: r.s3_not_priced_in ?? null, s4_volume: r.s4_volume ?? null,
+    s5_no_spike: r.s5_no_spike ?? null,
     last_updated: lastUpdated
   }));
 
