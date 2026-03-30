@@ -1254,7 +1254,7 @@ async function doImport() {
   }));
 
   (json.bounce_back || []).forEach((r, i) => itRows.push({
-    user_id: uid, sport: r.sport || null, category: 'bounce_back',
+    user_id: uid, sport: r.sport || 'football', category: 'bounce_back',
     rank: r.rank ?? i + 1, card: r.card, grade: r.grade || null,
     target: r.target ?? null, max: r.max ?? null, trend: parseTrend(r.trend),
     vol: r.vol != null ? String(r.vol) : null,
@@ -1287,7 +1287,7 @@ async function doImport() {
       { key: 'football_raw',      sport: 'football',   category: 'raw' },
       { key: 'basketball_graded', sport: 'basketball', category: 'graded' },
       { key: 'basketball_raw',    sport: 'basketball', category: 'raw' },
-      { key: 'bounce_back',       sport: null,         category: 'bounce_back' },
+      { key: 'bounce_back',       sport: 'football',   category: 'bounce_back' },
     ];
     ebayMap.forEach(({ key, sport, category }) => {
       (ebaySearches[key] || []).forEach(item => {
