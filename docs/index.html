@@ -262,6 +262,20 @@
   .ratio-down { color: #dc2626; font-weight: 600; }
   .ratio-flat { color: #6b7280; }
 
+  /* Trend results sub-tabs */
+  .trend-subtabs { display: flex; gap: 2px; margin: 0 0 14px; border-bottom: 2px solid #e5e7eb; }
+  .trend-subtab { background: none; border: none; border-bottom: 3px solid transparent; padding: 6px 16px 9px; font-size: .83rem; font-weight: 600; color: #9ca3af; cursor: pointer; margin-bottom: -2px; transition: color .15s, border-color .15s; }
+  .trend-subtab:hover { color: #374151; }
+  .trend-subtab.active { color: #111827; border-bottom-color: #2563eb; }
+
+  /* Bounce-back score block */
+  .bb-score-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .bb-score-header { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .bb-grade-block { text-align: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 20px; min-width: 110px; }
+  .bb-grade-label { font-size: .68rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .bb-score-num { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+  .bb-qualify { font-size: .72rem; font-weight: 700; margin-top: 3px; }
+
   /* Prevent any element from causing page-level horizontal scroll */
   body, #mainContent { overflow-x: hidden; }
 
@@ -1553,7 +1567,7 @@ const WINDOWS = {
   ],
 };
 // Window index constants (0-based, after adding 7d/14d)
-const W_30=2, W_90=4, W_180=5;
+const W_7=0, W_14=1, W_30=2, W_90=4, W_180=5, W_360=6;
 
 const _csvCache = {};
 const _autocompleteLoaded = { football: false, basketball: false };
@@ -1658,6 +1672,15 @@ async function fetchGemRate(cardName, sport) {
 
   const fallback = sport === 'basketball' ? BA.GEM_FALLBACK_BB : BA.GEM_FALLBACK_FB;
   return { gemRate: fallback, source: rows ? 'file (no match — using fallback)' : 'estimated' };
+}
+
+function showTrendTab(tab) {
+  ['analysis', 'bb'].forEach(t => {
+    const panel = document.getElementById('trend-tab-' + t);
+    const btn   = document.getElementById('trend-tab-btn-' + t);
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+    if (btn)   btn.classList.toggle('active', t === tab);
+  });
 }
 
 async function loadTrendAutocomplete(sport) {
@@ -1973,9 +1996,113 @@ async function runTrendAnalysis(sport) {
     const lowConfHtml = confidence === 'Low'
       ? `<div class="ba-low-conf">⚠️ Low confidence — limited sales data. Treat this as directional only.</div>` : '';
 
+    // ── Bounce Back Score ─────────────────────────────────────────
+    function computeBB(gradeKey) {
+      const a180   = avg(wr[W_180][gradeKey]);
+      const a30    = avg(wr[W_30 ][gradeKey]);
+      const a14    = avg(wr[W_14 ][gradeKey]);
+      const a7     = avg(wr[W_7  ][gradeKey]);
+      const max180 = parsePrice(wr[W_180][gradeKey]?.['Max Sale']);
+      const vol30  = nsales(wr[W_30 ][gradeKey]);
+      const vol360 = nsales(wr[W_360][gradeKey]);
+      const monthlyPace = vol360 > 0 ? vol360 / 12 : null;
+
+      const s1 = (a30 && a180)               ? a30 < a180 * 0.85                  : null;
+      const s2 = (a14 && a30)                ? a14 >= a30 * 0.97                  : null;
+      const s3 = (a7  && a180)               ? a7  < a180 * 0.90                  : null;
+      const s4 = (vol30 > 0 && monthlyPace)  ? vol30 >= monthlyPace * 0.25        : null;
+      const s5 = (max180 && a180)            ? max180 < a180 * 3                  : null;
+
+      const score     = [s1, s2, s3, s4, s5].filter(s => s === true).length;
+      const qualifies = s1 === true && score >= 3;
+      return { a180, a30, a14, a7, max180, vol30, vol360, monthlyPace, s1, s2, s3, s4, s5, score, qualifies };
+    }
+
+    function bbSigCell(pass, detail) {
+      if (pass === null) return `<td style="color:#9ca3af;text-align:center;font-size:.78rem">—</td>`;
+      const icon  = pass ? '✅' : '❌';
+      const color = pass ? '#15803d' : '#dc2626';
+      return `<td style="text-align:center;font-size:.8rem;color:${color};white-space:nowrap">${icon} ${detail}</td>`;
+    }
+
+    function bbBlock(label, bb) {
+      const sc = bb.score >= 4 ? '#15803d' : bb.score >= 3 ? '#d2961e' : '#dc2626';
+      const qc = bb.qualifies ? '#15803d' : '#dc2626';
+      const qt = bb.qualifies ? '✅ Qualifies' : bb.s1 === false ? '❌ S1 fail' : bb.s1 === null ? '⚠ no data' : '❌ Score < 3';
+      return `<div class="bb-grade-block">
+        <div class="bb-grade-label">${label}</div>
+        <div class="bb-score-num" style="color:${sc}">${bb.score}/5</div>
+        <div class="bb-qualify" style="color:${qc}">${qt}</div>
+      </div>`;
+    }
+
+    function bbTabHTML(p9, p10) {
+      const fd = v => v == null ? '—' : '$' + (v >= 10 ? Math.round(v) : v.toFixed(2));
+      const fp = (a, b) => (a && b) ? ((a / b - 1) * 100).toFixed(1) + '%' : '—';
+      const fv = (vol, pace) => pace != null ? `${vol} sales · pace ${pace.toFixed(1)}/mo` : vol > 0 ? `${vol} sales` : '—';
+
+      const rows = [
+        [ '<strong style="color:#dc2626">S1★</strong>', '<strong>Cheap vs norm</strong>',         '30d avg ≥15% below 180d avg',
+          p9.s1,  `${fp(p9.a30,  p9.a180)}  (${fd(p9.a30)}  vs ${fd(p9.a180)})`,
+          p10.s1, `${fp(p10.a30, p10.a180)} (${fd(p10.a30)} vs ${fd(p10.a180)})` ],
+        [ 'S2', '<strong>Stabilizing</strong>',           '14d avg ≥ 30d avg (within 3%)',
+          p9.s2,  `${fp(p9.a14,  p9.a30)}  (${fd(p9.a14)}  vs ${fd(p9.a30)})`,
+          p10.s2, `${fp(p10.a14, p10.a30)} (${fd(p10.a14)} vs ${fd(p10.a30)})` ],
+        [ 'S3', '<strong>Recovery not priced in</strong>', '7d avg &lt; 90% of 180d avg',
+          p9.s3,  `${fp(p9.a7,   p9.a180)}  (${fd(p9.a7)}  vs ${fd(p9.a180)})`,
+          p10.s3, `${fp(p10.a7,  p10.a180)} (${fd(p10.a7)} vs ${fd(p10.a180)})` ],
+        [ 'S4', '<strong>Market still active</strong>',   '30d vol ≥ 25% of monthly 360d pace',
+          p9.s4,  fv(p9.vol30,  p9.monthlyPace),
+          p10.s4, fv(p10.vol30, p10.monthlyPace) ],
+        [ 'S5', '<strong>No spike distortion</strong>',   '180d max &lt; 3× 180d avg',
+          p9.s5,  `${fd(p9.max180)} vs 3× = ${fd(p9.a180  ? p9.a180  * 3 : null)}`,
+          p10.s5, `${fd(p10.max180)} vs 3× = ${fd(p10.a180 ? p10.a180 * 3 : null)}` ],
+      ];
+
+      return `<div class="bb-score-wrap">
+        <div class="ba-header">🔄 Bounce Back Score</div>
+        <div class="bb-score-header">
+          ${bbBlock('PSA 9', p9)}
+          ${bbBlock('PSA 10', p10)}
+        </div>
+        <div class="trend-table-wrap">
+          <table style="font-size:.8rem">
+            <thead><tr>
+              <th style="width:36px">#</th><th style="min-width:130px">Signal</th>
+              <th style="min-width:160px;font-weight:400;color:#9ca3af">Rule</th>
+              <th style="min-width:160px">PSA 9</th><th style="min-width:160px">PSA 10</th>
+            </tr></thead>
+            <tbody>
+              ${rows.map(([num, label, rule, p9pass, p9det, p10pass, p10det]) => `<tr>
+                <td>${num}</td>
+                <td style="white-space:normal">${label}</td>
+                <td style="font-size:.72rem;color:#9ca3af;white-space:normal">${rule}</td>
+                ${bbSigCell(p9pass, p9det)}
+                ${bbSigCell(p10pass, p10det)}
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;padding:8px 12px;background:#f9fafb;border-radius:6px;font-size:.72rem;color:#9ca3af;line-height:1.9">
+          <strong style="color:#6b7280">Data inputs</strong> &nbsp;·&nbsp;
+          <strong>PSA 9:</strong> 180d ${fd(p9.a180)} · 30d ${fd(p9.a30)} · 14d ${fd(p9.a14)} · 7d ${fd(p9.a7)} · 180d max ${fd(p9.max180)} · 30d vol ${p9.vol30 || '—'} · 360d/mo ${p9.monthlyPace != null ? p9.monthlyPace.toFixed(1) : '—'}
+          &nbsp;&nbsp;<strong>PSA 10:</strong> 180d ${fd(p10.a180)} · 30d ${fd(p10.a30)} · 14d ${fd(p10.a14)} · 7d ${fd(p10.a7)} · 180d max ${fd(p10.max180)} · 30d vol ${p10.vol30 || '—'} · 360d/mo ${p10.monthlyPace != null ? p10.monthlyPace.toFixed(1) : '—'}
+        </div>
+      </div>`;
+    }
+
+    const bbP9  = computeBB('psa9');
+    const bbP10 = computeBB('psa10');
+
     resultsEl.innerHTML = `
       <div class="trend-card-name">${esc(query)}</div>
 
+      <div class="trend-subtabs">
+        <button id="trend-tab-btn-analysis" class="trend-subtab active" onclick="showTrendTab('analysis')">📈 Analysis</button>
+        <button id="trend-tab-btn-bb"       class="trend-subtab"        onclick="showTrendTab('bb')">🔄 Bounce Back</button>
+      </div>
+
+      <div id="trend-tab-analysis">
       <div class="trend-table-wrap">
         <table>
           <thead><tr><th>Window</th><th>Raw Avg</th><th>PSA 9 Avg</th><th>PSA 10 Avg</th><th>Raw/9</th><th>9/10</th></tr></thead>
@@ -2019,6 +2146,11 @@ async function runTrendAnalysis(sport) {
           <span class="conf-badge" style="background:${confBg}">${confidence} Confidence</span>
         </div>
         ${lowConfHtml}
+      </div>
+      </div>
+
+      <div id="trend-tab-bb" style="display:none">
+        ${bbTabHTML(bbP9, bbP10)}
       </div>`;
 
     loadEl.style.display = 'none';
