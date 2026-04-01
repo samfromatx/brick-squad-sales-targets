@@ -304,13 +304,13 @@
           <th onclick="sortTable(4)">Qty</th>
           <th onclick="sortTable(5)">Grading $</th>
           <th onclick="sortTable(6)">Total Cost</th>
+          <th>7d Avg</th>
+          <th>30d Avg</th>
           <th onclick="sortTable(7)">Target Sell</th>
           <th onclick="sortTable(8)">Actual Sale</th>
           <th onclick="sortTable(9)">Sale Venue</th>
           <th onclick="sortTable(10)">Profit</th>
           <th onclick="sortTable(11)">Date</th>
-          <th>7d Avg</th>
-          <th>30d Avg</th>
           <th></th>
           <th onclick="sortTable(12)">Notes</th>
         </tr>
@@ -747,13 +747,13 @@ function renderTable() {
       <td>${e.qty}</td>
       <td>${e.grading > 0 ? fmt(e.grading) : '—'}</td>
       <td><strong>${fmt(totalCost)}</strong></td>
+      <td style="color:#374151;">${getAvg(e, '7')}</td>
+      <td style="color:#374151;">${getAvg(e, '30')}</td>
       <td>${e.target > 0 ? fmt(e.target) : '—'}</td>
       <td>${e.actualSale > 0 ? fmt(e.actualSale) : '—'}</td>
       <td>${e.saleVenue ? esc(e.saleVenue) : '—'}</td>
       <td class="${profitCls}">${profit !== null ? (profit >= 0 ? '+' : '') + fmt(profit) : '—'}</td>
       <td>${e.date || '—'}</td>
-      <td style="color:#374151;">${getAvg(e, '7')}</td>
-      <td style="color:#374151;">${getAvg(e, '30')}</td>
       <td style="white-space:nowrap;">
         <button class="btn-edit btn-sm" onclick="editEntry(${e.id})">✏️</button>
         <button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})" style="margin-left:4px;">✕</button>
@@ -798,7 +798,7 @@ function sortTable(col) {
 // ── Export CSV ────────────────────────────────────────────────────
 function exportCSV() {
   if (!entries.length) { alert('No entries to export.'); return; }
-  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Actual Sale','Sale Venue','Profit','Date','7d Avg','30d Avg','Notes'];
+  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','7d Avg','30d Avg','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes'];
   const rows = entries.map(e => {
     const totalCost    = e.price * e.qty + e.grading;
     const profit       = e.target > 0 ? e.target * e.qty - totalCost : '';
@@ -807,9 +807,10 @@ function exportCSV() {
       : '';
     const actualProfit = actualRevenue !== '' ? (actualRevenue - totalCost).toFixed(2) : '';
     return [e.card, e.sport, e.grade, e.price, e.qty, e.grading, totalCost.toFixed(2),
+            getAvg(e, '7'), getAvg(e, '30'),
             e.target || '', e.actualSale || '', e.saleVenue || '',
             profit !== '' ? profit.toFixed(2) : '',
-            e.date, getAvg(e, '7'), getAvg(e, '30'), e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+            e.date, e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   });
   const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
@@ -855,7 +856,7 @@ function buildPriceLookup(rows) {
     const key = (r['Card'] || '').toLowerCase() + '|' + (r['Grade'] || '').toLowerCase();
     map.set(key, { avg: r['Avg'], sales: parseInt(r['# of Sales']) || 0 });
   });
-  return map;
+  return { map, rows };
 }
 
 async function loadCSVData() {
@@ -873,15 +874,42 @@ async function loadCSVData() {
   }));
 }
 
+function normalizeName(s) {
+  return s.toLowerCase()
+    .replace(/#\d+/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function getAvg(entry, days) {
   const sport = entry.sport === '🏈 FB' ? 'football' : 'basketball';
-  const map = csvPriceData[sport][days];
-  if (!map) return '-';
-  const key = entry.card.toLowerCase() + '|' + entry.grade.toLowerCase();
-  const row = map.get(key);
-  if (!row) return '-';
-  if (days === '7' && row.sales === 0) return '-';
-  const n = parseFloat((row.avg || '').replace(/[$,]/g, ''));
+  const data = csvPriceData[sport][days];
+  if (!data) return '-';
+  const grade = entry.grade.toLowerCase();
+
+  // Exact match first
+  const exactKey = entry.card.toLowerCase() + '|' + grade;
+  if (data.map.has(exactKey)) {
+    const row = data.map.get(exactKey);
+    if (days === '7' && row.sales === 0) return '-';
+    const n = parseFloat((row.avg || '').replace(/[$,]/g, ''));
+    return isNaN(n) ? '-' : fmt(n);
+  }
+
+  // Fuzzy: all tokens in portfolio name must appear in CSV name
+  const tokens = normalizeName(entry.card).split(' ').filter(t => t);
+  const matches = data.rows.filter(r => {
+    if ((r['Grade'] || '').toLowerCase() !== grade) return false;
+    const csvTokens = new Set(normalizeName(r['Card'] || '').split(' ').filter(t => t));
+    return tokens.every(t => csvTokens.has(t));
+  });
+  if (matches.length !== 1) return '-';
+
+  const m = matches[0];
+  const sales = parseInt(m['# of Sales']) || 0;
+  if (days === '7' && sales === 0) return '-';
+  const n = parseFloat((m['Avg'] || '').replace(/[$,]/g, ''));
   return isNaN(n) ? '-' : fmt(n);
 }
 
