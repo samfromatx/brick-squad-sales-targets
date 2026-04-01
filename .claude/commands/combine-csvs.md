@@ -8,13 +8,17 @@ Process new CSV exports from the drop folder into the project's data files.
 
 ## File naming convention
 Downloaded files follow the pattern:
+`{sport}-all-players-{type}-last-{N}-days-{min}.csv`
+or with an optional max:
 `{sport}-all-players-{type}-last-{N}-days-{min}-{max}.csv`
 
 Examples:
-- `basketball-all-players-raw-last-360-days-5-9.csv`
+- `basketball-all-players-raw-last-360-days-5-9.csv` (with max)
+- `basketball-all-players-raw-last-360-days-5.csv` (no max — also valid)
 - `football-all-players-graded-last-180-days-25-49.csv`
+- `football-all-players-graded-last-180-days-25.csv`
 
-Where `{min}-{max}` is the sales count range for that export slice.
+Where `{min}` is the lower bound of the sales count range. The `-{max}` suffix is optional and may be absent.
 
 ## Steps to execute
 
@@ -23,6 +27,7 @@ List all CSV files in the drop folder. If none found, stop and tell the user. Gr
 
 ### 2. Combine slices within each group
 For each `{sport}+{type}+{N}` group (e.g. all the `basketball-raw-360` files):
+- Match filenames using the regex: `^(football|basketball)-all-players-(raw|graded)-last-(\d+)-days-(\d+)(-\d+)?\.csv$` — the trailing `-{max}` group is optional
 - Sort files in the group by their `{min}` sales number ascending (so lowest range first)
 - Take the CSV header from the first file
 - Append data rows (skip header line) from every file in the group
