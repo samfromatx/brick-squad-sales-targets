@@ -309,6 +309,8 @@
           <th onclick="sortTable(9)">Sale Venue</th>
           <th onclick="sortTable(10)">Profit</th>
           <th onclick="sortTable(11)">Date</th>
+          <th>7d Avg</th>
+          <th>30d Avg</th>
           <th></th>
           <th onclick="sortTable(12)">Notes</th>
         </tr>
@@ -417,7 +419,7 @@ async function showApp() {
   document.getElementById('navEmail').textContent = currentUser.email;
   setDefaultDate();
   checkMigration();
-  await Promise.all([loadEntries(), populatePicker()]);
+  await Promise.all([loadEntries(), populatePicker(), loadCSVData()]);
   render();
 }
 
@@ -720,7 +722,7 @@ function renderTable() {
   const tbody = document.getElementById('portfolioBody');
   document.getElementById('entryCount').textContent = entries.length;
   if (!entries.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="14">No purchases yet — add your first card above</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="16">No purchases yet — add your first card above</td></tr>';
     return;
   }
   const sorted = [...entries].sort((a, b) => {
@@ -750,6 +752,8 @@ function renderTable() {
       <td>${e.saleVenue ? esc(e.saleVenue) : '—'}</td>
       <td class="${profitCls}">${profit !== null ? (profit >= 0 ? '+' : '') + fmt(profit) : '—'}</td>
       <td>${e.date || '—'}</td>
+      <td style="color:#374151;">${getAvg(e, '7')}</td>
+      <td style="color:#374151;">${getAvg(e, '30')}</td>
       <td style="white-space:nowrap;">
         <button class="btn-edit btn-sm" onclick="editEntry(${e.id})">✏️</button>
         <button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})" style="margin-left:4px;">✕</button>
@@ -794,7 +798,7 @@ function sortTable(col) {
 // ── Export CSV ────────────────────────────────────────────────────
 function exportCSV() {
   if (!entries.length) { alert('No entries to export.'); return; }
-  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes'];
+  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','Target Sell','Actual Sale','Sale Venue','Profit','Date','7d Avg','30d Avg','Notes'];
   const rows = entries.map(e => {
     const totalCost    = e.price * e.qty + e.grading;
     const profit       = e.target > 0 ? e.target * e.qty - totalCost : '';
@@ -805,7 +809,7 @@ function exportCSV() {
     return [e.card, e.sport, e.grade, e.price, e.qty, e.grading, totalCost.toFixed(2),
             e.target || '', e.actualSale || '', e.saleVenue || '',
             profit !== '' ? profit.toFixed(2) : '',
-            e.date, e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+            e.date, getAvg(e, '7'), getAvg(e, '30'), e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   });
   const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
@@ -817,6 +821,69 @@ function exportCSV() {
 // ── Helpers ───────────────────────────────────────────────────────
 function fmt(n) { return '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── CSV Price Lookup ──────────────────────────────────────────────
+let csvPriceData = { football: {}, basketball: {} };
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function parseCSVRows(text) {
+  const lines = text.trim().split('\n');
+  const headers = parseCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCSVLine(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = (vals[i] || '').replace(/^"|"$/g, '').trim());
+    return obj;
+  });
+}
+
+function buildPriceLookup(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const key = (r['Card'] || '').toLowerCase() + '|' + (r['Grade'] || '').toLowerCase();
+    map.set(key, { avg: r['Avg'], sales: parseInt(r['# of Sales']) || 0 });
+  });
+  return map;
+}
+
+async function loadCSVData() {
+  const combos = [
+    ['football', '7'], ['football', '30'],
+    ['basketball', '7'], ['basketball', '30']
+  ];
+  await Promise.all(combos.map(async ([sport, days]) => {
+    try {
+      const res = await fetch(`data/${sport}-all-players-last-${days}-days.csv`);
+      if (!res.ok) return;
+      const text = await res.text();
+      csvPriceData[sport][days] = buildPriceLookup(parseCSVRows(text));
+    } catch(e) { /* silently ignore */ }
+  }));
+}
+
+function getAvg(entry, days) {
+  const sport = entry.sport === '🏈 FB' ? 'football' : 'basketball';
+  const map = csvPriceData[sport][days];
+  if (!map) return '-';
+  const key = entry.card.toLowerCase() + '|' + entry.grade.toLowerCase();
+  const row = map.get(key);
+  if (!row) return '-';
+  if (days === '7' && row.sales === 0) return '-';
+  const n = parseFloat((row.avg || '').replace(/[$,]/g, ''));
+  return isNaN(n) ? '-' : fmt(n);
+}
 
 // ── Init ──────────────────────────────────────────────────────────
 checkAuth();
