@@ -746,10 +746,10 @@ function renderTable() {
       <td>${esc(e.card)}</td>
       <td><span class="badge ${sportBadge}">${e.sport}</span></td>
       <td><span class="badge ${gradeBadge}">${esc(e.grade)}</span></td>
-      <td>${fmt(e.price)}</td>
+      <td style="${avg30Bg}">${fmt(e.price)}</td>
       <td>${e.qty}</td>
       <td>${e.grading > 0 ? fmt(e.grading) : '—'}</td>
-      <td style="${avg30Bg}"><strong>${fmt(totalCost)}</strong></td>
+      <td><strong>${fmt(totalCost)}</strong></td>
       <td style="color:#374151;">${getAvg(e, '7')}</td>
       <td style="color:#374151;">${getAvg(e, '30')}</td>
       <td style="${targetBg}">${e.target > 0 ? fmt(e.target) : '—'}</td>
