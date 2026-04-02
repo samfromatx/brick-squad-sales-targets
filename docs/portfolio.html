@@ -739,6 +739,9 @@ function renderTable() {
     const gradeBadge = e.grade === 'PSA 10' ? 'badge-psa10' : e.grade === 'PSA 9' ? 'badge-psa9' : 'badge-raw';
     const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : 'badge-bb';
     const profitCls  = profit === null ? 'profit-zero' : profit > 0 ? 'profit-pos' : profit < 0 ? 'profit-neg' : 'profit-zero';
+    const avg30      = getAvg(e, '30', true);
+    const avg30Bg    = avg30 === null ? '' : avg30 > e.price ? 'background:#f0fdf4;' : 'background:#fef2f2;';
+    const targetBg   = (avg30 !== null && e.target > 0 && avg30 >= e.target) ? 'background:#f0fdf4;' : '';
     return `<tr>
       <td>${esc(e.card)}</td>
       <td><span class="badge ${sportBadge}">${e.sport}</span></td>
@@ -746,10 +749,10 @@ function renderTable() {
       <td>${fmt(e.price)}</td>
       <td>${e.qty}</td>
       <td>${e.grading > 0 ? fmt(e.grading) : '—'}</td>
-      <td><strong>${fmt(totalCost)}</strong></td>
+      <td style="${avg30Bg}"><strong>${fmt(totalCost)}</strong></td>
       <td style="color:#374151;">${getAvg(e, '7')}</td>
       <td style="color:#374151;">${getAvg(e, '30')}</td>
-      <td>${e.target > 0 ? fmt(e.target) : '—'}</td>
+      <td style="${targetBg}">${e.target > 0 ? fmt(e.target) : '—'}</td>
       <td>${e.actualSale > 0 ? fmt(e.actualSale) : '—'}</td>
       <td>${e.saleVenue ? esc(e.saleVenue) : '—'}</td>
       <td class="${profitCls}">${profit !== null ? (profit >= 0 ? '+' : '') + fmt(profit) : '—'}</td>
@@ -882,19 +885,19 @@ function normalizeName(s) {
     .trim();
 }
 
-function getAvg(entry, days) {
+function getAvg(entry, days, raw = false) {
   const sport = entry.sport === '🏈 FB' ? 'football' : 'basketball';
   const data = csvPriceData[sport][days];
-  if (!data) return '-';
+  if (!data) return raw ? null : '-';
   const grade = entry.grade.toLowerCase();
 
   // Exact match first
   const exactKey = entry.card.toLowerCase() + '|' + grade;
   if (data.map.has(exactKey)) {
     const row = data.map.get(exactKey);
-    if (days === '7' && row.sales === 0) return '-';
+    if (days === '7' && row.sales === 0) return raw ? null : '-';
     const n = parseFloat((row.avg || '').replace(/[$,]/g, ''));
-    return isNaN(n) ? '-' : fmt(n);
+    return raw ? (isNaN(n) ? null : n) : (isNaN(n) ? '-' : fmt(n));
   }
 
   // Fuzzy: all tokens in portfolio name must appear in CSV name
@@ -904,13 +907,13 @@ function getAvg(entry, days) {
     const csvTokens = new Set(normalizeName(r['Card'] || '').split(' ').filter(t => t));
     return tokens.every(t => csvTokens.has(t));
   });
-  if (matches.length !== 1) return '-';
+  if (matches.length !== 1) return raw ? null : '-';
 
   const m = matches[0];
   const sales = parseInt(m['# of Sales']) || 0;
-  if (days === '7' && sales === 0) return '-';
+  if (days === '7' && sales === 0) return raw ? null : '-';
   const n = parseFloat((m['Avg'] || '').replace(/[$,]/g, ''));
-  return isNaN(n) ? '-' : fmt(n);
+  return raw ? (isNaN(n) ? null : n) : (isNaN(n) ? '-' : fmt(n));
 }
 
 // ── Init ──────────────────────────────────────────────────────────
