@@ -312,7 +312,6 @@
 
   <div class="danger-zone">
     <span>Danger zone:</span>
-    <button class="btn-danger btn-sm" onclick="clearAll()">Clear All Data</button>
     <span style="color:#9ca3af;">— this cannot be undone</span>
   </div>
 
@@ -644,13 +643,6 @@ async function deleteEntry(id) {
   render();
 }
 
-// ── Clear All ─────────────────────────────────────────────────────
-async function clearAll() {
-  if (!confirm('Delete all portfolio entries? This cannot be undone.')) return;
-  await sb.from('portfolio_entries').delete().eq('user_id', currentUser.id);
-  entries = [];
-  render();
-}
 
 // ── Render ────────────────────────────────────────────────────────
 function render() { renderStats(); renderTable(); }
