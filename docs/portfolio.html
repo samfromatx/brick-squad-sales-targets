@@ -704,8 +704,8 @@ function renderTable() {
     const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : 'badge-bb';
     const profitCls  = profit === null ? 'profit-zero' : profit > 0 ? 'profit-pos' : profit < 0 ? 'profit-neg' : 'profit-zero';
     const avg30      = getAvg(e, '30', true);
-    const avg30Bg    = avg30 === null ? '' : avg30 > e.price ? 'background:#f0fdf4;' : 'background:#fef2f2;';
-    const targetBg   = (avg30 !== null && e.target > 0 && avg30 >= e.target) ? 'background:#f0fdf4;' : '';
+    const avg30Bg    = avg30 === null ? '' : avg30 > e.price ? 'background:#dcfce7;' : 'background:#fee2e2;';
+    const targetBg   = (avg30 !== null && e.target > 0 && avg30 >= e.target) ? 'background:#dcfce7;' : '';
     return `<tr>
       <td>${esc(e.card)}</td>
       <td><span class="badge ${sportBadge}">${e.sport}</span></td>
