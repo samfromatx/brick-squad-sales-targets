@@ -252,10 +252,6 @@
         <input type="number" id="fQty" placeholder="1" min="1" value="1">
       </div>
       <div class="form-group">
-        <label>Grading Cost ($)</label>
-        <input type="number" id="fGrading" placeholder="0.00" min="0" step="0.01">
-      </div>
-      <div class="form-group">
         <label>Target Sell Price ($)</label>
         <input type="number" id="fTarget" placeholder="0.00" min="0" step="0.01">
       </div>
@@ -302,15 +298,14 @@
           <th onclick="sortTable(2)">Grade</th>
           <th onclick="sortTable(3)">Paid</th>
           <th onclick="sortTable(4)">Qty</th>
-          <th onclick="sortTable(5)">Grading $</th>
-          <th onclick="sortTable(6)">Total Cost</th>
+          <th onclick="sortTable(5)">Total Cost</th>
           <th>7d Avg</th>
           <th>30d Avg</th>
-          <th onclick="sortTable(7)">Target Sell</th>
-          <th onclick="sortTable(8)">Actual Sale</th>
-          <th onclick="sortTable(9)">Sale Venue</th>
-          <th onclick="sortTable(10)">Profit</th>
-          <th onclick="sortTable(11)">Date</th>
+          <th onclick="sortTable(6)">Target Sell</th>
+          <th onclick="sortTable(7)">Actual Sale</th>
+          <th onclick="sortTable(8)">Sale Venue</th>
+          <th onclick="sortTable(9)">Profit</th>
+          <th onclick="sortTable(10)">Date</th>
           <th></th>
           <th onclick="sortTable(12)">Notes</th>
         </tr>
@@ -775,13 +770,12 @@ function sortVal(e, col) {
     case 2:  return e.grade;
     case 3:  return e.price;
     case 4:  return e.qty;
-    case 5:  return e.grading;
-    case 6:  return totalCost;
-    case 7:  return e.target;
-    case 8:  return e.actualSale;
-    case 9:  return e.saleVenue;
-    case 10: return profit;
-    case 11: return e.date;
+    case 5:  return totalCost;
+    case 6:  return e.target;
+    case 7:  return e.actualSale;
+    case 8:  return e.saleVenue;
+    case 9:  return profit;
+    case 10: return e.date;
     case 12: return e.notes;
     default: return null;
   }
