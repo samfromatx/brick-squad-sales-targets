@@ -545,8 +545,6 @@ function onCardPick() {
   for (let o of gradeEl.options) { if (o.value === grade) { gradeEl.value = grade; break; } }
   const tEl = document.getElementById('fTarget');
   if (!tEl.value) tEl.value = price;
-  const gEl = document.getElementById('fGrading');
-  if (grade === 'Raw' && !gEl.value) gEl.value = '38';
   document.getElementById('fPrice').focus();
 }
 
@@ -557,7 +555,6 @@ async function addEntry() {
   const grade      = document.getElementById('fGrade').value;
   const price      = parseFloat(document.getElementById('fPrice').value)      || 0;
   const qty        = parseInt(document.getElementById('fQty').value)          || 1;
-  const grading    = parseFloat(document.getElementById('fGrading').value)    || 0;
   const target     = parseFloat(document.getElementById('fTarget').value)     || 0;
   const actualSale = parseFloat(document.getElementById('fActualSale').value) || 0;
   const saleVenue  = document.getElementById('fSaleVenue').value;
@@ -574,7 +571,6 @@ async function addEntry() {
   if (isEdit) {
     const { error } = await sb.from('portfolio_entries').update({
       card, sport, grade, price, qty,
-      grading_cost: grading,
       target_sell:  target,
       actual_sale:  actualSale,
       sale_venue:   saleVenue,
@@ -582,20 +578,19 @@ async function addEntry() {
     }).eq('id', editingId);
     if (!error) {
       const idx = entries.findIndex(e => e.id === editingId);
-      if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, qty, grading, target, actualSale, saleVenue, date, notes };
+      if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, qty, target, actualSale, saleVenue, date, notes };
     }
   } else {
     const { data, error } = await sb.from('portfolio_entries').insert({
       user_id: currentUser.id,
       card, sport, grade, price, qty,
-      grading_cost: grading,
       target_sell:  target,
       actual_sale:  actualSale,
       sale_venue:   saleVenue,
       date, notes
     }).select().single();
     if (!error && data) {
-      entries.push({ id: data.id, card, sport, grade, price, qty, grading, target, actualSale, saleVenue, date, notes });
+      entries.push({ id: data.id, card, sport, grade, price, qty, target, actualSale, saleVenue, date, notes });
     }
   }
 
@@ -619,7 +614,6 @@ function editEntry(id) {
   document.getElementById('fGrade').value   = e.grade;
   document.getElementById('fPrice').value      = e.price      || '';
   document.getElementById('fQty').value        = e.qty;
-  document.getElementById('fGrading').value    = e.grading    || '';
   document.getElementById('fTarget').value     = e.target     || '';
   document.getElementById('fActualSale').value = e.actualSale || '';
   document.getElementById('fSaleVenue').value  = e.saleVenue  || '';
@@ -644,7 +638,6 @@ function resetForm() {
   document.getElementById('fCard').value       = '';
   document.getElementById('fPrice').value      = '';
   document.getElementById('fQty').value        = '1';
-  document.getElementById('fGrading').value    = '';
   document.getElementById('fTarget').value     = '';
   document.getElementById('fActualSale').value = '';
   document.getElementById('fSaleVenue').value  = '';
@@ -678,10 +671,10 @@ function renderStats() {
   let actualProfit = null, soldCount = 0;
   entries.forEach(e => {
     totalCards  += e.qty;
-    totalCost   += e.price * e.qty + e.grading;
+    totalCost   += e.price * e.qty;
     totalTarget += e.target * e.qty;
     if (e.actualSale > 0) {
-      const cost    = e.price * e.qty + e.grading;
+      const cost    = e.price * e.qty;
       const revenue = e.saleVenue === 'eBay'
         ? e.actualSale * e.qty * (1 - 0.1325)
         : e.actualSale * e.qty;
@@ -729,7 +722,7 @@ function renderTable() {
     return (av - bv) * (sortDir === 'asc' ? 1 : -1);
   });
   tbody.innerHTML = sorted.map(e => {
-    const totalCost  = e.price * e.qty + e.grading;
+    const totalCost  = e.price * e.qty;
     const profit     = e.target > 0 ? e.target * e.qty - totalCost : null;
     const gradeBadge = e.grade === 'PSA 10' ? 'badge-psa10' : e.grade === 'PSA 9' ? 'badge-psa9' : 'badge-raw';
     const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : 'badge-bb';
@@ -762,7 +755,7 @@ function renderTable() {
 
 // ── Sort ──────────────────────────────────────────────────────────
 function sortVal(e, col) {
-  const totalCost = e.price * e.qty + e.grading;
+  const totalCost = e.price * e.qty;
   const profit    = e.target > 0 ? e.target * e.qty - totalCost : null;
   switch(col) {
     case 0:  return e.card;
@@ -796,7 +789,7 @@ function exportCSV() {
   if (!entries.length) { alert('No entries to export.'); return; }
   const headers = ['Card','Sport','Grade','Price Paid','Qty','Total Cost','7d Avg','30d Avg','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes'];
   const rows = entries.map(e => {
-    const totalCost    = e.price * e.qty + e.grading;
+    const totalCost    = e.price * e.qty;
     const profit       = e.target > 0 ? e.target * e.qty - totalCost : '';
     const actualRevenue = e.actualSale > 0
       ? (e.saleVenue === 'eBay' ? e.actualSale * e.qty * (1 - 0.1325) : e.actualSale * e.qty)
