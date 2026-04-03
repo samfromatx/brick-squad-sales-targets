@@ -748,7 +748,6 @@ function renderTable() {
       <td><span class="badge ${gradeBadge}">${esc(e.grade)}</span></td>
       <td style="${avg30Bg}">${fmt(e.price)}</td>
       <td>${e.qty}</td>
-      <td>${e.grading > 0 ? fmt(e.grading) : '—'}</td>
       <td><strong>${fmt(totalCost)}</strong></td>
       <td style="color:#374151;">${getAvg(e, '7')}</td>
       <td style="color:#374151;">${getAvg(e, '30')}</td>
@@ -801,7 +800,7 @@ function sortTable(col) {
 // ── Export CSV ────────────────────────────────────────────────────
 function exportCSV() {
   if (!entries.length) { alert('No entries to export.'); return; }
-  const headers = ['Card','Sport','Grade','Price Paid','Qty','Grading Cost','Total Cost','7d Avg','30d Avg','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes'];
+  const headers = ['Card','Sport','Grade','Price Paid','Qty','Total Cost','7d Avg','30d Avg','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes'];
   const rows = entries.map(e => {
     const totalCost    = e.price * e.qty + e.grading;
     const profit       = e.target > 0 ? e.target * e.qty - totalCost : '';
@@ -809,7 +808,7 @@ function exportCSV() {
       ? (e.saleVenue === 'eBay' ? e.actualSale * e.qty * (1 - 0.1325) : e.actualSale * e.qty)
       : '';
     const actualProfit = actualRevenue !== '' ? (actualRevenue - totalCost).toFixed(2) : '';
-    return [e.card, e.sport, e.grade, e.price, e.qty, e.grading, totalCost.toFixed(2),
+    return [e.card, e.sport, e.grade, e.price, e.qty, totalCost.toFixed(2),
             getAvg(e, '7'), getAvg(e, '30'),
             e.target || '', e.actualSale || '', e.saleVenue || '',
             profit !== '' ? profit.toFixed(2) : '',
