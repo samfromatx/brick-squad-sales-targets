@@ -332,6 +332,14 @@
     .tabs { display: none; }
     .tab-select-wrap { display: block; }
   }
+
+  /* SOCCER WC TAB */
+  .wc-sell { color: #b45309; font-weight: 600; white-space: nowrap; }
+  .wc-rationale { color: #6b7280; font-size: .72rem; max-width: 180px; white-space: normal !important; line-height: 1.4; }
+  .wc-note { background: #f0fdf4; border: 1px solid #86efac; border-left: 4px solid #16a34a; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: .82rem; color: #14532d; line-height: 1.7; }
+  .wc-warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; font-size: .82rem; color: #78350f; line-height: 1.7; }
+  .wc-card-name { white-space: normal !important; max-width: 220px; }
+  .wc-status-cell { white-space: normal !important; min-width: 110px; }
 </style>
 </head>
 <body>
@@ -402,6 +410,7 @@
   <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
   <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
   <div class="tab" onclick="showTab('ebay-searches')">🔍 eBay Searches</div>
+  <div class="tab" onclick="showTab('soccer-wc')">⚽ Soccer WC 2026</div>
 </div>
 <div class="tab-select-wrap">
   <select id="tabSelect" class="tab-select" onchange="showTab(this.value)">
@@ -413,6 +422,7 @@
     <option value="portfolios">💰 Portfolios</option>
     <option value="card-show">🛒 Card Show</option>
     <option value="ebay-searches">🔍 eBay Searches</option>
+    <option value="soccer-wc">⚽ Soccer WC 2026</option>
   </select>
 </div>
 
@@ -659,6 +669,336 @@
   <div id="ebay-searches" class="tab-content">
     <div id="ebay-searches-container"><p class="empty-msg">Loading…</p></div>
   </div>
+
+  <!-- ===== SOCCER WC 2026 (static) ===== -->
+  <div id="soccer-wc" class="tab-content">
+
+    <div class="section">
+      <div class="section-title">⚽ Soccer WC 2026 — Buy Targets <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">World Cup starts June 11, 2026 · ~10 weeks out · Generated April 2, 2026</span></div>
+      <div class="rule-box">
+        <p><strong>Notes:</strong> Prices anchored to 90-day sales avg. Trend = 90-day % change. Momentum = 30d avg vs 90d avg (short-term acceleration). Sell At for graded uses Max Sale + 30% WC bump on positive trend. Sell At for raw uses Max Sale + 50% WC hype premium (sell during June–July tournament). Gem rates not applied — raw plays are sell-raw-during-WC, not grade candidates. <strong>WC timing window: buy now, list by late May, peak sell June–July.</strong></p>
+      </div>
+    </div>
+
+    <!-- GRADED TABLE -->
+    <div class="section">
+      <div class="section-title">🏅 Top 13 Graded Buys <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">PSA Slabs — Buy &amp; Hold for WC Hype</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Card</th>
+              <th>Grade</th>
+              <th>Avg (90d)</th>
+              <th>Last Sale</th>
+              <th>Target Buy</th>
+              <th>Max Buy</th>
+              <th>Trend</th>
+              <th>Momentum</th>
+              <th>Vol</th>
+              <th>Sell At</th>
+              <th>WC Status</th>
+              <th>Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps Chrome UCL #64 Base</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$39.74</td><td>$55.55</td><td>$35–38</td><td>$40</td>
+              <td class="trend-up">+59.9%</td><td class="trend-up">+19.8%</td><td>145</td>
+              <td class="wc-sell">$90–120</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Highest volume, best RC, Spain locked in</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps Chrome UCL #64 Base</span></td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$193.42</td><td>$307.55</td><td>$170–185</td><td>$200</td>
+              <td class="trend-up">+113.6%</td><td class="trend-up">+41.9%</td><td>153</td>
+              <td class="wc-sell">$400–500</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Highest vol + biggest price surge; WC gem</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Florian Wirtz</strong><br><span style="color:#6b7280;font-size:.76rem;">2020 Topps Chrome Bundesliga #64 Base</span></td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$42.91</td><td>$55.00</td><td>$38–42</td><td>$43</td>
+              <td class="trend-up">+142.3%</td><td class="trend-up">+27.8%</td><td>16</td>
+              <td class="wc-sell">$80–100</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Best % trend under $50; Germany key player</td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Endrick</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Donruss #176 Optic Holo</span></td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$101.88</td><td>$165.00</td><td>$90–100</td><td>$105</td>
+              <td class="trend-up">+79.4%</td><td class="trend-up">+35.2%</td><td>13</td>
+              <td class="wc-sell">$200–240</td>
+              <td class="wc-status-cell"><span class="badge badge-med">✅ Brazil squad push</span></td>
+              <td class="wc-rationale">Hat trick at Lyon; Brazil WC inclusion likely</td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Christian Pulisic</strong><br><span style="color:#6b7280;font-size:.76rem;">2016 Select #150 Mezzanine</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$53.19</td><td>$75.00</td><td>$47–53</td><td>$55</td>
+              <td class="trend-up">+82.9%</td><td class="trend-up">+20.3%</td><td>19</td>
+              <td class="wc-sell">$95–115</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Host Nation</span></td>
+              <td class="wc-rationale">US host premium; Captain/face of tournament</td>
+            </tr>
+            <tr>
+              <td><strong>6</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Donruss #177 Optic Club</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$33.17</td><td>$38.25</td><td>$29–33</td><td>$34</td>
+              <td class="trend-up">+91.3%</td><td class="trend-up">+20.1%</td><td>17</td>
+              <td class="wc-sell">$60–70</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Cheaper Yamal slab entry; strong trend</td>
+            </tr>
+            <tr>
+              <td><strong>7</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Panini Megacracks La Liga #423 Master Rookie</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$192.20</td><td>$249.99</td><td>$170–185</td><td>$195</td>
+              <td class="trend-up">+46.8%</td><td class="trend-up">+21.0%</td><td>43</td>
+              <td class="wc-sell">$380–420</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">True RC; high European collector demand</td>
+            </tr>
+            <tr>
+              <td><strong>8</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Kylian Mbappé</strong><br><span style="color:#6b7280;font-size:.76rem;">2017 Topps Chrome UCL #41 Base</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$81.71</td><td>$105.00</td><td>$73–80</td><td>$82</td>
+              <td class="trend-up">+47.2%</td><td class="trend-up">+19.6%</td><td>23</td>
+              <td class="wc-sell">$140–165</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">43 goals this season; favorite to win Golden Boot</td>
+            </tr>
+            <tr>
+              <td><strong>9</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lionel Messi</strong><br><span style="color:#6b7280;font-size:.76rem;">2022 Prizm World Cup #7 Silver</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$174.27</td><td>$224.65</td><td>$155–170</td><td>$175</td>
+              <td class="trend-up">+59.3%</td><td class="trend-up">+28.9%</td><td>10</td>
+              <td class="wc-sell">$280–340</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Farewell Tour</span></td>
+              <td class="wc-rationale">Last WC narrative; 900th career goal; Silver = key parallel</td>
+            </tr>
+            <tr>
+              <td><strong>10</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Cristiano Ronaldo</strong><br><span style="color:#6b7280;font-size:.76rem;">2019 Topps Chrome UCL Sapphire #100 Base</span></td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$100.39</td><td>$129.00</td><td>$88–98</td><td>$102</td>
+              <td class="trend-up">+75.0%</td><td class="trend-up">+20.9%</td><td>16</td>
+              <td class="wc-sell">$165–195</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Final WC</span></td>
+              <td class="wc-rationale">Confirmed final WC; 957 career goals; Sapphire = prestige product</td>
+            </tr>
+            <tr>
+              <td><strong>11</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2024 Topps Chrome UCL #27 Base</span></td>
+              <td><span class="badge badge-psa10">PSA 10</span></td>
+              <td>$74.72</td><td>$126.00</td><td>$65–72</td><td>$75</td>
+              <td class="trend-up">+75.0%</td><td class="trend-up">+36.5%</td><td>8</td>
+              <td class="wc-sell">$150–175</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">2024 issue; strongest short-term momentum of all Yamal slabs</td>
+            </tr>
+            <tr>
+              <td><strong>12</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Endrick</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Donruss #176 Base</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$12.57</td><td>$14.99</td><td>$11–13</td><td>$13</td>
+              <td class="trend-up">+49.9%</td><td class="trend-up">+36.8%</td><td>17</td>
+              <td class="wc-sell">$30–40</td>
+              <td class="wc-status-cell"><span class="badge badge-med">✅ Brazil squad push</span></td>
+              <td class="wc-rationale">Cheapest graded Endrick entry; huge WC upside if named</td>
+            </tr>
+            <tr>
+              <td><strong>13</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Donruss #177 Base Club</span></td>
+              <td><span class="badge badge-psa9">PSA 9</span></td>
+              <td>$24.98</td><td>$39.00</td><td>$22–25</td><td>$25</td>
+              <td class="trend-up">+59.1%</td><td class="trend-up">+18.8%</td><td>34</td>
+              <td class="wc-sell">$45–55</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Budget Yamal slab; solid volume and trend</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RAW TABLE -->
+    <div class="section">
+      <div class="section-title">📦 Top 13 Raw Buys <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Buy Raw — Sell Raw During WC (June–July)</span></div>
+      <div class="wc-note">
+        <strong>Strategy:</strong> These are raw (ungraded) holds. Buy now at 90d avg or below, list on eBay late May / early June as World Cup hype peaks. Sell At = WC hype price estimate using Max Sale + 50% bump for strong-trend cards or +20% for moderate-trend. No grading intended.
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Card</th>
+              <th>Avg (90d)</th>
+              <th>Last Sale</th>
+              <th>Max Sale</th>
+              <th>Target Buy</th>
+              <th>Max Buy</th>
+              <th>Trend (90d)</th>
+              <th>Momentum</th>
+              <th>Vol</th>
+              <th>Sell At (WC)</th>
+              <th>WC Status</th>
+              <th>Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Endrick</strong><br><span style="color:#6b7280;font-size:.76rem;">2024 Topps Chrome UCL #RR-10 Radiating Rookies</span></td>
+              <td>$94.66</td><td>$130.00</td><td>$149.99</td><td>$85–94</td><td>$95</td>
+              <td class="trend-up">+182.6%</td><td class="trend-up">+47.9%</td><td>11</td>
+              <td class="wc-sell">$200–250</td>
+              <td class="wc-status-cell"><span class="badge badge-med">✅ Brazil push</span></td>
+              <td class="wc-rationale">Actual Topps RC; Lyon hat trick; WC call-up momentum</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps Chrome UCL #64 Refractor</span></td>
+              <td>$119.72</td><td>$303.00</td><td>$303.00</td><td>$107–120</td><td>$120</td>
+              <td class="trend-up">+184.5%</td><td class="trend-up">+42.1%</td><td>30</td>
+              <td class="wc-sell">$350–450</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">PSA 9 graded = $150; raw Refractor with huge WC ceiling</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps UCL Starball Foil</span></td>
+              <td>$102.01</td><td>$140.83</td><td>$160.50</td><td>$91–102</td><td>$102</td>
+              <td class="trend-up">+134.7%</td><td class="trend-up">+34.7%</td><td>20</td>
+              <td class="wc-sell">$200–260</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Premium insert; fast trending; graded version sells $500+</td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lionel Messi</strong><br><span style="color:#6b7280;font-size:.76rem;">2014 Prizm World Cup #12 Base</span></td>
+              <td>$36.00</td><td>$68.38</td><td>$73.28</td><td>$32–36</td><td>$36</td>
+              <td class="trend-up">+161.8%</td><td class="trend-up">+25.7%</td><td>34</td>
+              <td class="wc-sell">$90–120</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Farewell Tour</span></td>
+              <td class="wc-rationale">Historical WC Prizm base; last WC narrative will spike demand</td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2024 Topps Chrome UCL #27 Speckle Refractor</span></td>
+              <td>$25.53</td><td>$54.18</td><td>$54.18</td><td>$22–25</td><td>$26</td>
+              <td class="trend-up">+249.5%</td><td class="trend-up">+112.2%</td><td>6</td>
+              <td class="wc-sell">$70–90</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Hottest short-term momentum; numbered parallel; low volume = move fast</td>
+            </tr>
+            <tr>
+              <td><strong>6</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps UCL #EN-10 European Nights</span></td>
+              <td>$13.23</td><td>$37.00</td><td>$37.00</td><td>$11–13</td><td>$14</td>
+              <td class="trend-up">+276.4%</td><td class="trend-up">+35.7%</td><td>50</td>
+              <td class="wc-sell">$45–60</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Cheapest Yamal Topps entry; massive trend; great flip ratio</td>
+            </tr>
+            <tr>
+              <td><strong>7</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Endrick</strong><br><span style="color:#6b7280;font-size:.76rem;">2024 Topps Chrome UCL #100 Speckle Refractor</span></td>
+              <td>$9.45</td><td>$22.00</td><td>$22.00</td><td>$8–9</td><td>$10</td>
+              <td class="trend-up">+284.6%</td><td class="trend-up">+122.1%</td><td>7</td>
+              <td class="wc-sell">$30–40</td>
+              <td class="wc-status-cell"><span class="badge badge-med">✅ Brazil push</span></td>
+              <td class="wc-rationale">Cheap parallel RC; explosive short-term move; grab multiples</td>
+            </tr>
+            <tr>
+              <td><strong>8</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Michael Olise</strong><br><span style="color:#6b7280;font-size:.76rem;">2021 Prizm Premier League #296 Base</span></td>
+              <td>$2.62</td><td>$6.47</td><td>$12.50</td><td>$2.25–2.60</td><td>$3</td>
+              <td class="trend-up">+250.4%</td><td class="trend-up">+21.4%</td><td>23</td>
+              <td class="wc-sell">$12–18</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ France Starter</span></td>
+              <td class="wc-rationale">16G/26A this season; France's secret weapon; massively underpriced</td>
+            </tr>
+            <tr>
+              <td><strong>9</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Fermín López</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps Chrome UCL #38 Refractor</span></td>
+              <td>$4.62</td><td>$7.99</td><td>$7.99</td><td>$4–4.60</td><td>$5</td>
+              <td class="trend-up">+707.1%</td><td class="trend-up">+72.9%</td><td>6</td>
+              <td class="wc-sell">$12–18</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Spain contender</span></td>
+              <td class="wc-rationale">707% trend is #1 in the dataset; 12G/16A at Barca; buy bundles now</td>
+            </tr>
+            <tr>
+              <td><strong>10</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Florian Wirtz</strong><br><span style="color:#6b7280;font-size:.76rem;">2024 Topps Chrome UCL #SE-12 Shadow Etch</span></td>
+              <td>$6.56</td><td>$10.00</td><td>$10.00</td><td>$5.75–6.50</td><td>$7</td>
+              <td class="trend-up">+344.4%</td><td class="trend-up">+52.4%</td><td>7</td>
+              <td class="wc-sell">$15–22</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">Premium insert; Germany's #10; Matthäus says he'll shine</td>
+            </tr>
+            <tr>
+              <td><strong>11</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lamine Yamal</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Donruss #177 Optic Holo Club</span></td>
+              <td>$66.42</td><td>$90.00</td><td>$99.88</td><td>$59–66</td><td>$67</td>
+              <td class="trend-up">+136.8%</td><td class="trend-up">+25.7%</td><td>34</td>
+              <td class="wc-sell">$130–160</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Confirmed</span></td>
+              <td class="wc-rationale">High-gloss Optic; solid volume; strong raw ceiling</td>
+            </tr>
+            <tr>
+              <td><strong>12</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Lionel Messi</strong><br><span style="color:#6b7280;font-size:.76rem;">2023 Topps MLS #201 GOAT Variation</span></td>
+              <td>$14.69</td><td>$17.99</td><td>$25.00</td><td>$13–15</td><td>$15</td>
+              <td class="trend-up">+323.3%</td><td class="trend-up">+19.1%</td><td>17</td>
+              <td class="wc-sell">$35–50</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Farewell Tour</span></td>
+              <td class="wc-rationale">US market card; GOAT variation is unique; American collectors eat this up</td>
+            </tr>
+            <tr>
+              <td><strong>13</strong></td>
+              <td class="wc-card-name"><strong style="color:#1d4ed8;">Christian Pulisic</strong><br><span style="color:#6b7280;font-size:.76rem;">2022 Prizm World Cup #201 Base</span></td>
+              <td>$1.47</td><td>$4.99</td><td>$4.99</td><td>$1.25–1.50</td><td>$1.75</td>
+              <td class="trend-up">+399.0%</td><td class="trend-up">+70.1%</td><td>10</td>
+              <td class="wc-sell">$7–12</td>
+              <td class="wc-status-cell"><span class="badge badge-premium">✅ Host Nation</span></td>
+              <td class="wc-rationale">Under $2 to buy; grab 15–20 copies; US host = Pulisic card frenzy</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PLAYERS TO WATCH -->
+    <div class="section">
+      <div class="section-title">⚠️ Players to Watch / Avoid</div>
+      <div class="wc-warn-box">
+        <strong>Jude Bellingham:</strong> Data looks great (+99% trend, PSA 9 raw at $3.16) but he's returning from a hamstring tear. Small position only — his card price will spike hard if fully healthy.<br><br>
+        <strong>Phil Foden:</strong> England manager Tuchel said on April 2 his squad spot is "not guaranteed." Avoid.<br><br>
+        <strong>Darwin Núñez:</strong> Dropped from Al-Hilal domestic squad, 8 international caps without a goal, hasn't played competitive football in 50 days. Cards cooling. Avoid.<br><br>
+        <strong>Dominik Szoboszlai:</strong> ❌ Hungary eliminated from qualification. Skip all cards.<br><br>
+        <strong>Mohamed Salah:</strong> Egypt is at the WC, Salah confirmed starter and captain. His UCL sticker/foil graded cards show up in data but pricing is already elevated. Good long hold, risky short flip.
+      </div>
+    </div>
+
+  </div><!-- end #soccer-wc -->
 
 
 </div><!-- end .content -->
@@ -1472,7 +1812,7 @@ function showTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const ids = ['overview','football-targets','basketball-targets','raw-grade','portfolios','card-show','ebay-searches'];
+  const ids = ['overview','football-targets','basketball-targets','raw-grade','bounce-back','portfolios','card-show','ebay-searches','soccer-wc'];
   const idx = ids.indexOf(id);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   const sel = document.getElementById('tabSelect');
