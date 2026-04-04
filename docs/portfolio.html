@@ -801,7 +801,7 @@ function fmt(n) { return '$' + (n || 0).toLocaleString('en-US', { minimumFractio
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── CSV Price Lookup ──────────────────────────────────────────────
-let csvPriceData = { football: {}, basketball: {} };
+let csvPriceData = { football: {}, basketball: {}, soccer: {} };
 
 function parseCSVLine(line) {
   const result = [];
