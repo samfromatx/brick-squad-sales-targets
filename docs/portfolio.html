@@ -89,6 +89,7 @@
   .badge-raw   { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
   .badge-fb    { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; font-size: .65rem; }
   .badge-bb    { background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; font-size: .65rem; }
+  .badge-sc    { background: #fdf4ff; color: #9333ea; border: 1px solid #d8b4fe; font-size: .65rem; }
 
   /* P&L */
   .profit-pos  { color: #16a34a; font-weight: 600; }
@@ -231,6 +232,7 @@
         <select id="fSport">
           <option value="🏈 FB">🏈 Football</option>
           <option value="🏀 BB">🏀 Basketball</option>
+          <option value="⚽ SC">⚽ Soccer</option>
         </select>
       </div>
       <div class="form-group">
@@ -381,6 +383,21 @@ async function checkAuth() {
   if (session) {
     currentUser = session.user;
     await showApp();
+  } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const devEmail = localStorage.getItem('devEmail');
+    const devPassword = localStorage.getItem('devPassword');
+    if (devEmail && devPassword) {
+      const { data, error } = await sb.auth.signInWithPassword({ email: devEmail, password: devPassword });
+      if (!error && data.user) {
+        currentUser = data.user;
+        await showApp();
+        return;
+      }
+      console.warn('[dev] Auto-login failed:', error?.message);
+    } else {
+      console.info('[dev] Set localStorage.devEmail and localStorage.devPassword to auto-login on localhost.');
+    }
+    document.getElementById('authOverlay').style.display = 'flex';
   } else {
     document.getElementById('authOverlay').style.display = 'flex';
   }
@@ -701,7 +718,7 @@ function renderTable() {
   tbody.innerHTML = sorted.map(e => {
     const profit     = e.target > 0 ? e.target - e.price : null;
     const gradeBadge = e.grade === 'PSA 10' ? 'badge-psa10' : e.grade === 'PSA 9' ? 'badge-psa9' : 'badge-raw';
-    const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : 'badge-bb';
+    const sportBadge = e.sport === '🏈 FB' ? 'badge-fb' : e.sport === '⚽ SC' ? 'badge-sc' : 'badge-bb';
     const profitCls  = profit === null ? 'profit-zero' : profit > 0 ? 'profit-pos' : profit < 0 ? 'profit-neg' : 'profit-zero';
     const avg30      = getAvg(e, '30', true);
     const avg30Bg    = avg30 === null ? '' : avg30 > e.price ? 'background:#dcfce7;' : 'background:#fee2e2;';
@@ -843,7 +860,7 @@ function normalizeName(s) {
 }
 
 function getAvg(entry, days, raw = false) {
-  const sport = entry.sport === '🏈 FB' ? 'football' : 'basketball';
+  const sport = entry.sport === '🏈 FB' ? 'football' : entry.sport === '⚽ SC' ? 'soccer' : 'basketball';
   const data = csvPriceData[sport][days];
   if (!data) return raw ? null : '-';
   const grade = entry.grade.toLowerCase();

@@ -1078,6 +1078,21 @@ async function checkAuth() {
   if (session) {
     currentUser = session.user;
     await showApp();
+  } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const devEmail = localStorage.getItem('devEmail');
+    const devPassword = localStorage.getItem('devPassword');
+    if (devEmail && devPassword) {
+      const { data, error } = await sb.auth.signInWithPassword({ email: devEmail, password: devPassword });
+      if (!error && data.user) {
+        currentUser = data.user;
+        await showApp();
+        return;
+      }
+      console.warn('[dev] Auto-login failed:', error?.message);
+    } else {
+      console.info('[dev] Set localStorage.devEmail and localStorage.devPassword to auto-login on localhost.');
+    }
+    document.getElementById('authOverlay').style.display = 'flex';
   } else {
     document.getElementById('authOverlay').style.display = 'flex';
   }
