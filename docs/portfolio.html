@@ -853,7 +853,8 @@ async function loadCSVData() {
 
 function normalizeName(s) {
   return s.toLowerCase()
-    .replace(/#\d+/g, '')
+    .replace(/\/\d+/g, '')   // strip serial numbers like /799
+    .replace(/#\d+/g, '')    // strip card numbers like #2
     .replace(/[^a-z0-9 ]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
