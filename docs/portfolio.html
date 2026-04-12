@@ -96,6 +96,13 @@
   .profit-neg  { color: #dc2626; font-weight: 600; }
   .profit-zero { color: #6b7280; }
 
+  /* FILTERS */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .btn-filter { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; padding: 5px 14px; font-size: .78rem; font-weight: 600; border-radius: 20px; cursor: pointer; transition: all .15s; }
+  .btn-filter:hover { background: #e5e7eb; }
+  .btn-filter.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .btn-filter.active-green { background: #16a34a; color: #fff; border-color: #16a34a; }
+
   /* EXPORT / EDIT */
   .btn-export { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; padding: 5px 12px; font-size: .75rem; border-radius: 6px; cursor: pointer; transition: all .15s; }
   .btn-export:hover { background: #e5e7eb; color: #111827; }
@@ -282,6 +289,11 @@
   </div>
 
   <!-- TABLE -->
+  <div class="filter-bar">
+    <button class="btn-filter active" id="filterAll" onclick="setFilter(null)">All</button>
+    <button class="btn-filter" id="filterAboveCost" onclick="setFilter('above-cost')">Above Cost</button>
+    <button class="btn-filter" id="filterAtTarget" onclick="setFilter('at-target')">At Target</button>
+  </div>
   <div class="section-title">
     <span>Purchase Log (<span id="entryCount">0</span> entries)</span>
     <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
@@ -324,12 +336,13 @@ const SUPABASE_URL = 'https://azvoynuwnmejqwzscmnc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_zzhXo3XG5seQBYgADSAbmA_PyTWou2a';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let entries   = [];
-let sortCol   = 11;
-let sortDir   = 'desc';
-let editingId = null;
+let entries     = [];
+let sortCol     = 11;
+let sortDir     = 'desc';
+let editingId   = null;
 let currentUser = null;
-let authMode  = 'login';
+let authMode    = 'login';
+let activeFilter = null;
 
 // ── Auth UI ───────────────────────────────────────────────────────
 function switchAuthTab(mode) {
@@ -657,6 +670,15 @@ async function deleteEntry(id) {
 }
 
 
+// ── Filters ───────────────────────────────────────────────────────
+function setFilter(f) {
+  activeFilter = f;
+  document.getElementById('filterAll').className        = 'btn-filter' + (f === null ? ' active' : '');
+  document.getElementById('filterAboveCost').className  = 'btn-filter' + (f === 'above-cost' ? ' active-green' : '');
+  document.getElementById('filterAtTarget').className   = 'btn-filter' + (f === 'at-target'  ? ' active-green' : '');
+  renderTable();
+}
+
 // ── Render ────────────────────────────────────────────────────────
 function render() { renderStats(); renderTable(); }
 
@@ -702,12 +724,18 @@ function renderStats() {
 
 function renderTable() {
   const tbody = document.getElementById('portfolioBody');
-  document.getElementById('entryCount').textContent = entries.length;
-  if (!entries.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="16">No purchases yet — add your first card above</td></tr>';
+  let visible = entries;
+  if (activeFilter === 'above-cost') {
+    visible = entries.filter(e => { const a = getAvg(e, '30', true); return a !== null && a > e.price; });
+  } else if (activeFilter === 'at-target') {
+    visible = entries.filter(e => { const a = getAvg(e, '30', true); return a !== null && e.target > 0 && a >= e.target; });
+  }
+  document.getElementById('entryCount').textContent = visible.length;
+  if (!visible.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="16">' + (activeFilter ? 'No cards match this filter.' : 'No purchases yet — add your first card above') + '</td></tr>';
     return;
   }
-  const sorted = [...entries].sort((a, b) => {
+  const sorted = [...visible].sort((a, b) => {
     const av = sortVal(a, sortCol), bv = sortVal(b, sortCol);
     if (av === null && bv === null) return 0;
     if (av === null) return 1;
