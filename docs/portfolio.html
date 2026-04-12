@@ -874,16 +874,47 @@ function getAvg(entry, days, raw = false) {
     return raw ? (isNaN(n) ? null : n) : (isNaN(n) ? '-' : fmt(n));
   }
 
-  // Fuzzy: all tokens in portfolio name must appear in CSV name
+  // Fuzzy: bidirectional subset match (portfolio ⊆ CSV, or CSV ⊆ portfolio),
+  // scored by Jaccard similarity to handle ties.
   const tokens = normalizeName(entry.card).split(' ').filter(t => t);
-  const matches = data.rows.filter(r => {
-    if ((r['Grade'] || '').toLowerCase() !== grade) return false;
-    const csvTokens = new Set(normalizeName(r['Card'] || '').split(' ').filter(t => t));
-    return tokens.every(t => csvTokens.has(t));
-  });
-  if (matches.length !== 1) return raw ? null : '-';
+  const tokenSet = new Set(tokens);
 
-  const m = matches[0];
+  const candidates = data.rows.filter(r => {
+    if ((r['Grade'] || '').toLowerCase() !== grade) return false;
+    const csvToks = normalizeName(r['Card'] || '').split(' ').filter(t => t);
+    const csvSet = new Set(csvToks);
+    // Either all portfolio tokens are in CSV, OR all CSV tokens are in portfolio
+    return tokens.every(t => csvSet.has(t)) || csvToks.every(t => tokenSet.has(t));
+  });
+
+  if (candidates.length === 0) return raw ? null : '-';
+
+  let m;
+  if (candidates.length === 1) {
+    m = candidates[0];
+  } else {
+    // Score by Jaccard similarity (intersection / union), prefer fewer extra tokens on ties
+    const scored = candidates.map(r => {
+      const csvToks = normalizeName(r['Card'] || '').split(' ').filter(t => t);
+      const csvSet = new Set(csvToks);
+      const overlap = tokens.filter(t => csvSet.has(t)).length;
+      const union = new Set([...tokens, ...csvToks]).size;
+      return { r, score: overlap / union, normCard: normalizeName(r['Card'] || ''), csvLen: csvToks.length };
+    });
+    scored.sort((a, b) => b.score - a.score || a.csvLen - b.csvLen);
+
+    const best = scored[0];
+    const second = scored[1];
+
+    if (second && second.score >= best.score * 0.95) {
+      // Tied — only accept if the tied rows are functionally identical (e.g. numbered parallels #1/#2/#3)
+      const allSame = scored.filter(s => s.score >= best.score * 0.95).every(s => s.normCard === best.normCard);
+      if (!allSame) return raw ? null : '-'; // genuinely ambiguous different cards
+    }
+
+    m = best.r;
+  }
+
   const sales = parseInt(m['# of Sales']) || 0;
   if (days === '7' && sales === 0) return raw ? null : '-';
   const n = parseFloat((m['Avg'] || '').replace(/[$,]/g, ''));
