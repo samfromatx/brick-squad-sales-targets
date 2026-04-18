@@ -1964,19 +1964,48 @@ function parseCSV(text) {
 }
 
 function parsePrice(str) {
-  if (!str) return null;
+  if (str == null || str === '') return null;
+  if (typeof str === 'number') return isNaN(str) ? null : str;
   const n = parseFloat(str.replace(/[^0-9.]/g, ''));
   return isNaN(n) ? null : n;
 }
 
 function parseNum(str) {
-  if (!str) return null;
+  if (str == null || str === '') return null;
+  if (typeof str === 'number') return isNaN(str) ? null : str;
   const n = parseFloat(str.replace(/[^0-9.\-]/g, ''));
   return isNaN(n) ? null : n;
 }
 
 async function fetchCSV(file) {
   if (_csvCache[file]) return _csvCache[file];
+  const m = file.match(/(football|basketball)-all-players-last-(\d+)-days\.csv/);
+  if (m) {
+    const sport = m[1], windowDays = parseInt(m[2]);
+    const { data, error } = await sb
+      .from('card_market_data')
+      .select('card,grade,price_change_pct,price_change_dollar,starting_price,last_sale,avg,min_sale,max_sale,volume_change_pct,num_sales,total_sales_dollar')
+      .eq('sport', sport)
+      .eq('window_days', windowDays)
+      .limit(100000);
+    if (error) throw error;
+    const mapped = (data || []).map(r => ({
+      'Card': r.card,
+      'Grade': r.grade,
+      'Price Change %': r.price_change_pct,
+      'Price Change $': r.price_change_dollar,
+      'Starting Price': r.starting_price,
+      'Last Sale': r.last_sale,
+      'Avg': r.avg,
+      'Min Sale': r.min_sale,
+      'Max Sale': r.max_sale,
+      'Volume Change %': r.volume_change_pct,
+      '# of Sales': r.num_sales,
+      'Total Sales $': r.total_sales_dollar,
+    }));
+    _csvCache[file] = mapped;
+    return mapped;
+  }
   const res = await fetch(file);
   const text = await res.text();
   const data = parseCSV(text);
