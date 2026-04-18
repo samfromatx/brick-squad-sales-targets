@@ -2081,17 +2081,10 @@ function showTrendTab(tab) {
 async function loadTrendAutocomplete(sport) {
   if (_autocompleteLoaded[sport]) return;
   _autocompleteLoaded[sport] = true;
-  // Load from 30d first (most cards), fall back through remaining windows
-  const ordered = [WINDOWS[sport][W_30], ...WINDOWS[sport].filter((_, i) => i !== W_30)];
-  for (const w of ordered) {
-    try {
-      const data = await fetchCSV(w.file);
-      if (data.length > 0) {
-        _cardNames[sport] = [...new Set(data.map(r => r['Card']).filter(Boolean))].sort();
-        break;
-      }
-    } catch(e) { /* try next window */ }
-  }
+  try {
+    const { data, error } = await sb.rpc('get_card_names', { p_sport: sport });
+    if (!error && Array.isArray(data)) _cardNames[sport] = data;
+  } catch(e) { /* autocomplete unavailable */ }
 }
 
 function trendAcFilter(sport) {
@@ -2167,22 +2160,37 @@ async function runTrendAnalysis(sport) {
 
   try {
     const windows = WINDOWS[sport];
-    const allData = await Promise.all(windows.map(w => fetchCSV(w.file)));
+    const { data: cardRows, error: fetchErr } = await sb
+      .from('card_market_data')
+      .select('grade,window_days,price_change_pct,price_change_dollar,starting_price,last_sale,avg,min_sale,max_sale,volume_change_pct,num_sales,total_sales_dollar')
+      .eq('sport', sport)
+      .ilike('card', query);
+    if (fetchErr) throw fetchErr;
 
-    // Per-window rows (case-insensitive match)
-    const wr = windows.map((w, i) => {
-      const rows = allData[i].filter(r => r['Card'] && r['Card'].toLowerCase() === query.toLowerCase());
+    function mapRow(r) {
+      if (!r) return r;
+      return {
+        'Grade': r.grade, 'Avg': r.avg, '# of Sales': r.num_sales,
+        'Starting Price': r.starting_price, 'Last Sale': r.last_sale,
+        'Min Sale': r.min_sale, 'Max Sale': r.max_sale,
+        'Price Change %': r.price_change_pct, 'Price Change $': r.price_change_dollar,
+        'Volume Change %': r.volume_change_pct, 'Total Sales $': r.total_sales_dollar,
+      };
+    }
+
+    const wr = windows.map(w => {
+      const rows = (cardRows || []).filter(r => r.window_days === parseInt(w.key));
       return {
         label: w.label,
-        raw:   rows.find(r => r['Grade'] === 'Raw'),
-        psa9:  rows.find(r => r['Grade'] === 'PSA 9'),
-        psa10: rows.find(r => r['Grade'] === 'PSA 10'),
+        raw:   mapRow(rows.find(r => r.grade === 'Raw')),
+        psa9:  mapRow(rows.find(r => r.grade === 'PSA 9')),
+        psa10: mapRow(rows.find(r => r.grade === 'PSA 10')),
       };
     });
 
     const found = wr.some(w => w.raw || w.psa9 || w.psa10);
     if (!found) {
-      const suggestions = [...new Set(allData[0].map(r => r['Card']).filter(Boolean))]
+      const suggestions = _cardNames[sport]
         .filter(n => n.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
       loadEl.style.display = 'none';
       emptyEl.textContent = suggestions.length
