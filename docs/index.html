@@ -175,37 +175,6 @@
   .formula-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; font-size: .82rem; color: #374151; line-height: 1.7; }
   .example-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 12px 14px; font-size: .78rem; color: #78350f; line-height: 1.6; }
 
-  /* CHEAT SHEET */
-  .cheat-sheet { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin-top: 16px; }
-  .cs-title { font-size: .82rem; font-weight: 600; color: #374151; margin-bottom: 10px; }
-  .cs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .cs-item { padding: 10px 12px; border-radius: 6px; font-size: .78rem; line-height: 1.5; }
-  .cs-buy10 { background: #eff6ff; color: #1e40af; border-left: 3px solid #3b82f6; }
-  .cs-buy9  { background: #f0fdf4; color: #14532d; border-left: 3px solid #22c55e; }
-  .cs-grade { background: #f0fdf4; color: #14532d; border-left: 3px solid #22c55e; }
-  .cs-slab  { background: #fffbeb; color: #78350f; border-left: 3px solid #f59e0b; }
-
-  /* CALCULATOR */
-  .calc-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; }
-  .calc-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; margin-bottom: 20px; }
-  .calc-field label { display: block; font-size: .7rem; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
-  .calc-input-prefix { display: flex; align-items: center; border: 1px solid #d1d5db; border-radius: 6px; overflow: hidden; background: #f9fafb; }
-  .calc-input-prefix span { padding: 7px 9px; font-size: .82rem; color: #9ca3af; background: #f3f4f6; border-right: 1px solid #d1d5db; }
-  .calc-input-prefix input { border: none; background: transparent; padding: 7px 10px; font-size: .82rem; color: #111827; width: 100%; outline: none; }
-  .calc-input-prefix input:focus { background: #fff; }
-  .calc-verdict-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
-  .calc-verdict { border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; background: #fff; }
-  .calc-verdict .cv-label { font-size: .68rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .calc-verdict .cv-value { font-size: 1.3rem; font-weight: 700; color: #111827; margin-bottom: 4px; }
-  .calc-verdict .cv-rec { font-size: .75rem; color: #6b7280; line-height: 1.4; }
-  .calc-verdict.v-green { border-top: 3px solid #22c55e; }
-  .calc-verdict.v-amber { border-top: 3px solid #f59e0b; }
-  .calc-verdict.v-red   { border-top: 3px solid #ef4444; }
-  .calc-verdict.v-gray  { border-top: 3px solid #d1d5db; }
-  .calc-overall { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px; }
-  .calc-overall .co-label { font-size: .7rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .calc-overall .co-rec { font-size: .9rem; font-weight: 600; color: #1e40af; line-height: 1.5; }
-  .calc-empty { font-size: .82rem; color: #9ca3af; text-align: center; padding: 16px 0; }
 
   /* TREND ANALYSIS */
   .trend-search { display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; position: relative; }
@@ -300,8 +269,7 @@
     /* Grids → single column */
     .callout { grid-template-columns: 1fr; }
     .sport-compare { grid-template-columns: 1fr; }
-    .cs-grid { grid-template-columns: 1fr; }
-    .calc-verdict-grid { grid-template-columns: 1fr 1fr; }
+
     .trend-signals { grid-template-columns: 1fr 1fr; }
 
     /* Trend analysis — stack Football/Basketball dropdowns on two rows */
@@ -464,38 +432,6 @@
       <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Search a card above to see historical trend analysis.</div>
     </div>
 
-    <!-- GRADE DECISION CALCULATOR -->
-    <div class="section">
-      <div class="section-title">🧮 Grade Decision Calculator</div>
-      <div class="calc-wrap">
-        <div class="calc-inputs">
-          <div class="calc-field">
-            <label>Raw Card Price</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-raw" placeholder="0" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>PSA 9 Market Value</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-psa9" placeholder="0" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>PSA 10 Market Value</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-psa10" placeholder="0" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>Grading Cost</label>
-            <div class="calc-input-prefix"><span>$</span><input type="number" id="calc-grading" value="38" min="0" oninput="runCalc()"></div>
-          </div>
-          <div class="calc-field">
-            <label>Gem Rate (PSA 10 %)</label>
-            <div class="calc-input-prefix"><span>%</span><input type="number" id="calc-gem" placeholder="e.g. 35" min="0" max="100" oninput="runCalc()"></div>
-          </div>
-        </div>
-        <div id="calc-verdict-grid" class="calc-verdict-grid" style="display:none;"></div>
-        <div id="calc-overall" style="display:none;"></div>
-        <div id="calc-empty" class="calc-empty">Enter at least two prices above to get a recommendation.</div>
-      </div>
-    </div>
-
     <!-- EXECUTIVE SUMMARY -->
     <div class="section">
       <div class="section-title">📊 Executive Summary</div>
@@ -607,16 +543,6 @@
             <tr><td><strong>5×+</strong></td><td><span class="trend-flat">PSA 10 may be worth it</span> if gem rate is under 20%</td></tr>
           </tbody>
         </table>
-      </div>
-
-      <div class="cheat-sheet">
-        <div class="cs-title">⚡ Quick Decision Cheat Sheet</div>
-        <div class="cs-grid">
-          <div class="cs-item cs-buy10">Low gem rate (&lt;20%) + PSA 10 sells 4× the PSA 9 → <strong>Buy / chase PSA 10</strong></div>
-          <div class="cs-item cs-buy9">High gem rate (&gt;40%) + PSA 10 sells 2× the PSA 9 → <strong>Buy PSA 9 all day</strong></div>
-          <div class="cs-item cs-grade">Raw card &lt;40% of PSA 9 + clean card → <strong>Grade it</strong></div>
-          <div class="cs-item cs-slab">Raw card &gt;60% of PSA 9 → <strong>Buy the slab</strong></div>
-        </div>
       </div>
 
       <div class="rule-box" style="margin-top:16px;">
@@ -2566,158 +2492,7 @@ async function runTrendAnalysis(sport) {
   }
 }
 
-// ── Grade Decision Calculator ─────────────────────────────────────
-function runCalc() {
-  const raw     = parseFloat(document.getElementById('calc-raw').value);
-  const psa9    = parseFloat(document.getElementById('calc-psa9').value);
-  const psa10   = parseFloat(document.getElementById('calc-psa10').value);
-  const grading = parseFloat(document.getElementById('calc-grading').value) || BA.GRADING_COST;
-  const gem     = parseFloat(document.getElementById('calc-gem').value);
 
-  const hasRaw  = !isNaN(raw)  && raw  > 0;
-  const hasPsa9 = !isNaN(psa9) && psa9 > 0;
-  const hasPsa10= !isNaN(psa10)&& psa10> 0;
-  const hasGem  = !isNaN(gem)  && gem  > 0;
-
-  const gridEl    = document.getElementById('calc-verdict-grid');
-  const overallEl = document.getElementById('calc-overall');
-  const emptyEl   = document.getElementById('calc-empty');
-
-  const canCalc = (hasRaw && hasPsa9) || (hasPsa9 && hasPsa10);
-  if (!canCalc) {
-    gridEl.style.display = 'none';
-    overallEl.style.display = 'none';
-    emptyEl.style.display = 'block';
-    return;
-  }
-
-  // Net prices after eBay fees (spec: EBAY_FEE_MULT = 0.87)
-  const net_psa9  = hasPsa9  ? psa9  * BA.EBAY_FEE_MULT : null;
-  const net_psa10 = hasPsa10 ? psa10 * BA.EBAY_FEE_MULT : null;
-  const net_psa8  = hasRaw   ? raw   * BA.PSA8_MULT      : null; // PSA 8 downside
-
-  const cards = [];
-  const signals = [];
-
-  // ── Raw viability ratio (spec Step 5) ────────────────────────────
-  if (hasRaw && hasPsa9) {
-    const ratio = raw / psa9;
-    let color, rec;
-    if (ratio < 0.40) {
-      color = 'v-green'; rec = 'Viable grade candidate — raw is cheap enough relative to PSA 9 that grading makes sense.';
-      signals.push('grade');
-    } else if (ratio <= 0.60) {
-      color = 'v-amber'; rec = 'Marginal — card must be near-perfect to justify grading cost.';
-      signals.push('marginal');
-    } else {
-      color = 'v-red'; rec = 'Skip grading — buy the slab. Raw is too close to PSA 9 price.';
-      signals.push('slab');
-    }
-    cards.push({ label: 'Raw / PSA 9 Ratio', value: ratio.toFixed(2) + '×', rec, color });
-  }
-
-  // ── EV model (spec Step 6) — requires raw, psa9, psa10, gem ─────
-  if (hasRaw && hasPsa9 && hasPsa10 && hasGem) {
-    const p10   = gem / 100;
-    const p9    = 0.40;
-    const p_low = Math.max(0, 1 - p10 - p9);
-    const cost_basis = raw + grading;
-    const EV    = (p10 * net_psa10) + (p9 * net_psa9) + (p_low * net_psa8);
-    const net_ev = EV - cost_basis;
-    const evStr  = (net_ev >= 0 ? '+' : '') + '$' + net_ev.toFixed(0);
-    const color  = net_ev >= BA.MIN_PROFIT_FLOOR ? 'v-green' : net_ev >= 0 ? 'v-amber' : 'v-red';
-    const rec    = net_ev >= BA.MIN_PROFIT_FLOOR
-      ? `Positive grading EV. p10=${(p10*100).toFixed(0)}% · p9=40% · p8/below=${(p_low*100).toFixed(0)}% · cost basis $${cost_basis.toFixed(0)}.`
-      : net_ev >= 0
-      ? `Marginal EV — below $${BA.MIN_PROFIT_FLOOR} profit floor. Needs a very clean card.`
-      : `Negative EV — don't grade at these prices.`;
-    if (net_ev >= BA.MIN_PROFIT_FLOOR) signals.push('grade_ev');
-    cards.push({ label: 'Net EV (after eBay fees)', value: evStr, rec, color });
-  } else if (hasRaw && hasPsa9) {
-    // Simplified: no PSA 10 or gem rate — show PSA 9 net profit only
-    const cost_basis = raw + grading;
-    const net9 = net_psa9 - cost_basis;
-    const net9str = (net9 >= 0 ? '+' : '') + '$' + net9.toFixed(0);
-    cards.push({
-      label: 'Net if Grades PSA 9',
-      value: net9str,
-      rec: `After $${grading} grading + 13% eBay fees. ${net9 >= BA.MIN_PROFIT_FLOOR ? 'Profitable.' : 'Below profit floor — needs PSA 10.'}`,
-      color: net9 >= BA.MIN_PROFIT_FLOOR ? 'v-green' : net9 >= 0 ? 'v-amber' : 'v-red'
-    });
-    if (hasRaw && hasPsa10) {
-      const net10 = net_psa10 - cost_basis;
-      const net10str = (net10 >= 0 ? '+' : '') + '$' + net10.toFixed(0);
-      cards.push({
-        label: 'Net if Grades PSA 10',
-        value: net10str,
-        rec: `After $${grading} grading + 13% eBay fees.`,
-        color: net10 >= BA.MIN_PROFIT_FLOOR ? 'v-green' : net10 >= 0 ? 'v-amber' : 'v-red'
-      });
-    }
-  }
-
-  // ── PSA 10/9 multiplier matrix (spec Step 7) ─────────────────────
-  if (hasPsa9 && hasPsa10) {
-    const mult = psa10 / psa9;
-    const gr   = hasGem ? gem : null;
-    let color, rec;
-    if (mult < 1.5) {
-      color = 'v-green';
-      rec = gr > 35 ? 'Buy raw / PSA 9 — low multiplier + high gem rate, PSA 10 adds no premium.' : 'Buy PSA 9 — multiplier too low to justify chasing PSA 10.';
-      signals.push('psa9');
-    } else if (mult <= 3.5) {
-      if (gr !== null && gr < 15)       { color = 'v-amber'; rec = 'Strong grade play — low gem rate + healthy multiplier.'; signals.push('grade'); }
-      else if (gr !== null && gr <= 35) { color = 'v-amber'; rec = 'Run EV model — mid-range gem rate, multiplier supports grading.'; }
-      else                               { color = 'v-green'; rec = 'Grade for PSA 9 — high gem rate means PSA 10 premium isn\'t defensible.'; signals.push('psa9'); }
-    } else {
-      if (gr !== null && gr < 15)       { color = 'v-amber'; rec = 'PSA 10 scarcity is real — low gem rate supports the large premium.'; signals.push('psa10'); }
-      else if (gr !== null && gr <= 35) { color = 'v-red';   rec = 'Caution — fragile premium. High multiplier but gem rate isn\'t low enough.'; }
-      else                               { color = 'v-red';   rec = 'Avoid PSA 10 play — high gem rate will compress this premium.'; signals.push('psa9'); }
-    }
-    cards.push({ label: 'PSA 10 / PSA 9 Multiplier', value: mult.toFixed(2) + '×', rec, color });
-
-    if (hasGem) {
-      let gemColor, gemRec;
-      if      (gem > 35 && mult < 1.5)  { gemColor = 'v-green'; gemRec = 'High gem rate + low mult = PSA 9 is the value play.'; }
-      else if (gem < 15 && mult > 3.5)  { gemColor = 'v-amber'; gemRec = 'Low gem rate + high mult = genuine PSA 10 scarcity. Premium may hold.'; }
-      else if (gem > 35 && mult > 3.5)  { gemColor = 'v-red';   gemRec = 'High gem rate will compress this large premium. Lean PSA 9.'; }
-      else                               { gemColor = 'v-gray';  gemRec = 'Gem rate within normal range. Use EV model and player trajectory.'; }
-      cards.push({ label: 'Gem Rate Signal', value: gem + '%', rec: gemRec, color: gemColor });
-    }
-  }
-
-  // ── Overall recommendation ────────────────────────────────────────
-  const hasGrade  = signals.includes('grade') || signals.includes('grade_ev');
-  const hasSlab   = signals.includes('slab');
-  const hasPsa9s  = signals.includes('psa9');
-  const hasPsa10s = signals.includes('psa10');
-  let overall = '';
-  if      (hasGrade && hasPsa9s)  overall = '📦 Buy raw and grade — strong EV with PSA 9 as the target outcome.';
-  else if (hasGrade)              overall = '📦 Buy raw and grade — grading EV clears the profit floor. Card condition matters.';
-  else if (hasSlab && hasPsa9s)   overall = '🏅 Buy the PSA 9 — raw is too expensive to grade and PSA 9 beats PSA 10 on value.';
-  else if (hasSlab && hasPsa10s)  overall = '🏅 Buy the PSA 10 — raw is too expensive to grade and low gem rate supports the premium.';
-  else if (hasSlab)               overall = '🏅 Buy the slab — raw price is too close to graded for grading to pencil out.';
-  else if (hasPsa9s)              overall = '🏅 Buy the PSA 9 — PSA 10 multiplier or gem rate doesn\'t justify the upgrade.';
-  else if (hasPsa10s)             overall = '💎 Chase the PSA 10 — low gem rate creates genuine scarcity that supports the premium.';
-  else                            overall = '⚖️ Situational — run the full EV model with gem rate to get a clear signal.';
-
-  gridEl.innerHTML = cards.map(c => `
-    <div class="calc-verdict ${c.color}">
-      <div class="cv-label">${c.label}</div>
-      <div class="cv-value">${c.value}</div>
-      <div class="cv-rec">${c.rec}</div>
-    </div>`).join('');
-
-  overallEl.innerHTML = `
-    <div class="calc-overall">
-      <div class="co-label">Overall Recommendation</div>
-      <div class="co-rec">${overall}</div>
-    </div>`;
-
-  gridEl.style.display = 'grid';
-  overallEl.style.display = 'block';
-  emptyEl.style.display = 'none';
-}
 </script>
 </body>
 </html>
