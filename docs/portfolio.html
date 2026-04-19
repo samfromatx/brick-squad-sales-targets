@@ -337,6 +337,10 @@
         <label>Notes (optional)</label>
         <input type="text" id="fNotes" placeholder="e.g. bought at card show">
       </div>
+      <div class="form-group" style="flex-direction:row; align-items:center; gap:8px; grid-column: span 2;">
+        <input type="checkbox" id="fPC" style="width:16px;height:16px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;">
+        <label for="fPC" style="text-transform:none;letter-spacing:0;font-size:.82rem;color:var(--ink-2);cursor:pointer;">Personal Collection — not for sale</label>
+      </div>
     </div>
     <div class="form-actions">
       <button class="btn btn-primary" id="submitBtn" onclick="addEntry()">Add to Portfolio</button>
@@ -373,7 +377,8 @@
           <th onclick="sortTable(7)">Profit</th>
           <th onclick="sortTable(8)">Date</th>
           <th></th>
-          <th onclick="sortTable(12)">Notes</th>
+          <th onclick="sortTable(9)">Notes</th>
+          <th onclick="sortTable(10)">PC</th>
         </tr>
       </thead>
       <tbody id="portfolioBody">
@@ -599,7 +604,8 @@ async function loadEntries() {
     actualSale: parseFloat(row.actual_sale)  || 0,
     saleVenue:  row.sale_venue || '',
     date:       row.date  || '',
-    notes:      row.notes || ''
+    notes:      row.notes || '',
+    pc:         row.pc    || false
   }));
 }
 
@@ -635,6 +641,7 @@ async function addEntry() {
   const saleVenue  = document.getElementById('fSaleVenue').value;
   const date       = document.getElementById('fDate').value;
   const notes      = document.getElementById('fNotes').value.trim();
+  const pc         = document.getElementById('fPC').checked;
 
   if (!card) { document.getElementById('fCard').focus(); return; }
 
@@ -645,7 +652,7 @@ async function addEntry() {
 
   if (isEdit) {
     const { error } = await sb.from('portfolio_entries').update({
-      card, sport, grade, price,
+      card, sport, grade, price, pc,
       target_sell:  target,
       actual_sale:  actualSale,
       sale_venue:   saleVenue,
@@ -653,19 +660,19 @@ async function addEntry() {
     }).eq('id', editingId);
     if (!error) {
       const idx = entries.findIndex(e => e.id === editingId);
-      if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, target, actualSale, saleVenue, date, notes };
+      if (idx > -1) entries[idx] = { id: editingId, card, sport, grade, price, target, actualSale, saleVenue, date, notes, pc };
     }
   } else {
     const { data, error } = await sb.from('portfolio_entries').insert({
       user_id: currentUser.id,
-      card, sport, grade, price,
+      card, sport, grade, price, pc,
       target_sell:  target,
       actual_sale:  actualSale,
       sale_venue:   saleVenue,
       date, notes
     }).select().single();
     if (!error && data) {
-      entries.push({ id: data.id, card, sport, grade, price, target, actualSale, saleVenue, date, notes });
+      entries.push({ id: data.id, card, sport, grade, price, target, actualSale, saleVenue, date, notes, pc });
     }
   }
 
@@ -693,6 +700,7 @@ function editEntry(id) {
   document.getElementById('fSaleVenue').value  = e.saleVenue  || '';
   document.getElementById('fDate').value       = e.date;
   document.getElementById('fNotes').value      = e.notes;
+  document.getElementById('fPC').checked       = e.pc || false;
   document.getElementById('formTitle').textContent   = '✏️ Edit Entry';
   document.getElementById('submitBtn').textContent   = 'Save Changes';
   document.getElementById('cancelBtn').style.display = 'inline-block';
@@ -715,6 +723,7 @@ function resetForm() {
   document.getElementById('fActualSale').value = '';
   document.getElementById('fSaleVenue').value  = '';
   document.getElementById('fNotes').value      = '';
+  document.getElementById('fPC').checked       = false;
   document.getElementById('formTitle').textContent   = '➕ Add Purchase';
   document.getElementById('submitBtn').textContent   = 'Add to Portfolio';
   document.getElementById('cancelBtn').style.display = 'none';
@@ -827,7 +836,8 @@ function renderTable() {
         <button class="btn-edit btn-sm" onclick="editEntry(${e.id})">✏️</button>
         <button class="btn-danger btn-sm" onclick="deleteEntry(${e.id})" style="margin-left:4px;">✕</button>
       </td>
-      <td style="color:#6b7280;font-size:.75rem;">${esc(e.notes)}</td>
+      <td style="color:var(--ink-3);font-size:.75rem;">${esc(e.notes)}</td>
+      <td style="text-align:center;">${e.pc ? '<span title="Personal Collection" style="font-size:1rem;">⭐</span>' : ''}</td>
     </tr>`;
   }).join('');
 }
@@ -846,6 +856,7 @@ function sortVal(e, col) {
     case 7:  return profit;
     case 8:  return e.date;
     case 9:  return e.notes;
+    case 10: return e.pc ? 1 : 0;
     default: return null;
   }
 }
@@ -863,7 +874,7 @@ function sortTable(col) {
 // ── Export CSV ────────────────────────────────────────────────────
 function exportCSV() {
   if (!entries.length) { alert('No entries to export.'); return; }
-  const headers = ['Card','Sport','Grade','Price Paid','7d Avg','30d Avg','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes'];
+  const headers = ['Card','Sport','Grade','Price Paid','7d Avg','30d Avg','Target Sell','Actual Sale','Sale Venue','Profit','Date','Notes','PC'];
   const rows = entries.map(e => {
     const profit       = e.target > 0 ? e.target - e.price : '';
     const actualRevenue = e.actualSale > 0
@@ -874,7 +885,7 @@ function exportCSV() {
             getAvg(e, '7'), getAvg(e, '30'),
             e.target || '', e.actualSale || '', e.saleVenue || '',
             profit !== '' ? profit.toFixed(2) : '',
-            e.date, e.notes].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+            e.date, e.notes, e.pc ? 'Yes' : ''].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   });
   const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
   const a = document.createElement('a');
@@ -1125,8 +1136,10 @@ function parseImportCSV(text) {
     const saleVenue  = VENUE_MAP[rawVenue] ?? '';
     const date       = (r['Date Purchased'] || r['date'] || '').trim();
     const notes      = (r['Notes'] || r['notes'] || '').trim();
+    const rawPC      = (r['PC'] || r['pc'] || '').trim().toLowerCase();
+    const pc         = rawPC === 'yes' || rawPC === 'true' || rawPC === '1';
 
-    return { card, sport, grade, price, target, actualSale, saleVenue, date, notes };
+    return { card, sport, grade, price, target, actualSale, saleVenue, date, notes, pc };
   }).filter(Boolean);
 
   if (errors.length) {
@@ -1164,6 +1177,7 @@ async function confirmImport() {
     sale_venue:   e.saleVenue,
     date:         e.date,
     notes:        e.notes,
+    pc:           e.pc,
   }));
 
   const { error } = await sb.from('portfolio_entries').insert(dbRows);
