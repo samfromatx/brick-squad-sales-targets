@@ -433,8 +433,9 @@ async function showApp() {
   document.getElementById('navEmail').textContent = currentUser.email;
   setDefaultDate();
   checkMigration();
-  await Promise.all([loadEntries(), populatePicker(), loadCSVData()]);
+  await Promise.all([loadEntries(), populatePicker()]);
   render();
+  loadCSVData().then(() => render());
 }
 
 // ── Populate Picker from investment_targets ────────────────────────
