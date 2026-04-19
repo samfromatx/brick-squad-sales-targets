@@ -649,6 +649,7 @@
     </div>
     <div id="ts-signal" class="trend-strip-signal"></div>
   </div>
+  <div id="trend-detail" style="display:none;"></div>
   <div id="trend-strip-empty" style="font-size:.78rem; color:#9ca3af; padding:4px 0; display:none;"></div>
 </div>
 
@@ -2302,6 +2303,7 @@ function setTrendSport(sport) {
   // Reset results when switching sport
   document.getElementById('trend-strip').style.display = 'none';
   document.getElementById('trend-strip-empty').style.display = 'none';
+  document.getElementById('trend-detail').style.display = 'none';
   loadTrendAutocomplete(sport);
 }
 
@@ -2991,6 +2993,54 @@ async function runTrendAnalysis(sport) {
     document.getElementById('ts-sell').textContent = sellAtVal;
     document.getElementById('ts-signal').innerHTML =
       `<span class="chip ${chipClass}">${chipText}</span><span>${esc(rationale)}</span>`;
+
+    // ── Detail section: price table + buy analysis + bounce back ──
+    const fd = v => v == null ? '—' : '$' + (v >= 10 ? Math.round(v) : v.toFixed(2));
+
+    const verdictBadge = `<span style="display:inline-block;background:${
+      verdictColor === 'green' ? '#166534' : verdictColor === 'blue' ? '#1e40af' : verdictColor === 'purple' ? '#6b21a8' : '#374151'
+    };color:#fff;border-radius:6px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:6px">${verdict}</span>`;
+    const confBadge = `<span style="display:inline-block;background:${
+      confidence === 'High' ? '#15803d' : confidence === 'Medium' ? '#b45309' : '#dc2626'
+    };color:#fff;border-radius:6px;padding:2px 10px;font-size:.75rem;font-weight:600;margin-left:6px">${confidence} confidence</span>`;
+
+    const p9bb  = computeBB('psa9');
+    const p10bb = computeBB('psa10');
+
+    const detailEl = document.getElementById('trend-detail');
+    detailEl.innerHTML = `
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:12px;">
+        <div style="font-size:.72rem;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">
+          ${esc(query)} ${verdictBadge} ${confBadge}
+        </div>
+
+        <!-- Price table -->
+        <div class="trend-table-wrap" style="margin-bottom:14px;">
+          <table>
+            <thead><tr>
+              <th>Window</th><th>Raw avg</th><th>PSA 9 avg</th><th>PSA 10 avg</th>
+              <th>Raw/PSA9</th><th>PSA10/PSA9</th>
+            </tr></thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+
+        <!-- Buy analysis card -->
+        <div class="buy-analysis-card" style="margin-bottom:14px;">
+          <div class="ba-header">📊 Buy Analysis</div>
+          ${lowConfHtml}
+          ${viabilityRow}
+          ${matrixRow}
+          ${evRow}
+          ${beRow}
+          ${gemRow}
+          ${suggestedRow}
+        </div>
+
+        <!-- Bounce back -->
+        ${bbTabHTML(p9bb, p10bb)}
+      </div>`;
+    detailEl.style.display = 'block';
 
     loadEl.style.display = 'none';
     if (analyzeBtn) { analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analyze'; }
