@@ -2274,9 +2274,55 @@ function portfolioSportKey(s) {
   return null;
 }
 
-function portfolioPlayerName(card) {
-  const yearMatch = card.match(/\b(20\d\d|19\d\d)\b/);
-  return yearMatch ? card.slice(0, card.indexOf(yearMatch[0])).trim() : card.split(' ').slice(0, 3).join(' ');
+function normalizeName(s) {
+  return s.toLowerCase()
+    .replace(/\/\d+/g, '')
+    .replace(/#\d+/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function fuzzyFindRow(rows, card, grade) {
+  const gradeLower = (grade || '').toLowerCase();
+  const tokens = normalizeName(card).split(' ').filter(t => t);
+  const tokenSet = new Set(tokens);
+
+  // Exact match first
+  const exact = rows.find(r =>
+    (r['Card'] || '').toLowerCase() === card.toLowerCase() &&
+    (r['Grade'] || '').toLowerCase() === gradeLower
+  );
+  if (exact) return exact;
+
+  // Bidirectional token subset match
+  const candidates = rows.filter(r => {
+    if ((r['Grade'] || '').toLowerCase() !== gradeLower) return false;
+    const csvToks = normalizeName(r['Card'] || '').split(' ').filter(t => t);
+    const csvSet = new Set(csvToks);
+    return tokens.every(t => csvSet.has(t)) || csvToks.every(t => tokenSet.has(t));
+  });
+
+  if (!candidates.length) return null;
+  if (candidates.length === 1) return candidates[0];
+
+  // Jaccard scoring to resolve ties
+  const scored = candidates.map(r => {
+    const csvToks = normalizeName(r['Card'] || '').split(' ').filter(t => t);
+    const csvSet = new Set(csvToks);
+    const overlap = tokens.filter(t => csvSet.has(t)).length;
+    const union = new Set([...tokens, ...csvToks]).size;
+    return { r, score: overlap / union, normCard: normalizeName(r['Card'] || ''), csvLen: csvToks.length };
+  });
+  scored.sort((a, b) => b.score - a.score || a.csvLen - b.csvLen);
+
+  const best = scored[0];
+  const second = scored[1];
+  if (second && second.score >= best.score * 0.95) {
+    const allSame = scored.filter(s => s.score >= best.score * 0.95).every(s => s.normCard === best.normCard);
+    if (!allSame) return null;
+  }
+  return best.r;
 }
 
 function sellVerdict(score, hasData) {
@@ -2329,25 +2375,21 @@ function scoreSellEntry(entry, market) {
 async function fetchPortfolioMarket(entry) {
   const sport = portfolioSportKey(entry.sport);
   if (!sport || sport === 'soccer') return { avg_7d: null, avg_30d: null, trend_7d: null, trend_30d: null, sales_7d: null, last_sale: null };
-  const playerName = portfolioPlayerName(entry.card);
   const grade = entry.grade || 'PSA 9';
   try {
-    const { data } = await sb
-      .from('card_market_data')
-      .select('window_days,avg,price_change_pct,num_sales,last_sale')
-      .eq('sport', sport)
-      .eq('grade', grade)
-      .ilike('card', `%${playerName}%`)
-      .in('window_days', [7, 30]);
-    const w7  = (data || []).find(r => r.window_days === 7);
-    const w30 = (data || []).find(r => r.window_days === 30);
+    const [rows7, rows30] = await Promise.all([
+      fetchCSV(`data/${sport}-all-players-last-7-days.csv`),
+      fetchCSV(`data/${sport}-all-players-last-30-days.csv`),
+    ]);
+    const r7  = fuzzyFindRow(rows7,  entry.card, grade);
+    const r30 = fuzzyFindRow(rows30, entry.card, grade);
     return {
-      avg_7d:    w7  ? parseFloat(w7.avg)  || null : null,
-      avg_30d:   w30 ? parseFloat(w30.avg) || null : null,
-      trend_7d:  w7  ? parseFloat(w7.price_change_pct)  || null : null,
-      trend_30d: w30 ? parseFloat(w30.price_change_pct) || null : null,
-      sales_7d:  w7  ? parseInt(w7.num_sales)  || null : null,
-      last_sale: w7  ? parseFloat(w7.last_sale) || null : null,
+      avg_7d:    r7  ? parsePrice(r7['Avg'])                     : null,
+      avg_30d:   r30 ? parsePrice(r30['Avg'])                    : null,
+      trend_7d:  r7  ? parseNum(r7['Price Change %'])            : null,
+      trend_30d: r30 ? parseNum(r30['Price Change %'])           : null,
+      sales_7d:  r7  ? (parseInt(r7['# of Sales']) || null)      : null,
+      last_sale: r7  ? parsePrice(r7['Last Sale'])               : null,
     };
   } catch(e) {
     return { avg_7d: null, avg_30d: null, trend_7d: null, trend_30d: null, sales_7d: null, last_sale: null };
