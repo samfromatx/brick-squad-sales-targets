@@ -2482,6 +2482,9 @@ async function renderPortfolioSell() {
   const trendColor = v => v == null ? '' : v > 5 ? 'style="color:var(--green-text);font-weight:600"' : v < -5 ? 'style="color:var(--red-text)"' : '';
 
   body.innerHTML = `
+    <p style="font-size:.78rem;color:var(--ink-3);margin-bottom:10px;">
+      ROI = (30d avg × 0.87 − cost) ÷ cost. The 0.87 accounts for ~13% eBay fees, so a card needs to sell ~15% above your cost to break even. Cards are shown if the market price exceeds your cost paid, even if ROI is still negative after fees.
+    </p>
     <div class="tbl-wrap" style="margin-top:12px;">
       <table>
         <thead><tr>
