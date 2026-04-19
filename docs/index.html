@@ -2440,9 +2440,9 @@ async function renderPortfolioSell() {
   if (pkpiSell)   pkpiSell.innerHTML   = `<div class="pv" style="color:var(--brand)">${readyCount}</div><div class="pl">Ready to Sell</div>`;
   if (pkpiProfit) pkpiProfit.innerHTML = `<div class="pv" style="color:#3b6d11">${profitCount}</div><div class="pl">Profitable</div>`;
 
-  // Show score >= 3 (Consider or better) OR profitable (market > cost paid)
+  // Show score >= 3 (Consider or better) OR market price above what was paid (before fees)
   const candidates = scored
-    .filter(s => s.hasData && (s.score >= 3 || (s.roiPct !== null && s.roiPct > 0)))
+    .filter(s => s.hasData && (s.score >= 3 || (s.marketPrice !== null && s.marketPrice > s.costBasis)))
     .sort((a, b) => b.score - a.score);
 
   const body = document.getElementById('sell-rec-body');
