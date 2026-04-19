@@ -354,6 +354,8 @@
     <button class="btn-filter active" id="filterAll" onclick="setFilter(null)">All</button>
     <button class="btn-filter" id="filterAboveCost" onclick="setFilter('above-cost')">Above Cost</button>
     <button class="btn-filter" id="filterAtTarget" onclick="setFilter('at-target')">At Target</button>
+    <button class="btn-filter" id="filterHidePC" onclick="setFilter('hide-pc')">Hide PC</button>
+    <button class="btn-filter" id="filterPCOnly" onclick="setFilter('pc-only')">⭐ PC Only</button>
   </div>
   <div class="section-title">
     <span>Purchase Log (<span id="entryCount">0</span> entries)</span>
@@ -741,9 +743,11 @@ async function deleteEntry(id) {
 // ── Filters ───────────────────────────────────────────────────────
 function setFilter(f) {
   activeFilter = f;
-  document.getElementById('filterAll').className        = 'btn-filter' + (f === null ? ' active' : '');
-  document.getElementById('filterAboveCost').className  = 'btn-filter' + (f === 'above-cost' ? ' active-green' : '');
-  document.getElementById('filterAtTarget').className   = 'btn-filter' + (f === 'at-target'  ? ' active-green' : '');
+  document.getElementById('filterAll').className       = 'btn-filter' + (f === null         ? ' active' : '');
+  document.getElementById('filterAboveCost').className = 'btn-filter' + (f === 'above-cost' ? ' active-green' : '');
+  document.getElementById('filterAtTarget').className  = 'btn-filter' + (f === 'at-target'  ? ' active-green' : '');
+  document.getElementById('filterHidePC').className    = 'btn-filter' + (f === 'hide-pc'    ? ' active' : '');
+  document.getElementById('filterPCOnly').className    = 'btn-filter' + (f === 'pc-only'    ? ' active' : '');
   renderTable();
 }
 
@@ -797,6 +801,10 @@ function renderTable() {
     visible = entries.filter(e => { const a = getAvg(e, '30', true); return a !== null && a > e.price; });
   } else if (activeFilter === 'at-target') {
     visible = entries.filter(e => { const a = getAvg(e, '30', true); return a !== null && e.target > 0 && a >= e.target; });
+  } else if (activeFilter === 'hide-pc') {
+    visible = entries.filter(e => !e.pc);
+  } else if (activeFilter === 'pc-only') {
+    visible = entries.filter(e => e.pc);
   }
   document.getElementById('entryCount').textContent = visible.length;
   if (!visible.length) {
