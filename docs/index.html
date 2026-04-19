@@ -407,6 +407,10 @@
   .port-kpi .pl { font-size: .7rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .4px; margin-top: 3px; }
   .port-link { display: inline-block; margin-top: 8px; padding: 8px 18px; background: var(--ink); color: #fff; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; }
   .port-link:hover { background: #333; }
+  .chip-sell-now   { background: var(--green-bg);  color: var(--green-text);  border: 1px solid var(--green-border); }
+  .chip-strong-sell { background: var(--teal-bg);  color: var(--teal-text);   border: 1px solid var(--teal-border);  }
+  .chip-consider   { background: var(--amber-bg);  color: var(--amber-text);  border: 1px solid var(--amber-border); }
+  .chip-hold       { background: var(--bg-2);      color: var(--ink-3);       border: 1px solid var(--border);       }
 
   .btn-analyze {
     padding: 7px 14px; border-radius: 6px;
@@ -1359,19 +1363,22 @@ async function showApp() {
 
 // ── Data Layer ────────────────────────────────────────────────────
 async function loadData() {
-  const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }, { data: ebayRows, error: e3 }] = await Promise.all([
+  const [{ data: targets, error: e1 }, { data: portfolios, error: e2 }, { data: ebayRows, error: e3 }, { data: entries, error: e4 }] = await Promise.all([
     sb.from('investment_targets').select('*').eq('user_id', currentUser.id).order('rank'),
     sb.from('portfolio_targets').select('*').eq('user_id', currentUser.id).order('budget_tier'),
-    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('sport').order('category')
+    sb.from('ebay_searches').select('*').eq('user_id', currentUser.id).order('sport').order('category'),
+    sb.from('portfolio_entries').select('*').eq('user_id', currentUser.id)
   ]);
 
   if (e1) console.error('Load targets error:', e1);
   if (e2) console.error('Load portfolios error:', e2);
   if (e3) console.error('Load ebay searches error:', e3);
+  if (e4) console.error('Load portfolio entries error:', e4);
 
   const t = targets || [];
   const p = portfolios || [];
   const e = ebayRows || [];
+  _portfolioEntries = (entries || []).filter(r => !r.actual_sale || r.actual_sale === 0);
   allTargets = t;
   renderTargetsTab();
 
@@ -1387,7 +1394,7 @@ async function loadData() {
   renderBBRaw(t.filter(r => r.sport === 'basketball' && r.category === 'raw'));
   renderBounceBack(t.filter(r => r.category === 'bounce_back'));
   renderCardShow(t.filter(r => r.category === 'graded'));
-  renderPortfolioTool(p);
+  renderPortfolioSell();
   _ebayRows = e;
   renderEbaySearches(e, activeEbaySport);
   attachSorting();
@@ -2245,6 +2252,7 @@ function renderTargetsTab() {
 let activeTool = 'bounce';
 let activeEbaySport = 'all';
 let _ebayRows = [];
+let _portfolioEntries = [];
 
 function showTool(id) {
   activeTool = id;
@@ -2257,42 +2265,187 @@ function showTool(id) {
   setTimeout(attachSorting, 50);
 }
 
-function renderPortfolioTool(rows) {
+// ── Portfolio Sell Recommendations ───────────────────────────────
+function portfolioSportKey(s) {
+  if (!s) return null;
+  if (s.includes('FB') || s.toLowerCase().includes('football')) return 'football';
+  if (s.includes('BB') || s.toLowerCase().includes('basketball')) return 'basketball';
+  if (s.includes('SC') || s.toLowerCase().includes('soccer')) return 'soccer';
+  return null;
+}
+
+function portfolioPlayerName(card) {
+  const yearMatch = card.match(/\b(20\d\d|19\d\d)\b/);
+  return yearMatch ? card.slice(0, card.indexOf(yearMatch[0])).trim() : card.split(' ').slice(0, 3).join(' ');
+}
+
+function sellVerdict(score, hasData) {
+  if (!hasData) return { label: 'No Data', cls: 'chip-hold' };
+  if (score >= 7) return { label: 'Sell Now',  cls: 'chip-sell-now' };
+  if (score >= 5) return { label: 'Strong Sell', cls: 'chip-strong-sell' };
+  if (score >= 3) return { label: 'Consider',  cls: 'chip-consider' };
+  if (score >= 1) return { label: 'Hold',      cls: 'chip-hold' };
+  return               { label: 'Hold / Wait', cls: 'chip-hold' };
+}
+
+function scoreSellEntry(entry, market) {
+  const { price = 0, grading_cost = 0, target_sell = 0 } = entry;
+  const costBasis = parseFloat(price) + parseFloat(grading_cost || 0);
+  const avg30 = market.avg_30d;
+  const avg7  = market.avg_7d;
+  const marketPrice = avg30 ?? avg7;
+  const roiPct = (marketPrice && costBasis > 0)
+    ? ((marketPrice * 0.87 - costBasis) / costBasis) * 100
+    : null;
+
+  let score = 0;
+  if (roiPct !== null) {
+    if (roiPct > 80)      score += 4;
+    else if (roiPct > 50) score += 3;
+    else if (roiPct > 25) score += 2;
+    else if (roiPct > 0)  score += 1;
+    else                  score -= 1;
+  }
+  const t7 = market.trend_7d;
+  if (t7 !== null) {
+    if (t7 > 20)       score += 3;
+    else if (t7 > 8)   score += 2;
+    else if (t7 > 2)   score += 1;
+    else if (t7 < -15) score += 1;
+  }
+  if (market.trend_30d !== null && market.trend_30d > 30) score += 1;
+  const s7 = market.sales_7d;
+  if (s7 !== null) {
+    if (s7 >= 10) score += 1;
+    else if (s7 <= 1) score -= 1;
+  }
+  if (marketPrice && target_sell > 0) {
+    if (marketPrice >= target_sell)           score += 2;
+    else if (marketPrice >= target_sell * 0.9) score += 1;
+  }
+  return { score, roiPct, costBasis, marketPrice };
+}
+
+async function fetchPortfolioMarket(entry) {
+  const sport = portfolioSportKey(entry.sport);
+  if (!sport || sport === 'soccer') return { avg_7d: null, avg_30d: null, trend_7d: null, trend_30d: null, sales_7d: null, last_sale: null };
+  const playerName = portfolioPlayerName(entry.card);
+  const grade = entry.grade || 'PSA 9';
+  try {
+    const { data } = await sb
+      .from('card_market_data')
+      .select('window_days,avg,price_change_pct,num_sales,last_sale')
+      .eq('sport', sport)
+      .eq('grade', grade)
+      .ilike('card', `%${playerName}%`)
+      .in('window_days', [7, 30]);
+    const w7  = (data || []).find(r => r.window_days === 7);
+    const w30 = (data || []).find(r => r.window_days === 30);
+    return {
+      avg_7d:    w7  ? parseFloat(w7.avg)  || null : null,
+      avg_30d:   w30 ? parseFloat(w30.avg) || null : null,
+      trend_7d:  w7  ? parseFloat(w7.price_change_pct)  || null : null,
+      trend_30d: w30 ? parseFloat(w30.price_change_pct) || null : null,
+      sales_7d:  w7  ? parseInt(w7.num_sales)  || null : null,
+      last_sale: w7  ? parseFloat(w7.last_sale) || null : null,
+    };
+  } catch(e) {
+    return { avg_7d: null, avg_30d: null, trend_7d: null, trend_30d: null, sales_7d: null, last_sale: null };
+  }
+}
+
+async function renderPortfolioSell() {
   const el = document.getElementById('portfolio-tool-container');
   if (!el) return;
 
-  const tiers = [
-    { key: '1000', label: '$1,000 Budget' },
-    { key: '1500', label: '$1,500 Budget' },
-    { key: '2000', label: '$2,000 Budget' },
-  ];
+  const entries = _portfolioEntries;
+  const totalHeld = entries.length;
+  const totalCost = entries.reduce((s, r) => s + parseFloat(r.price || 0) + parseFloat(r.grading_cost || 0), 0);
 
-  if (!rows.length) {
-    el.innerHTML = '<div class="rule-box" style="margin-top:8px;"><p style="color:var(--ink-3);">No portfolio data. Click ⬆ Import JSON to load.</p></div>';
+  if (!totalHeld) {
+    el.innerHTML = `<div class="rule-box"><p>No holdings found. <a href="portfolio.html" style="color:var(--brand)">Add cards in portfolio.html →</a></p></div>`;
     return;
   }
 
-  const kpis = tiers.map(({ key, label }) => {
-    const tierRows = rows.filter(r => r.budget_tier === key);
-    const total = tierRows.reduce((s, r) => s + (parseFloat(r.subtotal) || 0), 0);
-    const cards = tierRows.length;
-    return `<div class="port-kpi">
-      <div class="pv">${cards ? '$' + Math.round(total).toLocaleString() : '—'}</div>
-      <div class="pl">${label}</div>
-    </div>`;
-  }).join('');
-
-  const totalCards = rows.length;
-  const totalVal = rows.reduce((s, r) => s + (parseFloat(r.subtotal) || 0), 0);
-
+  // Show skeleton KPIs + loading state while market data fetches
   el.innerHTML = `
-    <div class="section-title" style="margin-bottom:14px;">💰 Portfolio Summary</div>
     <div class="portfolio-kpi-row">
-      <div class="port-kpi"><div class="pv">${totalCards}</div><div class="pl">Positions</div></div>
-      <div class="port-kpi"><div class="pv">$${Math.round(totalVal).toLocaleString()}</div><div class="pl">Total Allocated</div></div>
-      ${kpis}
+      <div class="port-kpi"><div class="pv">${totalHeld}</div><div class="pl">Cards Held</div></div>
+      <div class="port-kpi" id="pkpi-sell"><div class="pv">…</div><div class="pl">Ready to Sell</div></div>
+      <div class="port-kpi" id="pkpi-profit"><div class="pv">…</div><div class="pl">Profitable</div></div>
+      <div class="port-kpi"><div class="pv">$${Math.round(totalCost).toLocaleString()}</div><div class="pl">Cost Basis</div></div>
     </div>
-    <a href="portfolio.html" class="port-link">View full portfolio →</a>`;
+    <div id="sell-rec-body" style="color:var(--ink-3);font-size:.82rem;padding:16px 0;">Loading market data…</div>`;
+
+  // Fetch market data for all held cards in parallel
+  const markets = await Promise.all(entries.map(e => fetchPortfolioMarket(e)));
+
+  // Score every card
+  const scored = entries.map((entry, i) => {
+    const market = markets[i];
+    const hasData = market.avg_30d !== null || market.avg_7d !== null;
+    const { score, roiPct, costBasis, marketPrice } = scoreSellEntry(entry, market);
+    const verdict = sellVerdict(score, hasData);
+    const suggestedSell = market.last_sale || market.avg_30d || market.avg_7d;
+    return { entry, market, score, roiPct, costBasis, marketPrice, verdict, hasData, suggestedSell };
+  });
+
+  // Update KPI counts
+  const readyCount    = scored.filter(s => s.score >= 3 && s.hasData).length;
+  const profitCount   = scored.filter(s => s.roiPct !== null && s.roiPct > 0).length;
+  const pkpiSell    = document.getElementById('pkpi-sell');
+  const pkpiProfit  = document.getElementById('pkpi-profit');
+  if (pkpiSell)   pkpiSell.innerHTML   = `<div class="pv" style="color:var(--brand)">${readyCount}</div><div class="pl">Ready to Sell</div>`;
+  if (pkpiProfit) pkpiProfit.innerHTML = `<div class="pv" style="color:#3b6d11">${profitCount}</div><div class="pl">Profitable</div>`;
+
+  // Filter to CONSIDER or better, sort by score desc
+  const candidates = scored
+    .filter(s => s.score >= 3 && s.hasData)
+    .sort((a, b) => b.score - a.score);
+
+  const body = document.getElementById('sell-rec-body');
+  if (!body) return;
+
+  if (!candidates.length) {
+    body.innerHTML = `<p class="empty-msg" style="padding:16px 0;">No sell candidates right now — all holdings are in hold territory.</p><a href="portfolio.html" class="port-link" style="margin-top:8px;display:inline-block;">View full portfolio →</a>`;
+    return;
+  }
+
+  const fmt = v => v != null ? '$' + (v >= 10 ? Math.round(v) : v.toFixed(2)) : '—';
+  const fmtPct = v => v != null ? (v >= 0 ? '+' : '') + v.toFixed(1) + '%' : '—';
+  const roiColor = v => v == null ? '' : v > 0 ? 'style="color:var(--green-text);font-weight:600"' : 'style="color:var(--red-text)"';
+  const trendColor = v => v == null ? '' : v > 5 ? 'style="color:var(--green-text);font-weight:600"' : v < -5 ? 'style="color:var(--red-text)"' : '';
+
+  body.innerHTML = `
+    <div class="tbl-wrap" style="margin-top:12px;">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Card</th><th>Grade</th>
+          <th>Cost</th><th>30d Avg</th><th>ROI</th>
+          <th class="hide-mobile">7d Trend</th><th>Verdict</th>
+        </tr></thead>
+        <tbody>
+          ${candidates.map((s, i) => {
+            const sportEmoji = s.entry.sport?.includes('BB') ? '🏀' : s.entry.sport?.includes('SC') ? '⚽' : '🏈';
+            return `<tr>
+              <td class="hide-mobile" style="color:var(--ink-3)">${i + 1}</td>
+              <td style="white-space:normal;min-width:160px">
+                <span style="font-weight:500;color:var(--ink)">${esc(s.entry.card)}</span>
+                <small style="display:block;color:var(--ink-3);font-size:.72rem">${sportEmoji} ${s.entry.sport || ''}</small>
+              </td>
+              <td>${gradeBadgeHTML(s.entry.grade)}</td>
+              <td>${fmt(s.costBasis)}</td>
+              <td>${fmt(s.marketPrice)}</td>
+              <td ${roiColor(s.roiPct)}>${fmtPct(s.roiPct)}</td>
+              <td class="hide-mobile" ${trendColor(s.market.trend_7d)}>${fmtPct(s.market.trend_7d)}</td>
+              <td><span class="chip ${s.verdict.cls}">${s.verdict.label}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <a href="portfolio.html" class="port-link" style="margin-top:4px;display:inline-block;">View full portfolio →</a>`;
+  attachSorting();
 }
 
 function setTrendSport(sport) {
