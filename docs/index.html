@@ -879,7 +879,7 @@
   <div id="tools" class="tab-content">
     <div class="tools-nav">
       <button class="tool-tab active" id="tool-tab-bounce" onclick="showTool('bounce')">Bounce Back</button>
-      <button class="tool-tab" id="tool-tab-portfolio" onclick="showTool('portfolio')">Portfolios</button>
+      <button class="tool-tab" id="tool-tab-portfolio" onclick="showTool('portfolio')">Ready to Sell</button>
       <button class="tool-tab" id="tool-tab-cardshow" onclick="showTool('cardshow')">Card Show</button>
     </div>
     <div class="tool-panel active" id="tool-bounce">
@@ -2440,9 +2440,9 @@ async function renderPortfolioSell() {
   if (pkpiSell)   pkpiSell.innerHTML   = `<div class="pv" style="color:var(--brand)">${readyCount}</div><div class="pl">Ready to Sell</div>`;
   if (pkpiProfit) pkpiProfit.innerHTML = `<div class="pv" style="color:#3b6d11">${profitCount}</div><div class="pl">Profitable</div>`;
 
-  // Filter to CONSIDER or better, sort by score desc
+  // Show score >= 3 (Consider or better) OR profitable (market > cost paid)
   const candidates = scored
-    .filter(s => s.score >= 3 && s.hasData)
+    .filter(s => s.hasData && (s.score >= 3 || (s.roiPct !== null && s.roiPct > 0)))
     .sort((a, b) => b.score - a.score);
 
   const body = document.getElementById('sell-rec-body');
