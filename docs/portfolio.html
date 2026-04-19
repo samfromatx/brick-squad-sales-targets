@@ -866,15 +866,33 @@ function buildPriceLookup(rows) {
 
 async function loadCSVData() {
   const combos = [
-    ['football', '7'], ['football', '30'],
-    ['basketball', '7'], ['basketball', '30']
+    ['football', 7], ['football', 30],
+    ['basketball', 7], ['basketball', 30]
   ];
-  await Promise.all(combos.map(async ([sport, days]) => {
+  await Promise.all(combos.map(async ([sport, windowDays]) => {
     try {
-      const res = await fetch(`data/${sport}-all-players-last-${days}-days.csv`);
-      if (!res.ok) return;
-      const text = await res.text();
-      csvPriceData[sport][days] = buildPriceLookup(parseCSVRows(text));
+      const { data, error } = await sb
+        .from('card_market_data')
+        .select('card,grade,price_change_pct,price_change_dollar,starting_price,last_sale,avg,min_sale,max_sale,volume_change_pct,num_sales,total_sales_dollar')
+        .eq('sport', sport)
+        .eq('window_days', windowDays)
+        .limit(100000);
+      if (error || !data) return;
+      const rows = data.map(r => ({
+        'Card': r.card,
+        'Grade': r.grade,
+        'Price Change %': r.price_change_pct,
+        'Price Change $': r.price_change_dollar,
+        'Starting Price': r.starting_price,
+        'Last Sale': r.last_sale,
+        'Avg': r.avg,
+        'Min Sale': r.min_sale,
+        'Max Sale': r.max_sale,
+        'Volume Change %': r.volume_change_pct,
+        '# of Sales': r.num_sales,
+        'Total Sales $': r.total_sales_dollar,
+      }));
+      csvPriceData[sport][String(windowDays)] = buildPriceLookup(rows);
     } catch(e) { /* silently ignore */ }
   }));
 }
