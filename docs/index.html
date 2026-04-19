@@ -281,11 +281,12 @@
     .stat-card { min-width: calc(50% - 6px); }
     .stat-card .value { font-size: 1.15rem; }
 
-    /* Tables — constrain to viewport */
-    .tbl-wrap { max-width: 100%; }
-    table { font-size: .76rem; }
+    /* Tables — constrain to viewport, hide mobile cols */
+    .tbl-wrap { max-width: 100%; -webkit-overflow-scrolling: touch; }
+    table { font-size: .76rem; min-width: 480px; }
     thead th { padding: 8px 8px; font-size: .66rem; }
     tbody td { padding: 9px 8px; }
+    .hide-mobile { display: none; }
 
     /* Buy analysis cards */
     .ba-row { font-size: .78rem; }
@@ -308,6 +309,257 @@
   .wc-warn-box { background: #fffbeb; border: 1px solid #fcd34d; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; font-size: .82rem; color: #78350f; line-height: 1.7; }
   .wc-card-name { white-space: normal !important; max-width: 220px; }
   .wc-status-cell { white-space: normal !important; min-width: 110px; }
+
+  /* ── DESIGN TOKENS ──────────────────────────────────────────── */
+  :root {
+    --brand: #E8593C; --brand-dark: #c04020;
+    --ink: #1a1a18; --ink-2: #52524e; --ink-3: #888780;
+    --border: #e2e0d8; --border-2: #d0cec6;
+    --bg: #ffffff; --bg-2: #f7f6f2; --bg-3: #f0efe9;
+    --amber-bg: #faeeda; --amber-text: #633806; --amber-border: #fac775;
+    --blue-bg: #e6f1fb; --blue-text: #0c447c; --blue-border: #85b7eb;
+    --green-bg: #eaf3de; --green-text: #3b6d11; --green-border: #97c459;
+    --teal-bg: #e1f5ee; --teal-text: #085041; --teal-border: #5dcaa5;
+    --red-bg: #fcebeb; --red-text: #a32d2d; --red-border: #f09595;
+    --orange-bg: #fdf1ea; --orange-text: #4a1b0c; --orange-border: #d85a30;
+    --navy: #1a3d5c;
+  }
+
+  /* ── TREND BAR ──────────────────────────────────────────────── */
+  .trend-bar {
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px 12px;
+  }
+  .trend-bar-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--ink-3); margin-bottom: 7px;
+  }
+  .trend-bar-meta { font-size: 10px; color: var(--ink-3); margin-top: 5px; }
+  .trend-row { display: flex; gap: 6px; align-items: flex-start; flex-wrap: wrap; }
+  .trend-input-wrap { flex: 1; min-width: 200px; position: relative; }
+  .trend-input-wrap input {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid var(--border-2); border-radius: 6px;
+    font-size: 12px; background: #fff; color: var(--ink);
+    outline: none; transition: border-color .15s;
+  }
+  .trend-input-wrap input:focus { border-color: #93c5fd; background: #fff; }
+  .trend-sport-btns { display: flex; gap: 3px; }
+  .sport-btn {
+    padding: 6px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: #fff;
+    font-size: 14px; cursor: pointer; transition: all .15s; line-height: 1;
+  }
+  .sport-btn.active { background: var(--navy); border-color: var(--navy); }
+
+  /* TARGETS TAB FILTER BAR */
+  .targets-filter-bar {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    margin: -16px -16px 16px;
+  }
+  .tgt-sport-btns, .tgt-type-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tgt-sport-btn {
+    padding: 6px 14px; border-radius: 20px;
+    border: 1px solid var(--border); background: #fff;
+    font-size: 12px; font-weight: 500; color: var(--ink-2);
+    cursor: pointer; transition: all .15s;
+  }
+  .tgt-sport-btn:hover { border-color: #aaa; color: var(--ink); }
+  .tgt-sport-btn.active.fb { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); font-weight: 600; }
+  .tgt-sport-btn.active.bb { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue-text); font-weight: 600; }
+  .tgt-sport-btn.active.sc { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); font-weight: 600; }
+  .tgt-type-btn {
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--border); background: #fff;
+    font-size: 11px; font-weight: 500; color: var(--ink-3);
+    cursor: pointer; transition: all .15s;
+  }
+  .tgt-type-btn:hover { color: var(--ink-2); border-color: #aaa; }
+  .tgt-type-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .targets-kpi-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tgt-kpi { flex: 1; min-width: 100px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .tgt-kpi .kv { font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+  .tgt-kpi .kl { font-size: .7rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+  @media(max-width:600px) {
+    .targets-filter-bar { flex-direction: column; align-items: flex-start; }
+    .tgt-type-btns { display: none; }
+    .tgt-type-btns.show-mobile { display: flex; }
+  }
+
+  /* TOOLS TAB */
+  .tools-nav { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin: -16px -16px 20px; padding: 0 16px; background: var(--bg-2); }
+  .tool-tab {
+    padding: 10px 18px; font-size: 13px; font-weight: 500; color: var(--ink-3);
+    background: none; border: none; border-bottom: 2px solid transparent;
+    cursor: pointer; margin-bottom: -1px; transition: all .15s;
+  }
+  .tool-tab:hover { color: var(--ink-2); }
+  .tool-tab.active { color: var(--ink); border-bottom-color: var(--brand); font-weight: 600; }
+  .tool-panel { display: none; }
+  .tool-panel.active { display: block; }
+  .portfolio-kpi-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .port-kpi { flex: 1; min-width: 120px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .port-kpi .pv { font-size: 1.3rem; font-weight: 700; color: var(--ink); }
+  .port-kpi .pl { font-size: .7rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .4px; margin-top: 3px; }
+  .port-link { display: inline-block; margin-top: 8px; padding: 8px 18px; background: var(--ink); color: #fff; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; }
+  .port-link:hover { background: #333; }
+
+  .btn-analyze {
+    padding: 7px 14px; border-radius: 6px;
+    background: var(--brand); color: #fff;
+    font-size: 12px; font-weight: 500; border: none;
+    cursor: pointer; white-space: nowrap; transition: background .15s;
+  }
+  .btn-analyze:hover { background: var(--brand-dark); }
+  .btn-analyze:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── TREND STRIP ────────────────────────────────────────────── */
+  .trend-strip-stats {
+    display: flex; background: #fff;
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-top: 8px; overflow: hidden;
+  }
+  .ts-stat {
+    flex: 1; text-align: center; padding: 7px 8px;
+    border-right: 1px solid var(--border);
+  }
+  .ts-stat:last-child { border-right: none; }
+  .ts-stat-val { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .ts-stat-lbl { font-size: 10px; color: var(--ink-3); margin-top: 2px; }
+  .trend-strip-signal {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--ink-3); margin-top: 6px;
+  }
+
+  /* ── CHIPS ──────────────────────────────────────────────────── */
+  .chip {
+    display: inline-block; font-size: 10px; font-weight: 500;
+    padding: 2px 7px; border-radius: 99px; border: 1px solid;
+  }
+  .chip-buy   { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+  .chip-watch { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+  .chip-graded { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); }
+  .chip-raw   { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+
+  @media (max-width: 600px) {
+    .trend-bar { padding: 8px 12px 10px; }
+    .trend-row { gap: 5px; }
+    .trend-strip-stats { flex-wrap: wrap; }
+    .ts-stat { min-width: 30%; flex: 1 1 30%; }
+  }
+
+  /* ── OVERVIEW — SECTION LABELS ──────────────────────────────── */
+  .ov-sec-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--ink-3); margin-bottom: 10px;
+  }
+
+  /* ── BUY DECISION GUIDE ─────────────────────────────────────── */
+  .ov-defaults { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .ov-badge {
+    flex: 1; min-width: 140px; padding: 8px 12px; border-radius: 8px;
+    border: 1px solid; display: flex; justify-content: space-between; align-items: center;
+  }
+  .ov-badge.fb { background: var(--amber-bg); border-color: var(--amber-border); }
+  .ov-badge.bb { background: var(--blue-bg);  border-color: var(--blue-border); }
+  .ov-badge .sport { font-size: 12px; font-weight: 500; }
+  .ov-badge.fb .sport { color: #412402; }
+  .ov-badge.bb .sport { color: #042c53; }
+  .ov-badge .rec { font-size: 13px; font-weight: 600; }
+  .ov-badge.fb .rec { color: var(--amber-text); }
+  .ov-badge.bb .rec { color: var(--blue-text); }
+  .ov-badge .note { font-size: 10px; color: var(--ink-3); text-align: right; max-width: 90px; line-height: 1.3; }
+
+  .grade-cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .gc { border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+  .gc-head { padding: 8px 10px; }
+  .gc-name { font-size: 12px; font-weight: 600; }
+  .gc-sub  { font-size: 10px; margin-top: 2px; }
+  .gc.raw  .gc-head { background: var(--amber-bg); border-bottom: 1px solid var(--amber-border); }
+  .gc.raw  .gc-name { color: #412402; } .gc.raw  .gc-sub { color: var(--amber-text); }
+  .gc.p9   .gc-head { background: var(--blue-bg);  border-bottom: 1px solid var(--blue-border); }
+  .gc.p9   .gc-name { color: #042c53; } .gc.p9   .gc-sub { color: var(--blue-text); }
+  .gc.p10  .gc-head { background: var(--green-bg); border-bottom: 1px solid var(--green-border); }
+  .gc.p10  .gc-name { color: #173404; } .gc.p10  .gc-sub { color: var(--green-text); }
+  .gc-body { padding: 8px 10px; background: #fff; }
+  .sr { display: flex; align-items: flex-start; gap: 5px; margin-bottom: 5px; font-size: 11px; line-height: 1.4; color: var(--ink); }
+  .sr-i {
+    width: 13px; height: 13px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 8px; flex-shrink: 0; margin-top: 1px; font-style: normal;
+  }
+  .sr-i.go   { background: var(--green-bg); color: var(--green-text); }
+  .sr-i.warn { background: var(--amber-bg); color: var(--amber-text); }
+  .sr-i.no   { background: var(--red-bg);   color: var(--red-text); }
+
+  /* ── PSA 9v10 REFERENCE TOGGLE ──────────────────────────────── */
+  .ref-toggle { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+  .rt-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg-2);
+    color: var(--ink-2); cursor: pointer; transition: all .1s;
+  }
+  .rt-btn.active { background: #fff; color: var(--ink); border-color: var(--border-2); font-weight: 500; }
+  .ref-panel { display: none; }
+  .ref-panel.active { display: block; }
+
+  /* Trend signals table */
+  .tr-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .tr-table th { padding: 6px 8px; text-align: left; font-size: 10px; font-weight: 600; color: var(--ink-3); background: var(--bg-2); border-bottom: 1px solid var(--border); }
+  .tr-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--ink-2); vertical-align: middle; }
+  .tr-table tr:last-child td { border-bottom: none; }
+  .tr-table tbody tr:hover td { background: var(--bg-2); }
+  .vc { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 99px; border: 1px solid; }
+  .vc-9   { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+  .vc-10  { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+  .vc-av  { background: var(--bg-2);      color: var(--ink-3);       border-color: var(--border); }
+
+  /* Gem × multiplier matrix */
+  .mx-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .mx-grid { display: grid; grid-template-columns: 90px 1fr 1fr 1fr; }
+  .mx-cell { padding: 8px 10px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 10px; }
+  .mx-cell:nth-child(4n) { border-right: none; }
+  .mx-last { border-bottom: none !important; }
+  .mx-head { background: var(--bg-2); font-weight: 600; color: var(--ink); }
+  .mx-head small { font-weight: 400; color: var(--ink-3); display: block; margin-top: 1px; }
+  .mx-rl { background: var(--bg-2); }
+  .mx-rl .rm { font-size: 10px; font-weight: 600; color: var(--ink); }
+  .mx-rl .rs { font-size: 9px; color: var(--ink-3); margin-top: 2px; }
+  .mx-v { display: flex; flex-direction: column; gap: 3px; }
+  .mx-note { font-size: 9px; color: var(--ink-3); line-height: 1.3; }
+  .vc-str { background: var(--teal-bg);   color: var(--teal-text);   border-color: var(--teal-border); }
+  .vc-ev  { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-border); }
+  .vc-cau { background: var(--orange-bg); color: var(--orange-text); border-color: var(--orange-border); }
+  .vc-no  { background: var(--red-bg);    color: var(--red-text);    border-color: var(--red-border); }
+  .bg-9   { background: #f0f6fd; } .bg-10  { background: #f4f9ee; }
+  .bg-str { background: var(--teal-bg); } .bg-ev { background: var(--bg-2); }
+  .bg-cau { background: var(--orange-bg); } .bg-no { background: var(--red-bg); }
+
+  /* ── SELLING WINDOW TIMELINE ────────────────────────────────── */
+  .tl { display: flex; flex-direction: column; }
+  .tl-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .tl-row:last-child { border-bottom: none; }
+  .tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .tl-dot.miss   { background: var(--red-border); }
+  .tl-dot.now    { background: #EF9F27; border: 2px solid #854f0b; width: 12px; height: 12px; }
+  .tl-dot.future { background: var(--green-border); }
+  .tl-event  { font-size: 12px; font-weight: 500; color: var(--ink); }
+  .tl-timing { font-size: 10px; color: var(--ink-3); margin-top: 1px; }
+  .tl-action { font-size: 11px; margin-top: 2px; }
+  .tl-action.miss   { color: var(--red-text); }
+  .tl-action.now    { color: #854f0b; }
+  .tl-action.future { color: var(--green-text); }
+
+  .ov-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  @media (max-width: 600px) {
+    .grade-cols { grid-template-columns: 1fr; }
+    .ov-defaults { flex-direction: column; }
+    .mx-grid { grid-template-columns: 70px 1fr 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -355,10 +607,6 @@
 
 <div class="header">
   <h1>🏀🏈 Brick Squad — Investment Target List</h1>
-  <div class="meta">
-    <span id="metaUpdated">📅 Updated: —</span>
-    <span>💰 Grading: $38 ($30 PSA + $8 shipping)</span>
-  </div>
   <div class="nav">
     <a href="portfolio.html">📋 My Portfolio</a>
     <button class="btn-import" onclick="openImportModal()">⬆ Import JSON</button>
@@ -369,235 +617,298 @@
   </div>
 </div>
 
+<div class="trend-bar">
+  <div class="trend-bar-label">Trend Analysis</div>
+  <div class="trend-row">
+    <div class="trend-input-wrap">
+      <input type="text" id="trend-input"
+        placeholder="e.g. Mahomes Prizm 2017, Wembanyama, Yamal UCL…"
+        autocomplete="off"
+        oninput="trendAcFilter(trendSport)"
+        onfocus="loadTrendAutocomplete(trendSport); trendAcFilter(trendSport)"
+        onkeydown="trendAcKey(event, trendSport)"
+        onblur="setTimeout(()=>trendAcClose(trendSport), 150)">
+      <div id="trend-ac" class="trend-ac"></div>
+    </div>
+    <div class="trend-sport-btns">
+      <button class="sport-btn active" id="sport-btn-football" onclick="setTrendSport('football')">🏈</button>
+      <button class="sport-btn" id="sport-btn-basketball" onclick="setTrendSport('basketball')">🏀</button>
+      <button class="sport-btn" id="sport-btn-soccer" onclick="setTrendSport('soccer')">⚽</button>
+    </div>
+    <button class="btn-analyze" id="btn-analyze" onclick="runTrendAnalysis(trendSport)">Analyze</button>
+  </div>
+  <div class="trend-bar-meta"><span id="metaUpdated">Updated: —</span> · 💰 Grading: $38</div>
+  <div id="trend-loading-bar" style="display:none; font-size:.8rem; color:#6b7280; padding:4px 0;">Loading sales data…</div>
+  <div id="trend-strip" style="display:none;">
+    <div class="trend-strip-stats">
+      <div class="ts-stat"><div class="ts-stat-val" id="ts-avg">—</div><div class="ts-stat-lbl">30d avg</div></div>
+      <div class="ts-stat"><div class="ts-stat-val" id="ts-trend">—</div><div class="ts-stat-lbl">30d trend</div></div>
+      <div class="ts-stat"><div class="ts-stat-val" id="ts-sales">—</div><div class="ts-stat-lbl">30d sales</div></div>
+      <div class="ts-stat"><div class="ts-stat-val" id="ts-target">—</div><div class="ts-stat-lbl">buy target</div></div>
+      <div class="ts-stat"><div class="ts-stat-val" id="ts-sell">—</div><div class="ts-stat-lbl">sell at</div></div>
+    </div>
+    <div id="ts-signal" class="trend-strip-signal"></div>
+  </div>
+  <div id="trend-strip-empty" style="font-size:.78rem; color:#9ca3af; padding:4px 0; display:none;"></div>
+</div>
+
 <div class="tabs">
   <div class="tab active" onclick="showTab('overview')">📊 Overview</div>
-  <div class="tab" onclick="showTab('football-targets')">🏈 Football Targets</div>
-  <div class="tab" onclick="showTab('basketball-targets')">🏀 Basketball Targets</div>
-  <div class="tab" onclick="showTab('raw-grade')">📦 Raw→Grade</div>
-  <div class="tab" onclick="showTab('bounce-back')">🔄 Bounce Back</div>
-  <div class="tab" onclick="showTab('portfolios')">💰 Portfolios</div>
-  <div class="tab" onclick="showTab('card-show')">🛒 Card Show</div>
-  <div class="tab" onclick="showTab('ebay-searches')">🔍 eBay Searches</div>
-  <div class="tab" onclick="showTab('soccer-wc')">⚽ Soccer WC 2026</div>
+  <div class="tab" onclick="showTab('targets')">🎯 Targets</div>
+  <div class="tab" onclick="showTab('tools')">🔧 Tools</div>
+  <div class="tab" onclick="showTab('ebay')">🔍 eBay</div>
 </div>
 <div class="tab-select-wrap">
   <select id="tabSelect" class="tab-select" onchange="showTab(this.value)">
     <option value="overview">📊 Overview</option>
-    <option value="football-targets">🏈 Football Targets</option>
-    <option value="basketball-targets">🏀 Basketball Targets</option>
-    <option value="raw-grade">📦 Raw→Grade</option>
-    <option value="bounce-back">🔄 Bounce Back</option>
-    <option value="portfolios">💰 Portfolios</option>
-    <option value="card-show">🛒 Card Show</option>
-    <option value="ebay-searches">🔍 eBay Searches</option>
-    <option value="soccer-wc">⚽ Soccer WC 2026</option>
+    <option value="targets">🎯 Targets</option>
+    <option value="tools">🔧 Tools</option>
+    <option value="ebay">🔍 eBay</option>
   </select>
 </div>
 
 <div class="content">
 
-  <!-- ===== OVERVIEW (static) ===== -->
+  <!-- ===== OVERVIEW ===== -->
   <div id="overview" class="tab-content active">
 
-    <!-- TREND ANALYSIS -->
+    <!-- SECTION 1: BUY DECISION GUIDE -->
     <div class="section">
-      <div class="section-title">📈 Trend Analysis <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">Historical Sales Data</span></div>
-      <p style="font-size:.78rem;color:#6b7280;margin-bottom:14px;">Search any card to analyze PSA 9 vs PSA 10 price trends across 30/60/90/180/360-day windows — ratio expansion, velocity, and a buy signal.</p>
+      <div class="ov-sec-label">What to buy — raw, PSA 9, or PSA 10?</div>
 
-      <div class="trend-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
-        <div>
-          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏈 Football</div>
-          <div class="trend-search">
-            <input type="text" id="trend-input-fb" placeholder="e.g. Drake Maye 229 or Mahomes Prizm 2017…" autocomplete="off"
-              oninput="trendAcFilter('football')" onfocus="loadTrendAutocomplete('football');trendAcFilter('football')"
-              onkeydown="trendAcKey(event,'football')" onblur="setTimeout(()=>trendAcClose('football'),150)">
-            <div id="trend-ac-fb" class="trend-ac"></div>
-            <button class="btn btn-primary" onclick="runTrendAnalysis('football')">Analyze</button>
+      <div class="ov-defaults">
+        <div class="ov-badge fb">
+          <span class="sport">🏈 Football</span>
+          <span class="note">lower gem rates</span>
+          <span class="rec">Default: PSA 9</span>
+        </div>
+        <div class="ov-badge bb">
+          <span class="sport">🏀 Basketball</span>
+          <span class="note">deeper 10 market</span>
+          <span class="rec">Default: PSA 10</span>
+        </div>
+      </div>
+
+      <div class="grade-cols">
+        <div class="gc raw">
+          <div class="gc-head">
+            <div class="gc-name">Buy Raw</div>
+            <div class="gc-sub">Grade it yourself</div>
+          </div>
+          <div class="gc-body">
+            <div class="sr"><i class="sr-i go">✓</i><span>Raw &lt;40% of PSA 9 value</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Card near-perfect condition</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Sell window 3+ months out</span></div>
+            <div class="sr"><i class="sr-i warn">!</i><span>40–60% ratio — must be perfect</span></div>
+            <div class="sr"><i class="sr-i no">✗</i><span>Raw &gt;60% of PSA 9 — buy the slab</span></div>
+            <div class="sr"><i class="sr-i no">✗</i><span>Sell window &lt;10 weeks out</span></div>
           </div>
         </div>
-        <div>
-          <div style="font-size:.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">🏀 Basketball</div>
-          <div class="trend-search">
-            <input type="text" id="trend-input-bb" placeholder="e.g. Wembanyama 136 or Ant Edwards Prizm…" autocomplete="off"
-              oninput="trendAcFilter('basketball')" onfocus="loadTrendAutocomplete('basketball');trendAcFilter('basketball')"
-              onkeydown="trendAcKey(event,'basketball')" onblur="setTimeout(()=>trendAcClose('basketball'),150)">
-            <div id="trend-ac-bb" class="trend-ac"></div>
-            <button class="btn btn-primary" onclick="runTrendAnalysis('basketball')">Analyze</button>
+        <div class="gc p9">
+          <div class="gc-head">
+            <div class="gc-name">Buy PSA 9</div>
+            <div class="gc-sub">Football default</div>
+          </div>
+          <div class="gc-body">
+            <div class="sr"><i class="sr-i go">✓</i><span>10/9 ratio under 2×</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Ratio compressing over time</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Pop growing fast</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Need quick liquidity</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Both rising but 9 rising faster</span></div>
+            <div class="sr"><i class="sr-i warn">!</i><span>Both falling — 10s drop harder</span></div>
+          </div>
+        </div>
+        <div class="gc p10">
+          <div class="gc-head">
+            <div class="gc-name">Buy PSA 10</div>
+            <div class="gc-sub">Basketball default</div>
+          </div>
+          <div class="gc-body">
+            <div class="sr"><i class="sr-i go">✓</i><span>Ratio expanding + pop slow</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Both rising, 10 rising faster</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Ratio 5×+ with gem &lt;20%</span></div>
+            <div class="sr"><i class="sr-i go">✓</i><span>Card is $300+ value</span></div>
+            <div class="sr"><i class="sr-i warn">!</i><span>Ratio expanding + pop fast = fakeout</span></div>
+            <div class="sr"><i class="sr-i no">✗</i><span>Ratio 2–3× with fast-growing pop</span></div>
           </div>
         </div>
       </div>
-
-      <div id="trend-loading" class="trend-loading" style="display:none;">Loading sales data…</div>
-      <div id="trend-results" style="display:none;"></div>
-      <div id="trend-empty" style="font-size:.82rem;color:#9ca3af;padding:8px 0;">Search a card above to see historical trend analysis.</div>
     </div>
 
-    <!-- EXECUTIVE SUMMARY -->
-    <div class="section">
-      <div class="section-title">📊 Executive Summary</div>
+    <div class="ov-divider"></div>
 
-      <div class="sport-compare">
-        <div class="sport-panel sport-football">
-          <div class="sp-header">🏈 Football — Default: PSA 9</div>
-          <div class="sp-stats">
-            <div class="sp-stat"><span class="sp-num">50%</span><span class="sp-lbl">Cards where PSA 9 wins</span></div>
-            <div class="sp-stat"><span class="sp-num">+193%</span><span class="sp-lbl">Avg PSA 10 premium</span></div>
+    <!-- SECTION 2: PSA 9 vs 10 REFERENCE TOGGLE -->
+    <div class="section">
+      <div class="ov-sec-label">PSA 9 vs 10 reference</div>
+
+      <div class="ref-toggle">
+        <button class="rt-btn active" onclick="switchRef('trend', this)">Ratio trend signals</button>
+        <button class="rt-btn" onclick="switchRef('matrix', this)">Gem × multiplier matrix</button>
+      </div>
+
+      <div class="ref-panel active" id="ref-trend">
+        <div style="overflow-x:auto; border:1px solid var(--border); border-radius:8px;">
+          <table class="tr-table">
+            <thead>
+              <tr><th>Ratio trend</th><th>Pop report</th><th>What it means</th><th>Verdict</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Expanding</strong></td><td>Slow</td><td>Genuine scarcity — premium is real</td><td><span class="vc vc-10">Buy PSA 10</span></td></tr>
+              <tr><td><strong>Expanding</strong></td><td>Fast</td><td>Fakeout — supply will catch up</td><td><span class="vc vc-9">Buy PSA 9</span></td></tr>
+              <tr><td><strong>Compressing</strong></td><td>Any</td><td>10 premium fading — market saturating</td><td><span class="vc vc-9">Buy PSA 9</span></td></tr>
+              <tr><td><strong>Both rising</strong></td><td>Slow</td><td>10 rising faster = momentum + scarcity</td><td><span class="vc vc-10">Buy PSA 10</span></td></tr>
+              <tr><td><strong>Both rising</strong></td><td>Fast</td><td>9 rising faster = value hunters moving down</td><td><span class="vc vc-9">Buy PSA 9</span></td></tr>
+              <tr><td><strong>Both falling</strong></td><td>Any</td><td>10s lose liquidity first in corrections</td><td><span class="vc vc-9">Buy PSA 9</span></td></tr>
+              <tr><td><strong>Both cooling</strong></td><td>Fast</td><td>Both grades losing value — exit or pass</td><td><span class="vc vc-av">Avoid both</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ref-panel" id="ref-matrix">
+        <div class="mx-wrap">
+          <div class="mx-grid">
+            <div class="mx-cell mx-head"></div>
+            <div class="mx-cell mx-head">Gem &lt;15%<small>10s are scarce</small></div>
+            <div class="mx-cell mx-head">Gem 15–35%<small>moderate supply</small></div>
+            <div class="mx-cell mx-head">Gem &gt;35%<small>10s are common</small></div>
+
+            <div class="mx-cell mx-rl"><div class="rm">Mult &lt;1.5×</div><div class="rs">thin premium</div></div>
+            <div class="mx-cell bg-9"><div class="mx-v"><span class="vc vc-9">Buy PSA 9</span><div class="mx-note">Premium too thin</div></div></div>
+            <div class="mx-cell bg-9"><div class="mx-v"><span class="vc vc-9">Buy PSA 9</span><div class="mx-note">No reason to pay up</div></div></div>
+            <div class="mx-cell bg-9"><div class="mx-v"><span class="vc vc-9">Buy PSA 9</span><div class="mx-note">Easy gem, thin premium</div></div></div>
+
+            <div class="mx-cell mx-rl"><div class="rm">Mult 1.5–3.5×</div><div class="rs">healthy premium</div></div>
+            <div class="mx-cell bg-str"><div class="mx-v"><span class="vc vc-str">Strong PSA 10</span><div class="mx-note">Low pop, durable premium</div></div></div>
+            <div class="mx-cell bg-ev"><div class="mx-v"><span class="vc vc-ev">Run EV model</span><div class="mx-note">Use trend signals</div></div></div>
+            <div class="mx-cell bg-9"><div class="mx-v"><span class="vc vc-9">Buy PSA 9</span><div class="mx-note">High gem will compress 10</div></div></div>
+
+            <div class="mx-cell mx-rl mx-last"><div class="rm">Mult &gt;3.5×</div><div class="rs">large premium</div></div>
+            <div class="mx-cell bg-10 mx-last"><div class="mx-v"><span class="vc vc-10">PSA 10 — scarcity real</span><div class="mx-note">Low pop + high premium</div></div></div>
+            <div class="mx-cell bg-cau mx-last"><div class="mx-v"><span class="vc vc-cau">Caution — fragile</span><div class="mx-note">Pop could grow fast</div></div></div>
+            <div class="mx-cell bg-no mx-last"><div class="mx-v"><span class="vc vc-no">Avoid PSA 10</span><div class="mx-note">High gem floods supply</div></div></div>
           </div>
-          <div class="sp-rule">Upgrade to PSA 10 only for premium ($300+) cards. Lower gem rates make the PSA 10 premium harder to justify.</div>
         </div>
-        <div class="sport-panel sport-basketball">
-          <div class="sp-header">🏀 Basketball — Default: PSA 10</div>
-          <div class="sp-stats">
-            <div class="sp-stat"><span class="sp-num">50%</span><span class="sp-lbl">Cards where PSA 10 wins</span></div>
-            <div class="sp-stat"><span class="sp-num">+206%</span><span class="sp-lbl">Avg PSA 10 premium</span></div>
+      </div>
+    </div>
+
+    <div class="ov-divider"></div>
+
+    <!-- SECTION 3: SELLING WINDOW -->
+    <div class="section">
+      <div class="ov-sec-label">Selling window — cards graded now return June–Aug</div>
+      <div class="tl">
+        <div class="tl-row">
+          <div class="tl-dot miss"></div>
+          <div>
+            <div class="tl-event">NBA Playoffs + NFL Draft</div>
+            <div class="tl-timing">Apr–May 2026</div>
+            <div class="tl-action miss">Buy graded now to sell into these windows — grading too slow to catch this</div>
           </div>
-          <div class="sp-rule">Downgrade to PSA 9 only for speculation plays. Higher gem rates create a deeper, more liquid PSA 10 market.</div>
         </div>
-      </div>
-
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Metric</th><th>🏈 Football</th><th>🏀 Basketball</th></tr></thead>
-          <tbody>
-            <tr><td>PSA 10 outperformed PSA 9</td><td>42% of cards</td><td><strong>50% of cards</strong></td></tr>
-            <tr><td>PSA 9 outperformed PSA 10</td><td><strong>50% of cards</strong></td><td>39% of cards</td></tr>
-            <tr><td>Recommended Default</td><td><strong>PSA 9</strong></td><td><strong>PSA 10</strong></td></tr>
-            <tr><td>Avg PSA 10 Premium</td><td>+193% over PSA 9</td><td>+206% over PSA 9</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- SELLING WINDOW -->
-    <div class="section">
-      <div class="section-title">📅 Selling Window Analysis <span style="font-size:.75rem;color:#8b949e;font-weight:400;">Cards submitted now return June–August 2026</span></div>
-
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Event</th><th>Timing</th><th>Strategy</th></tr></thead>
-          <tbody>
-            <tr><td><strong>NBA Playoffs</strong></td><td>Apr–Jun 2026</td><td><span class="event-miss">❌ Graded cards miss this</span> → Buy graded NOW to sell into playoffs</td></tr>
-            <tr><td><strong>NFL Draft</strong></td><td>Apr 2026</td><td><span class="event-miss">❌ Cards in grading</span> → Buy graded draft prospect cards NOW</td></tr>
-            <tr><td><strong>NFL Training Camp</strong></td><td>Jul–Aug 2026</td><td><span class="event-hit">✅ Cards return in time</span> → Raw-to-grade viable</td></tr>
-            <tr><td><strong>NFL Season Start</strong></td><td>Sep 2026</td><td><span class="event-hit">✅ Perfect timing</span> → Raw-to-grade optimal window</td></tr>
-            <tr><td><strong>NBA Season Start</strong></td><td>Oct 2026</td><td><span class="event-hit">✅ Perfect timing</span> → Raw-to-grade optimal window</td></tr>
-            <tr><td><strong>NFL Playoffs</strong></td><td>Jan 2027</td><td><span class="event-hit">✅ Cards ready</span> → Sell winners</td></tr>
-            <tr><td><strong>NBA All-Star</strong></td><td>Feb 2027</td><td><span class="event-hit">✅ Cards ready</span> → Sell risers</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="callout">
-        <div class="callout-box callout-buy">
-          <h4>🛒 BUY GRADED NOW (flip before/during summer)</h4>
-          <ul>
-            <li>Basketball playoff contender cards</li>
-            <li>Football draft prospect cards (sell into April hype)</li>
-            <li>Any "flip in 30–90 days" plays</li>
-          </ul>
+        <div class="tl-row">
+          <div class="tl-dot now"></div>
+          <div>
+            <div class="tl-event">FIFA World Cup</div>
+            <div class="tl-timing">Jun 11 – Jul 19 · ~10 weeks out</div>
+            <div class="tl-action now">Buy now — list late May, peak sell June–July</div>
+          </div>
         </div>
-        <div class="callout-box callout-raw">
-          <h4>📦 BUY RAW NOW (grade and sell in fall)</h4>
-          <ul>
-            <li>Football rookies → ready for NFL kickoff</li>
-            <li>Basketball rookies → ready for NBA tip-off</li>
-            <li>Cards with positive grading EV</li>
-            <li>You won't miss windows — you'll hit the NEXT ones</li>
-          </ul>
+        <div class="tl-row">
+          <div class="tl-dot future"></div>
+          <div>
+            <div class="tl-event">NFL Training Camp + Season</div>
+            <div class="tl-timing">Jul–Sep 2026</div>
+            <div class="tl-action future">Raw-to-grade optimal window — cards return just in time</div>
+          </div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-dot future"></div>
+          <div>
+            <div class="tl-event">NBA Season Start</div>
+            <div class="tl-timing">Oct 2026</div>
+            <div class="tl-action future">Raw-to-grade cards ready — list into opening week hype</div>
+          </div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-dot future"></div>
+          <div>
+            <div class="tl-event">NFL Playoffs + NBA All-Star</div>
+            <div class="tl-timing">Jan–Feb 2027</div>
+            <div class="tl-action future">Sell winners and risers</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- PRICE RATIO FRAMEWORK -->
-    <div class="section">
-      <div class="section-title">💡 Price Ratio Framework</div>
+  </div>
 
-      <div class="framework-subhead">Raw → PSA 9: Should You Buy Raw and Grade?</div>
-      <div class="formula-box">
-        <strong>Break-even formula:</strong> Raw price &lt; (PSA 9 value × gem rate) − grading cost<br>
-        <span style="color:#6b7280;font-size:.78rem;">With ~$38–45 all-in grading cost, use these rules of thumb:</span>
+  <!-- ===== TARGETS (combined – Football / Basketball / Soccer + Graded/Raw filter) ===== -->
+  <div id="targets" class="tab-content">
+    <div class="targets-filter-bar">
+      <div class="tgt-sport-btns">
+        <button class="tgt-sport-btn active fb" id="tgt-sport-football" onclick="setTargetSport('football')">🏈 Football</button>
+        <button class="tgt-sport-btn bb" id="tgt-sport-basketball" onclick="setTargetSport('basketball')">🏀 Basketball</button>
+        <button class="tgt-sport-btn sc" id="tgt-sport-soccer" onclick="setTargetSport('soccer')">⚽ Soccer WC</button>
       </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Scenario</th><th>Rule</th></tr></thead>
-          <tbody>
-            <tr><td>Raw card is <strong>under 40%</strong> of PSA 9 value</td><td><span class="ev-pos">✅ Strong candidate to grade</span> — if the card grades well</td></tr>
-            <tr><td>Raw card is <strong>50–60%</strong> of PSA 9 value</td><td><span class="trend-flat">⚠️ Marginal</span> — condition must be near-perfect</td></tr>
-            <tr><td>Raw card is <strong>70%+</strong> of PSA 9 value</td><td><span class="ev-neg">❌ Just buy the PSA 9</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="example-box">
-        <strong>Example:</strong> PSA 9 sells for $100. Raw sells for $35 (35% ratio). Grading costs $42. If it grades a 9 → profit $23. If it grades an 8 (PSA 8 ≈ $55) → lose $22. You need realistic confidence it grades 9+.
-      </div>
-
-      <div class="framework-subhead" style="margin-top:20px;">PSA 9 vs PSA 10: The Multiplier Decision</div>
-      <p style="font-size:.78rem;color:#6b7280;margin-bottom:12px;">Population data matters most here. The gem rate flips this logic — a 50% gem rate compresses the multiplier over time; a 10% gem rate means PSA 10s are genuinely scarce and the premium may hold.</p>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>PSA 10 / PSA 9 Ratio</th><th>Decision</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Under 2×</strong></td><td><span class="ev-pos">Buy PSA 9 — strong value</span></td></tr>
-            <tr><td><strong>2×–3×</strong></td><td><span class="ev-pos">PSA 9 still favored</span> unless gem rate is very low</td></tr>
-            <tr><td><strong>3×–5×</strong></td><td><span class="trend-flat">Situational</span> — depends on gem rate and player trajectory</td></tr>
-            <tr><td><strong>5×+</strong></td><td><span class="trend-flat">PSA 10 may be worth it</span> if gem rate is under 20%</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="rule-box" style="margin-top:16px;">
-        <p><strong>Why Football = PSA 9, Basketball = PSA 10:</strong> Football Prizm cards tend to have lower gem rates, so PSA 10s carry a bigger premium that's harder to justify at most price points. Basketball Prizm gems are more liquid and the PSA 10 market is deeper — PSA 10 is the market standard.</p>
-        <p style="margin-top:8px;"><strong>Watch:</strong> For rising star rookies, raw prices can compress fast — the window to grade profitably closes quickly as raw prices chase the PSA 9 comp.</p>
+      <div class="tgt-type-btns" id="tgt-type-bar">
+        <button class="tgt-type-btn active" data-type="all" onclick="setTargetType('all', this)">All</button>
+        <button class="tgt-type-btn" data-type="graded" onclick="setTargetType('graded', this)">Graded</button>
+        <button class="tgt-type-btn" data-type="raw" onclick="setTargetType('raw', this)">Raw</button>
       </div>
     </div>
-
-  </div>
-
-  <!-- ===== FOOTBALL TARGETS (DB-driven) ===== -->
-  <div id="football-targets" class="tab-content">
-    <div id="fb-targets-container"><p class="empty-msg">Loading…</p></div>
-  </div>
-
-  <!-- ===== BASKETBALL TARGETS (DB-driven) ===== -->
-  <div id="basketball-targets" class="tab-content">
-    <div id="bb-targets-container"><p class="empty-msg">Loading…</p></div>
-  </div>
-
-  <!-- ===== RAW→GRADE (DB-driven) ===== -->
-  <div id="raw-grade" class="tab-content">
-    <div id="raw-grade-fb-container"><p class="empty-msg">Loading…</p></div>
-    <div id="raw-grade-bb-container"><p class="empty-msg">Loading…</p></div>
-  </div>
-
-  <!-- ===== BOUNCE BACK (DB-driven) ===== -->
-  <div id="bounce-back" class="tab-content">
-    <div id="bounce-back-container"><p class="empty-msg">Loading…</p></div>
-  </div>
-
-  <!-- ===== PORTFOLIOS (DB-driven) ===== -->
-  <div id="portfolios" class="tab-content">
-    <div class="sub-tabs">
-      <div class="sub-tab active" onclick="showSub('p1000')">$1,000</div>
-      <div class="sub-tab" onclick="showSub('p1500')">$1,500</div>
-      <div class="sub-tab" onclick="showSub('p2000')">$2,000</div>
+    <!-- DB-driven render area -->
+    <div id="targets-render"></div>
+    <!-- Soccer WC static content -->
+    <div id="targets-soccer" style="display:none"></div>
+    <!-- Hidden legacy containers so existing render functions don't error -->
+    <div style="display:none">
+      <div id="fb-targets-container"></div>
+      <div id="bb-targets-container"></div>
+      <div id="raw-grade-fb-container"></div>
+      <div id="raw-grade-bb-container"></div>
     </div>
-    <div id="p1000" class="sub-content active"><p class="empty-msg">Loading…</p></div>
-    <div id="p1500" class="sub-content"><p class="empty-msg">Loading…</p></div>
-    <div id="p2000" class="sub-content"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== CARD SHOW (DB-driven) ===== -->
-  <div id="card-show" class="tab-content">
-    <div id="card-show-container"><p class="empty-msg">Loading…</p></div>
+  <!-- ===== TOOLS (Bounce Back / Portfolios / Card Show) ===== -->
+  <div id="tools" class="tab-content">
+    <div class="tools-nav">
+      <button class="tool-tab active" id="tool-tab-bounce" onclick="showTool('bounce')">Bounce Back</button>
+      <button class="tool-tab" id="tool-tab-portfolio" onclick="showTool('portfolio')">Portfolios</button>
+      <button class="tool-tab" id="tool-tab-cardshow" onclick="showTool('cardshow')">Card Show</button>
+    </div>
+    <div class="tool-panel active" id="tool-bounce">
+      <div id="bounce-back-container"></div>
+    </div>
+    <div class="tool-panel" id="tool-portfolio">
+      <div id="portfolio-tool-container"></div>
+    </div>
+    <div class="tool-panel" id="tool-cardshow">
+      <div id="card-show-container"></div>
+    </div>
+    <!-- Hidden legacy sub-content divs so existing showSub() calls don't error -->
+    <div style="display:none">
+      <div id="p1000" class="sub-content active"></div>
+      <div id="p1500" class="sub-content"></div>
+      <div id="p2000" class="sub-content"></div>
+    </div>
   </div>
 
-  <!-- ===== WATCHLIST (static) ===== -->
-  <div id="ebay-searches" class="tab-content">
+  <!-- ===== EBAY ===== -->
+  <div id="ebay" class="tab-content">
+    <div class="targets-filter-bar" style="margin-bottom:16px;">
+      <div class="tgt-sport-btns">
+        <button class="tgt-sport-btn active" id="ebay-sport-all" onclick="setEbaySport('all', this)">All</button>
+        <button class="tgt-sport-btn fb" id="ebay-sport-football" onclick="setEbaySport('football', this)">🏈 Football</button>
+        <button class="tgt-sport-btn bb" id="ebay-sport-basketball" onclick="setEbaySport('basketball', this)">🏀 Basketball</button>
+        <button class="tgt-sport-btn sc" id="ebay-sport-soccer" onclick="setEbaySport('soccer', this)">⚽ Soccer</button>
+      </div>
+    </div>
     <div id="ebay-searches-container"><p class="empty-msg">Loading…</p></div>
   </div>
 
-  <!-- ===== SOCCER WC 2026 (static) ===== -->
-  <div id="soccer-wc" class="tab-content">
+  <!-- ===== SOCCER WC 2026 — hidden, will integrate into Targets tab in Step 3 ===== -->
+  <div id="soccer-wc" style="display:none">
 
     <div class="section">
       <div class="section-title">⚽ Soccer WC 2026 — Buy Targets <span style="font-size:.72rem;color:#8b949e;font-weight:400;margin-left:4px;">World Cup starts June 11, 2026 · ~10 weeks out · Updated April 3, 2026</span></div>
@@ -951,6 +1262,10 @@ const SUPABASE_KEY = 'sb_publishable_zzhXo3XG5seQBYgADSAbmA_PyTWou2a';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let authMode = 'login';
+let allTargets = [];
+let trendSport = 'football';
+let activeSport = 'football';
+let activeType = 'all';
 
 // ── Auth UI ───────────────────────────────────────────────────────
 function switchAuthTab(mode) {
@@ -1056,6 +1371,8 @@ async function loadData() {
   const t = targets || [];
   const p = portfolios || [];
   const e = ebayRows || [];
+  allTargets = t;
+  renderTargetsTab();
 
   // Update "Updated" date from any record
   const anyRec = t[0];
@@ -1069,8 +1386,9 @@ async function loadData() {
   renderBBRaw(t.filter(r => r.sport === 'basketball' && r.category === 'raw'));
   renderBounceBack(t.filter(r => r.category === 'bounce_back'));
   renderCardShow(t.filter(r => r.category === 'graded'));
-  renderPortfolios(p);
-  renderEbaySearches(e);
+  renderPortfolioTool(p);
+  _ebayRows = e;
+  renderEbaySearches(e, activeEbaySport);
   attachSorting();
 }
 
@@ -1479,27 +1797,41 @@ function renderPortfolios(rows) {
   });
 }
 
+// ── eBay Sport Filter ─────────────────────────────────────────────
+function setEbaySport(sport, btn) {
+  activeEbaySport = sport;
+  document.querySelectorAll('#ebay .tgt-sport-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderEbaySearches(_ebayRows, sport);
+}
+
 // ── Render: eBay Searches ─────────────────────────────────────────
-function renderEbaySearches(rows) {
+function renderEbaySearches(rows, sportFilter) {
   const id = 'ebay-searches-container';
   const el = document.getElementById(id);
+  if (!el) return;
   if (!rows.length) {
     el.innerHTML = '<p class="empty-msg">No data. Click ⬆ Import JSON to load eBay searches.</p>';
     return;
   }
 
-  const sections = [
-    { sport: 'football',   category: 'graded',       label: '🏈 Football — Graded' },
-    { sport: 'football',   category: 'raw',           label: '🏈 Football — Raw' },
-    { sport: 'basketball', category: 'graded',        label: '🏀 Basketball — Graded' },
-    { sport: 'basketball', category: 'raw',           label: '🏀 Basketball — Raw' },
-    { sport: null,         category: 'bounce_back',   label: '🔄 Bounce Back' },
+  const sf = sportFilter || 'all';
+  const allSections = [
+    { sport: 'football',   category: 'graded',     label: '🏈 Football — Graded' },
+    { sport: 'football',   category: 'raw',         label: '🏈 Football — Raw' },
+    { sport: 'basketball', category: 'graded',      label: '🏀 Basketball — Graded' },
+    { sport: 'basketball', category: 'raw',         label: '🏀 Basketball — Raw' },
+    { sport: 'soccer',     category: 'graded',      label: '⚽ Soccer — Graded' },
+    { sport: 'soccer',     category: 'raw',         label: '⚽ Soccer — Raw' },
+    { sport: null,         category: 'bounce_back', label: '🔄 Bounce Back' },
   ];
 
-  el.innerHTML = sections.map(({ sport, category, label }) => {
+  const sections = sf === 'all' ? allSections
+    : allSections.filter(s => s.sport === sf || s.sport === null);
+
+  const html = sections.map(({ sport, category, label }) => {
     let sRows = rows.filter(r => r.category === category && (sport === null || r.sport === sport));
     if (!sRows.length) return '';
-    // sort by rank (nulls last)
     sRows = sRows.slice().sort((a, b) => {
       if (a.rank == null && b.rank == null) return 0;
       if (a.rank == null) return 1;
@@ -1515,16 +1847,15 @@ function renderEbaySearches(rows) {
             <tbody>
               ${sRows.map(r => {
                 const base = 'https://www.ebay.com/sch/i.html?_nkw=' + encodeURIComponent(r.search_text);
-                const activeUrl = base;
                 const soldUrl = base + '&LH_Sold=1&LH_Complete=1';
-                const cardLabel = r.card ? esc(r.card) : `<span style="color:#8b949e;font-family:monospace;font-size:.8rem">${esc(r.search_text)}</span>`;
+                const cardLabel = r.card ? esc(r.card) : `<span style="color:var(--ink-3);font-family:monospace;font-size:.8rem">${esc(r.search_text)}</span>`;
                 const rankLabel = r.rank != null ? r.rank : '—';
                 return `<tr>
-                  <td style="color:#8b949e;text-align:center;width:36px">${rankLabel}</td>
-                  <td style="white-space:normal;min-width:220px">${cardLabel}</td>
-                  <td style="text-align:center;width:64px"><button data-search="${esc(r.search_text)}" onclick="navigator.clipboard.writeText(this.dataset.search).then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copy'},1200)})" style="background:#21262d;border:1px solid #30363d;color:#c9d1d9;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8rem">Copy</button></td>
-                  <td><a href="${activeUrl}" target="_blank" rel="noopener" style="color:#58a6ff;text-decoration:none;">Active ↗</a></td>
-                  <td><a href="${soldUrl}" target="_blank" rel="noopener" style="color:#8b949e;text-decoration:none;">Sold ↗</a></td>
+                  <td style="color:var(--ink-3);text-align:center;width:36px">${rankLabel}</td>
+                  <td style="white-space:normal;min-width:180px">${cardLabel}</td>
+                  <td style="text-align:center;width:64px"><button data-search="${esc(r.search_text)}" onclick="navigator.clipboard.writeText(this.dataset.search).then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copy'},1200)})" style="background:var(--bg-2);border:1px solid var(--border);color:var(--ink-2);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8rem">Copy</button></td>
+                  <td><a href="${base}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;font-size:.82rem">Active ↗</a></td>
+                  <td><a href="${soldUrl}" target="_blank" rel="noopener" style="color:var(--ink-3);text-decoration:none;font-size:.82rem">Sold ↗</a></td>
                 </tr>`;
               }).join('')}
             </tbody>
@@ -1532,6 +1863,8 @@ function renderEbaySearches(rows) {
         </div>
       </div>`;
   }).join('');
+
+  el.innerHTML = html || '<p class="empty-msg" style="padding:20px 0;">No searches for this sport.</p>';
 }
 
 // ── Import Helpers ────────────────────────────────────────────────
@@ -1763,13 +2096,213 @@ function filterPriority(btn) {
 function showTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  const ids = ['overview','football-targets','basketball-targets','raw-grade','bounce-back','portfolios','card-show','ebay-searches','soccer-wc'];
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  const ids = ['overview', 'targets', 'tools', 'ebay'];
   const idx = ids.indexOf(id);
   if (idx >= 0) document.querySelectorAll('.tab')[idx].classList.add('active');
   const sel = document.getElementById('tabSelect');
   if (sel) sel.value = id;
   setTimeout(attachSorting, 50);
+}
+
+function switchRef(id, btn) {
+  document.querySelectorAll('.rt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.ref-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('ref-' + id).classList.add('active');
+}
+
+// ── Targets Tab ───────────────────────────────────────────────────
+function setTargetSport(sport) {
+  activeSport = sport;
+  document.querySelectorAll('.tgt-sport-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tgt-sport-' + sport);
+  if (btn) btn.classList.add('active');
+  // Hide/show type filter for soccer (static HTML, no type filter needed)
+  const typeBar = document.getElementById('tgt-type-bar');
+  if (typeBar) typeBar.style.display = sport === 'soccer' ? 'none' : '';
+  renderTargetsTab();
+}
+
+function setTargetType(type, btn) {
+  activeType = type;
+  document.querySelectorAll('.tgt-type-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTargetsTab();
+}
+
+function renderTargetsTab() {
+  const renderEl = document.getElementById('targets-render');
+  const soccerEl = document.getElementById('targets-soccer');
+  if (!renderEl) return;
+
+  if (activeSport === 'soccer') {
+    renderEl.style.display = 'none';
+    if (soccerEl) {
+      soccerEl.style.display = '';
+      // Populate once from the hidden static soccer-wc div
+      if (!soccerEl._populated) {
+        const src = document.getElementById('soccer-wc');
+        if (src) soccerEl.innerHTML = src.innerHTML;
+        soccerEl._populated = true;
+      }
+    }
+    return;
+  }
+  renderEl.style.display = '';
+  if (soccerEl) soccerEl.style.display = 'none';
+
+  const graded = allTargets.filter(r => r.sport === activeSport && r.category === 'graded');
+  const raw    = allTargets.filter(r => r.sport === activeSport && r.category === 'raw');
+
+  const sportLabel = activeSport === 'football' ? '🏈 Football' : '🏀 Basketball';
+  const defaultGrade = activeSport === 'football' ? 'PSA 9 default' : 'PSA 10 default';
+
+  // KPI stats
+  const rows = activeType === 'graded' ? graded : activeType === 'raw' ? raw : [...graded, ...raw];
+  const high = rows.filter(r => getPriority(r) === 'high' || getPriority(r) === 'premium').length;
+  const med  = rows.filter(r => getPriority(r) === 'med').length;
+  const watch = rows.filter(r => getPriority(r) === 'watch').length;
+
+  function signalChip(r) {
+    const p = getPriority(r);
+    return (p === 'high' || p === 'premium')
+      ? '<span class="chip chip-buy">Buy</span>'
+      : p === 'watch'
+        ? '<span class="chip chip-watch">Watch</span>'
+        : '<span class="chip chip-watch">Watch</span>';
+  }
+
+  function gradedRows(list) {
+    return list.map((r, i) => `<tr>
+      <td class="hide-mobile">${r.rank || i+1}</td>
+      <td>${esc(r.card)}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
+      ${activeType === 'all' ? `<td class="hide-mobile"><span class="chip chip-graded">Graded</span></td>` : ''}
+      <td>${gradeBadgeHTML(r.grade)}</td>
+      <td><strong>$${r.target || '—'}</strong></td>
+      <td class="hide-mobile">${trendHTML(r.trend)}</td>
+      <td class="hide-mobile">$${r.sell_at || '—'}</td>
+      <td>${signalChip(r)}</td>
+    </tr>`).join('');
+  }
+
+  function rawRows(list) {
+    return list.map((r, i) => `<tr>
+      <td class="hide-mobile">${r.rank || i+1}</td>
+      <td>${esc(r.card)}${r.new ? ' <span class="badge badge-new">NEW</span>' : ''}</td>
+      ${activeType === 'all' ? `<td class="hide-mobile"><span class="chip chip-raw">Raw</span></td>` : ''}
+      <td class="hide-mobile">—</td>
+      <td><strong>$${r.target_raw || '—'}</strong></td>
+      <td class="hide-mobile">${trendHTML(r.trend)}</td>
+      <td class="hide-mobile">$${r.sell_at || '—'}</td>
+      <td>${signalChip(r)}</td>
+    </tr>`).join('');
+  }
+
+  const typeColHeader = activeType === 'all' ? '<th class="hide-mobile">Type</th>' : '';
+
+  let tbody = '';
+  if (activeType === 'graded') {
+    tbody = graded.length ? gradedRows(graded) : `<tr><td colspan="7" class="empty-msg">No graded targets found.</td></tr>`;
+  } else if (activeType === 'raw') {
+    tbody = raw.length ? rawRows(raw) : `<tr><td colspan="7" class="empty-msg">No raw targets found.</td></tr>`;
+  } else {
+    // All: graded group first, then raw group
+    const sep = (label) => `<tr style="background:var(--bg-2)"><td colspan="8" style="padding:6px 10px;font-size:.72rem;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;">${label}</td></tr>`;
+    tbody = sep('Graded') + (graded.length ? gradedRows(graded) : `<tr><td colspan="8" class="empty-msg" style="padding:10px">No graded targets.</td></tr>`)
+          + sep('Raw') + (raw.length ? rawRows(raw) : `<tr><td colspan="8" class="empty-msg" style="padding:10px">No raw targets.</td></tr>`);
+  }
+
+  renderEl.innerHTML = `
+    <div class="targets-kpi-row">
+      <div class="tgt-kpi"><div class="kv">${rows.length}</div><div class="kl">Total</div></div>
+      <div class="tgt-kpi"><div class="kv" style="color:var(--brand)">${high}</div><div class="kl">Buy Now</div></div>
+      <div class="tgt-kpi"><div class="kv" style="color:var(--amber-text)">${med}</div><div class="kl">Watch</div></div>
+      <div class="tgt-kpi"><div class="kv" style="color:var(--ink-3)">${watch}</div><div class="kl">Monitor</div></div>
+    </div>
+    <div class="section-title" style="margin-bottom:10px;">${sportLabel} Targets <span style="font-size:.72rem;color:var(--ink-3);font-weight:400;">${defaultGrade}</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th class="hide-mobile">#</th>
+          <th>Card</th>
+          ${typeColHeader}
+          <th>Grade</th>
+          <th>Buy Target</th>
+          <th class="hide-mobile">Trend</th>
+          <th class="hide-mobile">Sell At</th>
+          <th>Signal</th>
+        </tr></thead>
+        <tbody>${tbody}</tbody>
+      </table>
+    </div>`;
+  attachSorting();
+}
+
+// ── Tools Tab ─────────────────────────────────────────────────────
+let activeTool = 'bounce';
+let activeEbaySport = 'all';
+let _ebayRows = [];
+
+function showTool(id) {
+  activeTool = id;
+  document.querySelectorAll('.tool-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  const tab = document.getElementById('tool-tab-' + id);
+  const panel = document.getElementById('tool-' + id);
+  if (tab) tab.classList.add('active');
+  if (panel) panel.classList.add('active');
+  setTimeout(attachSorting, 50);
+}
+
+function renderPortfolioTool(rows) {
+  const el = document.getElementById('portfolio-tool-container');
+  if (!el) return;
+
+  const tiers = [
+    { key: '1000', label: '$1,000 Budget' },
+    { key: '1500', label: '$1,500 Budget' },
+    { key: '2000', label: '$2,000 Budget' },
+  ];
+
+  if (!rows.length) {
+    el.innerHTML = '<div class="rule-box" style="margin-top:8px;"><p style="color:var(--ink-3);">No portfolio data. Click ⬆ Import JSON to load.</p></div>';
+    return;
+  }
+
+  const kpis = tiers.map(({ key, label }) => {
+    const tierRows = rows.filter(r => r.budget_tier === key);
+    const total = tierRows.reduce((s, r) => s + (parseFloat(r.subtotal) || 0), 0);
+    const cards = tierRows.length;
+    return `<div class="port-kpi">
+      <div class="pv">${cards ? '$' + Math.round(total).toLocaleString() : '—'}</div>
+      <div class="pl">${label}</div>
+    </div>`;
+  }).join('');
+
+  const totalCards = rows.length;
+  const totalVal = rows.reduce((s, r) => s + (parseFloat(r.subtotal) || 0), 0);
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-bottom:14px;">💰 Portfolio Summary</div>
+    <div class="portfolio-kpi-row">
+      <div class="port-kpi"><div class="pv">${totalCards}</div><div class="pl">Positions</div></div>
+      <div class="port-kpi"><div class="pv">$${Math.round(totalVal).toLocaleString()}</div><div class="pl">Total Allocated</div></div>
+      ${kpis}
+    </div>
+    <a href="portfolio.html" class="port-link">View full portfolio →</a>`;
+}
+
+function setTrendSport(sport) {
+  trendSport = sport;
+  document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('sport-btn-' + sport);
+  if (btn) btn.classList.add('active');
+  // Reset results when switching sport
+  document.getElementById('trend-strip').style.display = 'none';
+  document.getElementById('trend-strip-empty').style.display = 'none';
+  loadTrendAutocomplete(sport);
 }
 
 function showSub(id) {
@@ -1862,9 +2395,9 @@ const WINDOWS = {
 const W_7=0, W_14=1, W_30=2, W_90=4, W_180=5, W_360=6;
 
 const _csvCache = {};
-const _autocompleteLoaded = { football: false, basketball: false };
-const _cardNames = { football: [], basketball: [] };
-let _acActiveIdx = { football: -1, basketball: -1 };
+const _autocompleteLoaded = { football: false, basketball: false, soccer: false };
+const _cardNames = { football: [], basketball: [], soccer: [] };
+let _acActiveIdx = { football: -1, basketball: -1, soccer: -1 };
 
 function parseCSVRow(line) {
   const out = []; let cur = ''; let inQ = false;
@@ -2014,10 +2547,8 @@ async function loadTrendAutocomplete(sport) {
 }
 
 function trendAcFilter(sport) {
-  const inputId = sport === 'football' ? 'trend-input-fb' : 'trend-input-bb';
-  const acId    = sport === 'football' ? 'trend-ac-fb'    : 'trend-ac-bb';
-  const query   = document.getElementById(inputId).value.trim().toLowerCase();
-  const ac      = document.getElementById(acId);
+  const query = document.getElementById('trend-input').value.trim().toLowerCase();
+  const ac    = document.getElementById('trend-ac');
   _acActiveIdx[sport] = -1;
 
   if (!query || !_cardNames[sport].length) { ac.classList.remove('open'); return; }
@@ -2030,7 +2561,7 @@ function trendAcFilter(sport) {
   if (!matches.length) {
     ac.innerHTML = `<div class="trend-ac-none">No matches</div>`;
   } else {
-    ac.innerHTML = matches.map((n, i) =>
+    ac.innerHTML = matches.map(n =>
       `<div class="trend-ac-item" data-val="${esc(n)}" onmousedown="trendAcSelect('${sport}',this)">${esc(n)}</div>`
     ).join('');
   }
@@ -2038,21 +2569,18 @@ function trendAcFilter(sport) {
 }
 
 function trendAcSelect(sport, el) {
-  const inputId = sport === 'football' ? 'trend-input-fb' : 'trend-input-bb';
-  document.getElementById(inputId).value = el.dataset.val;
+  document.getElementById('trend-input').value = el.dataset.val;
   trendAcClose(sport);
   runTrendAnalysis(sport);
 }
 
 function trendAcClose(sport) {
-  const acId = sport === 'football' ? 'trend-ac-fb' : 'trend-ac-bb';
-  document.getElementById(acId).classList.remove('open');
+  document.getElementById('trend-ac').classList.remove('open');
   _acActiveIdx[sport] = -1;
 }
 
 function trendAcKey(e, sport) {
-  const acId = sport === 'football' ? 'trend-ac-fb' : 'trend-ac-bb';
-  const ac   = document.getElementById(acId);
+  const ac    = document.getElementById('trend-ac');
   const items = ac.querySelectorAll('.trend-ac-item');
   if (e.key === 'ArrowDown') {
     e.preventDefault();
@@ -2072,17 +2600,18 @@ function trendAcKey(e, sport) {
 }
 
 async function runTrendAnalysis(sport) {
-  const inputId = sport === 'football' ? 'trend-input-fb' : 'trend-input-bb';
-  const query = document.getElementById(inputId).value.trim();
+  const query = document.getElementById('trend-input').value.trim();
   if (!query) return;
 
-  const loadEl    = document.getElementById('trend-loading');
-  const resultsEl = document.getElementById('trend-results');
-  const emptyEl   = document.getElementById('trend-empty');
+  const loadEl  = document.getElementById('trend-loading-bar');
+  const stripEl = document.getElementById('trend-strip');
+  const emptyEl = document.getElementById('trend-strip-empty');
+  const analyzeBtn = document.getElementById('btn-analyze');
 
   loadEl.style.display = 'block';
-  resultsEl.style.display = 'none';
+  stripEl.style.display = 'none';
   emptyEl.style.display = 'none';
+  if (analyzeBtn) { analyzeBtn.disabled = true; analyzeBtn.textContent = '…'; }
 
   try {
     const windows = WINDOWS[sport];
@@ -2119,6 +2648,7 @@ async function runTrendAnalysis(sport) {
       const suggestions = _cardNames[sport]
         .filter(n => n.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
       loadEl.style.display = 'none';
+      if (analyzeBtn) { analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analyze'; }
       emptyEl.textContent = suggestions.length
         ? `No exact match. Did you mean: ${suggestions.join(' | ')}?`
         : `No data found for "${query}". Check the card name and try again.`;
@@ -2420,73 +2950,55 @@ async function runTrendAnalysis(sport) {
       </div>`;
     }
 
-    const bbP9  = computeBB('psa9');
-    const bbP10 = computeBB('psa10');
+    // ── Compact strip output ──────────────────────────────────────
+    // 30d avg: prefer PSA 9, fall back to PSA 10, then raw
+    const avg30val = avg(w30.psa9) ?? avg(w30.psa10) ?? avg(w30.raw);
+    const totalSales30 = nsales(w30.psa9) + nsales(w30.psa10) + nsales(w30.raw);
 
-    resultsEl.innerHTML = `
-      <div class="trend-card-name">${esc(query)}</div>
+    // Match card in allTargets for buy target + sell at
+    const qLow = query.toLowerCase();
+    const match = allTargets.find(r =>
+      r.sport === sport && r.card && r.card.toLowerCase().includes(qLow)
+    );
+    const buyTargetVal = match
+      ? '$' + (match.target || match.target_raw || '—')
+      : '—';
+    const sellAtVal = match ? (match.sell_at || '—') : '—';
 
-      <div class="trend-subtabs">
-        <button id="trend-tab-btn-analysis" class="trend-subtab active" onclick="showTrendTab('analysis')">📈 Analysis</button>
-        <button id="trend-tab-btn-bb"       class="trend-subtab"        onclick="showTrendTab('bb')">🔄 Bounce Back</button>
-      </div>
+    // Signal chip
+    const isWatch = verdict === 'Pass' || trend === 'downtrend';
+    const chipClass = isWatch ? 'chip-watch' : 'chip-buy';
+    const chipText  = isWatch ? 'Watch' : 'Buy';
 
-      <div id="trend-tab-analysis">
-      <div class="trend-table-wrap">
-        <table>
-          <thead><tr><th>Window</th><th>Raw Avg</th><th>PSA 9 Avg</th><th>PSA 10 Avg</th><th>Raw/9</th><th>9/10</th></tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      </div>
+    // One-line rationale
+    const rationaleparts = [
+      trend === 'uptrend' ? 'Uptrend' : trend === 'downtrend' ? 'Downtrend' : 'Stable',
+      multiplier ? multiplier.toFixed(1) + '× mult' : null,
+      matrix_verdict || null,
+      confidence !== 'High' ? confidence + ' confidence' : null,
+    ].filter(Boolean);
+    const rationale = rationaleparts.join(' · ');
 
-      <div class="trend-signals">
-        <div class="trend-signal ${trendClass}">
-          <div class="ts-label">Price Trend (30d vs 90d)</div>
-          <div class="ts-value">${trendIcon} ${trendLabel}</div>
-          <div class="ts-note">Based on ${trend_source} prices</div>
-        </div>
-        <div class="trend-signal ${liquClass}">
-          <div class="ts-label">Liquidity (30d PSA 10)</div>
-          <div class="ts-value">${p10_30_sales > 0 ? p10_30_sales + ' sales' : '—'}</div>
-          <div class="ts-note">${p10_30_sales >= 5 ? 'Liquid' : p10_30_sales > 0 ? 'Low volume' : 'No 30d data'}</div>
-        </div>
-        <div class="trend-signal ${momClass}">
-          <div class="ts-label">30d Price Change</div>
-          <div class="ts-value">${momStr}</div>
-          <div class="ts-note">PSA 9/10 momentum</div>
-        </div>
-        <div class="trend-signal ${r9Class}">
-          <div class="ts-label">Raw / PSA 9 Ratio</div>
-          <div class="ts-value">${r9Str}</div>
-          <div class="ts-note">${raw_ratio == null ? 'No raw data' : raw_ratio < 0.40 ? 'Strong grade play' : raw_ratio > 0.60 ? 'Buy the slab' : 'Marginal'}</div>
-        </div>
-      </div>
+    // Populate strip elements
+    document.getElementById('ts-avg').textContent = avg30val ? dollar(avg30val) : '—';
 
-      <div class="buy-analysis-card">
-        <div class="ba-header">Buy Analysis</div>
-        ${viabilityRow}
-        ${evRow}
-        ${matrixRow}
-        ${beRow}
-        ${gemRow}
-        ${suggestedRow}
-        <div class="ba-verdict">
-          <span class="verdict-badge" style="background:${verdictBg}">${verdict}</span>
-          <span class="conf-badge" style="background:${confBg}">${confidence} Confidence</span>
-        </div>
-        ${lowConfHtml}
-      </div>
-      </div>
+    const trendEl = document.getElementById('ts-trend');
+    trendEl.textContent = momStr;
+    trendEl.className = 'ts-stat-val' + (price30 > 5 ? ' trend-up' : price30 < -5 ? ' trend-dn' : '');
 
-      <div id="trend-tab-bb" style="display:none">
-        ${bbTabHTML(bbP9, bbP10)}
-      </div>`;
+    document.getElementById('ts-sales').textContent = totalSales30 > 0 ? totalSales30 : '—';
+    document.getElementById('ts-target').textContent = buyTargetVal;
+    document.getElementById('ts-sell').textContent = sellAtVal;
+    document.getElementById('ts-signal').innerHTML =
+      `<span class="chip ${chipClass}">${chipText}</span><span>${esc(rationale)}</span>`;
 
     loadEl.style.display = 'none';
-    resultsEl.style.display = 'block';
+    if (analyzeBtn) { analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analyze'; }
+    stripEl.style.display = 'block';
 
   } catch(e) {
     loadEl.style.display = 'none';
+    if (analyzeBtn) { analyzeBtn.disabled = false; analyzeBtn.textContent = 'Analyze'; }
     emptyEl.textContent = 'Error loading data: ' + e.message;
     emptyEl.style.display = 'block';
   }
