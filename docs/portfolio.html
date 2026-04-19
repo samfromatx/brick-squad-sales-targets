@@ -86,8 +86,11 @@
   thead th.sort-asc::after  { content: ' ▲'; opacity: .6; font-size: 9px; }
   thead th.sort-desc::after { content: ' ▼'; opacity: .6; font-size: 9px; }
   /* Sticky Card column */
-  thead th:first-child { position: sticky; top: 0; left: 0; z-index: 4; border-right: 1px solid var(--border); }
-  tbody td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); border-right: 1px solid var(--border); min-width: 140px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+  thead th:first-child { position: sticky; top: 0; left: 0; z-index: 4; border-right: 1px solid var(--border); padding-right: 18px; }
+  tbody td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); border-right: 1px solid var(--border); min-width: 100px; overflow: hidden; text-overflow: ellipsis; }
+  .col-resizer { position: absolute; right: 0; top: 0; bottom: 0; width: 8px; cursor: col-resize; display: flex; align-items: center; justify-content: center; }
+  .col-resizer::after { content: ''; display: block; width: 2px; height: 60%; background: var(--border-2); border-radius: 1px; }
+  .col-resizer:hover::after, .col-resizer.dragging::after { background: var(--brand); }
   tbody tr:nth-child(even) td:first-child { background: var(--bg-2); }
   tbody tr:hover td:first-child { background: var(--bg-3); }
   tbody tr { border-top: 1px solid var(--border); transition: background .1s; }
@@ -358,7 +361,7 @@
     <table id="portfolioTable">
       <thead>
         <tr>
-          <th onclick="sortTable(0)">Card</th>
+          <th onclick="sortTable(0)" style="position:relative;">Card<span class="col-resizer" id="cardColResizer" onclick="event.stopPropagation()"></span></th>
           <th onclick="sortTable(1)">Sport</th>
           <th onclick="sortTable(2)">Grade</th>
           <th onclick="sortTable(3)">Paid</th>
@@ -490,6 +493,7 @@ async function showApp() {
   checkMigration();
   await Promise.all([loadEntries(), populatePicker(), loadCSVData()]);
   render();
+  initColResize();
 }
 
 // ── Populate Picker from investment_targets ────────────────────────
@@ -1003,6 +1007,43 @@ function getAvg(entry, days, raw = false) {
   if (days === '7' && sales === 0) return raw ? null : '-';
   const n = parseFloat((m['Avg'] || '').replace(/[$,]/g, ''));
   return raw ? (isNaN(n) ? null : n) : (isNaN(n) ? '-' : fmt(n));
+}
+
+// ── Column Resize ─────────────────────────────────────────────────
+function initColResize() {
+  const handle = document.getElementById('cardColResizer');
+  const th = handle.closest('th');
+  let startX, startW;
+
+  function onMove(e) {
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const newW = Math.max(100, startW + (x - startX));
+    th.style.width = newW + 'px';
+    document.querySelectorAll('tbody td:first-child').forEach(td => td.style.width = newW + 'px');
+  }
+  function onUp() {
+    handle.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onUp);
+  }
+
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    startX = e.clientX;
+    startW = th.offsetWidth;
+    handle.classList.add('dragging');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  handle.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startW = th.offsetWidth;
+    handle.classList.add('dragging');
+    document.addEventListener('touchmove', onMove);
+    document.addEventListener('touchend', onUp);
+  });
 }
 
 // ── CSV Import ────────────────────────────────────────────────────
