@@ -2372,23 +2372,27 @@ function scoreSellEntry(entry, market) {
   return { score, roiPct, costBasis, marketPrice };
 }
 
-// Separate CSV cache for portfolio panel — fetches static files directly (fast)
+// Cache stores Promises so concurrent callers share the same in-flight request
 const _portCSVCache = {};
-async function fetchPortfolioCSV(file) {
-  if (_portCSVCache[file]) return _portCSVCache[file];
-  const res = await fetch(file);
-  if (!res.ok) return [];
-  const text = await res.text();
-  const lines = text.split('\n').filter(l => l.trim());
-  const headers = parseCSVRow(lines[0]);
-  const rows = lines.slice(1).map(line => {
-    const vals = parseCSVRow(line);
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
-    return obj;
-  });
-  _portCSVCache[file] = rows;
-  return rows;
+function fetchPortfolioCSV(file) {
+  if (!_portCSVCache[file]) {
+    _portCSVCache[file] = (async () => {
+      try {
+        const res = await fetch(file);
+        if (!res.ok) return [];
+        const text = await res.text();
+        const lines = text.split('\n').filter(l => l.trim());
+        const headers = parseCSVRow(lines[0]);
+        return lines.slice(1).map(line => {
+          const vals = parseCSVRow(line);
+          const obj = {};
+          headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+          return obj;
+        });
+      } catch(e) { return []; }
+    })();
+  }
+  return _portCSVCache[file];
 }
 
 async function fetchPortfolioMarket(entry) {
