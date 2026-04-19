@@ -2372,14 +2372,33 @@ function scoreSellEntry(entry, market) {
   return { score, roiPct, costBasis, marketPrice };
 }
 
+// Separate CSV cache for portfolio panel — fetches static files directly (fast)
+const _portCSVCache = {};
+async function fetchPortfolioCSV(file) {
+  if (_portCSVCache[file]) return _portCSVCache[file];
+  const res = await fetch(file);
+  if (!res.ok) return [];
+  const text = await res.text();
+  const lines = text.split('\n').filter(l => l.trim());
+  const headers = parseCSVRow(lines[0]);
+  const rows = lines.slice(1).map(line => {
+    const vals = parseCSVRow(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+    return obj;
+  });
+  _portCSVCache[file] = rows;
+  return rows;
+}
+
 async function fetchPortfolioMarket(entry) {
   const sport = portfolioSportKey(entry.sport);
   if (!sport || sport === 'soccer') return { avg_7d: null, avg_30d: null, trend_7d: null, trend_30d: null, sales_7d: null, last_sale: null };
   const grade = entry.grade || 'PSA 9';
   try {
     const [rows7, rows30] = await Promise.all([
-      fetchCSV(`data/${sport}-all-players-last-7-days.csv`),
-      fetchCSV(`data/${sport}-all-players-last-30-days.csv`),
+      fetchPortfolioCSV(`data/${sport}-all-players-last-7-days.csv`),
+      fetchPortfolioCSV(`data/${sport}-all-players-last-30-days.csv`),
     ]);
     const r7  = fuzzyFindRow(rows7,  entry.card, grade);
     const r30 = fuzzyFindRow(rows30, entry.card, grade);
