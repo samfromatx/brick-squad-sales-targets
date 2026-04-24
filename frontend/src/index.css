@@ -221,3 +221,20 @@ button { font-family: inherit; }
   border-radius: 4px;
 }
 .btn-ghost:hover { background: var(--surface-2); }
+
+/* ── Responsive nav ── */
+.nav-hamburger { display: none; align-items: center; }
+.nav-top-actions { display: flex; align-items: center; gap: 10px; }
+.nav-top-user { display: flex; align-items: center; gap: 12px; }
+
+@media (max-width: 600px) {
+  .nav-hamburger { display: flex !important; }
+  .nav-tab-row { display: none !important; }
+  .nav-top-actions { display: none !important; }
+  .nav-top-user { display: none !important; }
+
+  .page-content { padding: 16px 12px; }
+
+  .data-table tbody td,
+  .data-table thead th { padding: 7px 8px; }
+}

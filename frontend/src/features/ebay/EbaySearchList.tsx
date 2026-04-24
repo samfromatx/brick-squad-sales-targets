@@ -29,7 +29,7 @@ export function EbaySearchList({ searches }: Props) {
     <div>
       {Object.entries(grouped).map(([sport, cats]) => (
         <section key={sport} style={{ marginBottom: 28 }}>
-          <h2 style={{ fontSize: 15, color: '#cbd5e1', marginBottom: 10, borderBottom: '1px solid #1e293b', paddingBottom: 6 }}>
+          <h2 style={{ fontSize: 15, color: '#1e293b', marginBottom: 10, borderBottom: '1px solid #e2e8f0', paddingBottom: 6 }}>
             {SPORT_LABELS[sport] ?? sport}
           </h2>
           {Object.entries(cats).map(([cat, items]) => (
@@ -46,7 +46,7 @@ export function EbaySearchList({ searches }: Props) {
                     rel="noopener noreferrer"
                     style={linkCard}
                   >
-                    <span style={{ color: '#e2e8f0', fontWeight: 500 }}>
+                    <span style={{ color: '#1e293b', fontWeight: 500 }}>
                       {s.rank != null && <span style={{ color: '#475569', marginRight: 6 }}>#{s.rank}</span>}
                       {s.card_name ?? s.search_text}
                     </span>
@@ -67,7 +67,7 @@ export function EbaySearchList({ searches }: Props) {
 
 const linkCard: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 4,
-  background: '#1e293b', borderRadius: 6, padding: '8px 12px',
+  background: '#f8fafc', borderRadius: 6, padding: '8px 12px',
   textDecoration: 'none', fontSize: 13,
-  border: '1px solid #334155',
+  border: '1px solid #e2e8f0',
 }

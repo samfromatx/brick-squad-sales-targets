@@ -3,7 +3,6 @@ import { NavBar } from './layout/NavBar'
 import { DashboardPage } from '../pages/DashboardPage'
 import { ImportPage } from '../pages/ImportPage'
 import { PortfolioPage } from '../pages/PortfolioPage'
-import { SignInPage } from '../pages/SignInPage'
 import { TrendPage } from '../pages/TrendPage'
 import { OverviewPage } from '../pages/OverviewPage'
 import { ToolsPage } from '../pages/ToolsPage'
@@ -22,7 +21,6 @@ export function AppRouter() {
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/trends" element={<TrendPage />} />
         <Route path="/import" element={<ImportPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
       </Routes>
     </BrowserRouter>
   )

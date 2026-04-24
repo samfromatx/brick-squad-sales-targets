@@ -56,7 +56,7 @@ export function ImportForm() {
 
   return (
     <div style={{ maxWidth: 540 }}>
-      <p style={{ color: '#94a3b8', fontSize: 13, marginBottom: 20 }}>
+      <p style={{ color: '#64748b', fontSize: 13, marginBottom: 20 }}>
         Upload a JSON file in the current import format to replace target data.
         Sections present in the file will be replaced; absent sections are left unchanged.
       </p>
@@ -85,7 +85,7 @@ export function ImportForm() {
           onChange={handleFile}
         />
         {fileName ? (
-          <span style={{ color: '#e2e8f0', fontSize: 14 }}>📄 {fileName}</span>
+          <span style={{ color: '#1e293b', fontSize: 14 }}>📄 {fileName}</span>
         ) : (
           <span style={{ color: '#475569', fontSize: 13 }}>
             Click or drag a .json file here
@@ -137,29 +137,29 @@ export function ImportForm() {
 }
 
 function dropZone(status: string): React.CSSProperties {
-  const borderColor = status === 'success' ? '#22c55e' : status === 'error' ? '#ef4444' : '#334155'
+  const borderColor = status === 'success' ? '#22c55e' : status === 'error' ? '#ef4444' : '#cbd5e1'
   return {
     border: `2px dashed ${borderColor}`,
     borderRadius: 8,
     padding: '32px 24px',
     textAlign: 'center',
     cursor: 'pointer',
-    background: '#1e293b',
+    background: '#f8fafc',
     transition: 'border-color 0.2s',
   }
 }
 
 function btnPrimary(disabled: boolean): React.CSSProperties {
   return {
-    background: disabled ? '#1e3a5f' : '#2563eb',
-    color: disabled ? '#475569' : '#fff',
+    background: disabled ? '#93c5fd' : '#2563eb',
+    color: '#fff',
     border: 'none', borderRadius: 4,
     padding: '8px 20px', cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 13,
   }
 }
 
 const btnSecondary: React.CSSProperties = {
-  background: '#334155', color: '#e2e8f0', border: 'none',
+  background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
   borderRadius: 4, padding: '8px 16px', cursor: 'pointer', fontSize: 13,
 }
 
@@ -171,7 +171,7 @@ function feedback(bg: string, color: string): React.CSSProperties {
 }
 
 const codeBlock: React.CSSProperties = {
-  marginTop: 10, background: '#1e293b', borderRadius: 6,
-  padding: '12px 14px', fontSize: 11, color: '#94a3b8',
+  marginTop: 10, background: '#f1f5f9', borderRadius: 6,
+  padding: '12px 14px', fontSize: 11, color: '#475569',
   overflowX: 'auto', maxHeight: 320,
 }

@@ -11,6 +11,7 @@ const TAB_LINKS = [
 
 export function NavBar() {
   const [email, setEmail] = useState<string | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export function NavBar() {
 
   async function handleSignOut() {
     await signOut()
-    navigate('/sign-in')
+    navigate('/')
   }
 
   return (
@@ -34,19 +35,32 @@ export function NavBar() {
       <div style={topBar}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={logo}>🏀🏈 Brick Squad — Investment Target List</span>
-          <NavLink to="/portfolio" style={myPortfolioBtn}>My Portfolio</NavLink>
-          <NavLink to="/import" style={importBtn}>Import JSON</NavLink>
+          <div className="nav-top-actions">
+            <NavLink to="/portfolio" style={myPortfolioBtn}>My Portfolio</NavLink>
+            <NavLink to="/import" style={importBtn}>Import JSON</NavLink>
+          </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {email && <span style={{ fontSize: 12, color: '#64748b' }}>{email}</span>}
-          {email && (
-            <button onClick={handleSignOut} style={signOutBtn}>Sign Out</button>
-          )}
+          <div className="nav-top-user">
+            {email && <span style={{ fontSize: 12, color: '#64748b' }}>{email}</span>}
+            {email && (
+              <button onClick={handleSignOut} style={signOutBtn}>Sign Out</button>
+            )}
+          </div>
+          {/* Hamburger — shown on mobile via CSS */}
+          <button
+            className="nav-hamburger"
+            onClick={() => setMenuOpen(o => !o)}
+            style={hamburgerBtn}
+            aria-label="Toggle navigation menu"
+          >
+            {menuOpen ? '✕' : '☰'}
+          </button>
         </div>
       </div>
 
-      {/* Tab nav */}
-      <nav style={tabNav}>
+      {/* Desktop tab nav */}
+      <nav className="nav-tab-row" style={tabNav}>
         {TAB_LINKS.map(({ to, label }) => (
           <NavLink
             key={to}
@@ -57,6 +71,41 @@ export function NavBar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div style={mobileMenuWrap}>
+          {TAB_LINKS.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setMenuOpen(false)}
+              style={({ isActive }) => mobileLink(isActive)}
+            >
+              {label}
+            </NavLink>
+          ))}
+          <div style={{ borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+          <NavLink to="/portfolio" onClick={() => setMenuOpen(false)} style={() => mobileLink(false)}>
+            My Portfolio
+          </NavLink>
+          <NavLink to="/import" onClick={() => setMenuOpen(false)} style={() => mobileLink(false)}>
+            Import JSON
+          </NavLink>
+          {email && (
+            <>
+              <div style={{ borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+              <span style={{ padding: '8px 20px', fontSize: 12, color: '#64748b', display: 'block' }}>{email}</span>
+              <button
+                onClick={() => { setMenuOpen(false); void handleSignOut() }}
+                style={mobileSignOutBtn}
+              >
+                Sign Out
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </header>
   )
 }
@@ -120,6 +169,50 @@ const tabNav: React.CSSProperties = {
   display: 'flex',
   gap: 0,
   padding: '0 20px',
+}
+
+const hamburgerBtn: React.CSSProperties = {
+  background: 'none',
+  border: 'none',
+  fontSize: 20,
+  cursor: 'pointer',
+  color: '#475569',
+  padding: '4px 6px',
+  lineHeight: 1,
+}
+
+const mobileMenuWrap: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  background: '#fff',
+  borderTop: '1px solid #e2e8f0',
+  padding: '8px 0',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+}
+
+function mobileLink(isActive: boolean): React.CSSProperties {
+  return {
+    display: 'block',
+    padding: '10px 20px',
+    fontSize: 14,
+    fontWeight: isActive ? 600 : 400,
+    color: isActive ? '#2563eb' : '#1e293b',
+    textDecoration: 'none',
+    background: isActive ? '#eff6ff' : 'transparent',
+  }
+}
+
+const mobileSignOutBtn: React.CSSProperties = {
+  display: 'block',
+  width: '100%',
+  textAlign: 'left',
+  padding: '10px 20px',
+  fontSize: 14,
+  color: '#64748b',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
 }
 
 function tabStyle(isActive: boolean): React.CSSProperties {
