@@ -81,6 +81,18 @@ class ApiClient {
 
   // ── Portfolio entries ──────────────────────────────────────────────────────
 
+  async getAllPortfolioEntries(): Promise<PaginatedResponse<PortfolioEntry>> {
+    const all: PortfolioEntry[] = []
+    let cursor: string | undefined
+    do {
+      const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}&limit=200` : '?limit=200'
+      const page = await this.request<PaginatedResponse<PortfolioEntry>>(`/api/v1/portfolio-entries${qs}`)
+      all.push(...page.data)
+      cursor = page.has_more && page.next_cursor ? page.next_cursor : undefined
+    } while (cursor)
+    return { data: all, has_more: false, next_cursor: null }
+  }
+
   getPortfolioEntries(cursor?: string): Promise<PaginatedResponse<PortfolioEntry>> {
     const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
     return this.request<PaginatedResponse<PortfolioEntry>>(`/api/v1/portfolio-entries${qs}`)

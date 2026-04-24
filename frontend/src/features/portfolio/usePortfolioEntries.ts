@@ -8,7 +8,7 @@ export const ALLOCATIONS_KEY = ['portfolio-allocations'] as const
 export function usePortfolioEntries() {
   return useQuery({
     queryKey: ENTRIES_KEY,
-    queryFn: () => api.getPortfolioEntries(),
+    queryFn: () => api.getAllPortfolioEntries(),
   })
 }
 
