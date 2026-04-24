@@ -165,15 +165,11 @@ export function TargetTable({ targets, category }: Props) {
           {sorted.map(t => (
             <tr key={t.id}>
               <td style={{ color: '#888780' }}>{t.rank}</td>
-              <td style={{ fontWeight: 500, color: '#1a1a18' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: 200 }}>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-                    {t.card_name}
-                  </span>
-                  {t.is_new && (
-                    <span className="pill pill-new" style={{ fontSize: 10, flexShrink: 0 }}>NEW</span>
-                  )}
-                </div>
+              <td style={{ fontWeight: 500, color: '#1a1a18', minWidth: 220, whiteSpace: 'normal', lineHeight: 1.4 }}>
+                {t.card_name}
+                {t.is_new && (
+                  <span className="pill pill-new" style={{ fontSize: 10, marginLeft: 6, verticalAlign: 'middle' }}>NEW</span>
+                )}
               </td>
               <td>
                 <span className={gradePillClass(t.grade)}>

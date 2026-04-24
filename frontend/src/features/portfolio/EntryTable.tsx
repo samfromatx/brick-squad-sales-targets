@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { PortfolioEntry } from '../../lib/types'
 
 interface Props {
@@ -6,6 +7,13 @@ interface Props {
   onDelete: (id: string) => void
   onMarkSold: (entry: PortfolioEntry) => void
   onPcFilterClick?: () => void
+}
+
+type SortDir = 'asc' | 'desc'
+interface SortState { key: string; dir: SortDir }
+
+function isSold(e: PortfolioEntry): boolean {
+  return e.actual_sale !== null && e.actual_sale !== undefined && e.actual_sale > 0
 }
 
 function fmt(val: number | null, opts?: { decimals?: number; prefix?: string }): string {
@@ -17,9 +25,9 @@ function fmt(val: number | null, opts?: { decimals?: number; prefix?: string }):
 
 function calcProfit(entry: PortfolioEntry): { label: string; positive: boolean | null } {
   const cost = entry.price_paid + entry.grading_cost
-  if (entry.actual_sale !== null) {
+  if (isSold(entry)) {
     const ebay = entry.sale_venue?.toLowerCase().includes('ebay')
-    const net = ebay ? entry.actual_sale * (1 - 0.1325) : entry.actual_sale
+    const net = ebay ? (entry.actual_sale ?? 0) * (1 - 0.1325) : (entry.actual_sale ?? 0)
     const p = net - cost
     return { label: `${p >= 0 ? '+' : ''}${fmt(p, { decimals: 2 })}`, positive: p >= 0 }
   }
@@ -28,6 +36,43 @@ function calcProfit(entry: PortfolioEntry): { label: string; positive: boolean |
     return { label: `~${fmt(est, { decimals: 0 })}`, positive: est >= 0 }
   }
   return { label: '—', positive: null }
+}
+
+function getSortValue(e: PortfolioEntry, key: string): string | number {
+  const cost = e.price_paid + e.grading_cost
+  switch (key) {
+    case 'card_name':    return e.card_name.toLowerCase()
+    case 'sport':        return e.sport
+    case 'grade':        return e.grade.toLowerCase()
+    case 'target_sell':  return e.target_sell ?? -Infinity
+    case 'actual_sale':  return isSold(e) ? (e.actual_sale ?? 0) : -Infinity
+    case 'profit': {
+      if (isSold(e)) {
+        const ebay = e.sale_venue?.toLowerCase().includes('ebay')
+        const net = ebay ? (e.actual_sale ?? 0) * (1 - 0.1325) : (e.actual_sale ?? 0)
+        return net - cost
+      }
+      return e.target_sell !== null ? e.target_sell - cost : -Infinity
+    }
+    case 'purchase_date': return e.purchase_date ?? ''
+    default: return ''
+  }
+}
+
+function sortEntries(entries: PortfolioEntry[], sort: SortState): PortfolioEntry[] {
+  return [...entries].sort((a, b) => {
+    const av = getSortValue(a, sort.key)
+    const bv = getSortValue(b, sort.key)
+    let cmp = 0
+    if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv
+    else cmp = String(av).localeCompare(String(bv))
+    return sort.dir === 'asc' ? cmp : -cmp
+  })
+}
+
+function SortIndicator({ active, dir }: { active: boolean; dir: SortDir }) {
+  if (!active) return <span style={{ color: '#d0cec6', marginLeft: 4, fontSize: 9 }}>↕</span>
+  return <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>{dir === 'asc' ? '▲' : '▼'}</span>
 }
 
 const SPORT_BADGE: Record<string, { bg: string; text: string; border: string; label: string }> = {
@@ -43,18 +88,42 @@ function gradePill(grade: string) {
 }
 
 export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterClick }: Props) {
+  const [sort, setSort] = useState<SortState>({ key: 'card_name', dir: 'asc' })
+
   if (entries.length === 0) {
     return <p style={{ color: '#888780', fontStyle: 'italic', padding: '16px 0' }}>No entries yet. Add your first card.</p>
   }
+
+  function handleSort(key: string) {
+    setSort(prev =>
+      prev.key === key
+        ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { key, dir: 'asc' }
+    )
+  }
+
+  function th(key: string, label: string) {
+    const active = sort.key === key
+    return (
+      <th
+        onClick={() => handleSort(key)}
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+      >
+        {label}<SortIndicator active={active} dir={sort.dir} />
+      </th>
+    )
+  }
+
+  const sorted = sortEntries(entries, sort)
 
   return (
     <div className="tbl-wrap">
       <table className="data-table">
         <thead>
           <tr>
-            <th>CARD</th>
-            <th>SPORT</th>
-            <th>GRADE</th>
+            {th('card_name', 'CARD')}
+            {th('sport', 'SPORT')}
+            {th('grade', 'GRADE')}
             <th
               title="Personal Collection — click to filter"
               style={{ cursor: onPcFilterClick ? 'pointer' : undefined, userSelect: 'none' }}
@@ -64,17 +133,17 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterCl
             </th>
             <th>7D AVG</th>
             <th>30D AVG</th>
-            <th>TARGET SELL</th>
-            <th>ACTUAL SALE</th>
+            {th('target_sell', 'TARGET SELL')}
+            {th('actual_sale', 'ACTUAL SALE')}
             <th>SALE VENUE</th>
-            <th>PROFIT</th>
-            <th>DATE</th>
+            {th('profit', 'PROFIT')}
+            {th('purchase_date', 'DATE')}
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {entries.map(e => {
-            const sold = e.actual_sale !== null
+          {sorted.map(e => {
+            const sold = isSold(e)
             const { label: pl, positive } = calcProfit(e)
             const sp = SPORT_BADGE[e.sport] ?? SPORT_BADGE['football']
             const gp = gradePill(e.grade)
