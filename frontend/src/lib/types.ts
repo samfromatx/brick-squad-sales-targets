@@ -29,8 +29,7 @@ export interface Target {
   target_price: number | null
   max_price: number | null
   trend_pct: number | null
-  volume_count: number | null
-  volume_window_days: number | null
+  vol: string | null
   sell_at: number | null
   rationale: string | null
   is_new: boolean

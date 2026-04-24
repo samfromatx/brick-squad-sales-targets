@@ -208,7 +208,7 @@ All tests must use mock/fixture DB — no live Supabase dependency in CI.
 **Done when:** `pytest` exits 0 with all tests passing.
 **Prerequisite:** Task 12.
 
-### Task 14 — Add Playwright e2e tests
+### Task 14 — Add Playwright e2e tests ✅
 Add Playwright tests covering:
 - Sign-in flow
 - Dashboard loads with targets

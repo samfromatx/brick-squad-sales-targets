@@ -42,8 +42,7 @@ class Target(BaseModel):
     target_price: float | None = None
     max_price: float | None = None
     trend_pct: float | None = None
-    volume_count: int | None = None
-    volume_window_days: int | None = None
+    vol: str | None = None
     sell_at: float | None = None
     rationale: str | None = None
     is_new: bool = False

@@ -49,6 +49,7 @@ def _row_to_target(row: dict) -> Target:
         target_price=row.get("target_price"),
         max_price=row.get("max_price"),
         trend_pct=_parse_trend(row.get("trend_pct")),
+        vol=row.get("vol"),
         sell_at=row.get("sell_at"),
         rationale=row.get("rationale"),
         is_new=bool(row.get("is_new", False)),

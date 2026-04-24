@@ -7,73 +7,104 @@ interface Props {
   onMarkSold: (entry: PortfolioEntry) => void
 }
 
-function fmt(val: number | null, prefix = '$'): string {
+function fmt(val: number | null, opts?: { decimals?: number; prefix?: string }): string {
   if (val === null || val === undefined) return '—'
-  return `${prefix}${val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  const p = opts?.prefix ?? '$'
+  const d = opts?.decimals ?? 0
+  return `${p}${val.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d })}`
 }
 
-function profit(entry: PortfolioEntry): string {
+function calcProfit(entry: PortfolioEntry): { label: string; positive: boolean | null } {
   const cost = entry.price_paid + entry.grading_cost
-  const sale = entry.actual_sale
-  if (sale === null) {
-    if (entry.target_sell === null) return '—'
-    const est = entry.target_sell - cost
-    return `~${est >= 0 ? '+' : ''}$${est.toFixed(0)}`
+  if (entry.actual_sale !== null) {
+    const ebay = entry.sale_venue?.toLowerCase().includes('ebay')
+    const net = ebay ? entry.actual_sale * (1 - 0.1325) : entry.actual_sale
+    const p = net - cost
+    return { label: `${p >= 0 ? '+' : ''}${fmt(p, { decimals: 2 })}`, positive: p >= 0 }
   }
-  const ebayVenue = entry.sale_venue?.toLowerCase().includes('ebay')
-  const net = ebayVenue ? sale * (1 - 0.1325) : sale
-  const p = net - cost
-  return `${p >= 0 ? '+' : ''}$${p.toFixed(0)}`
+  if (entry.target_sell !== null) {
+    const est = entry.target_sell - cost
+    return { label: `~${fmt(est, { decimals: 0 })}`, positive: est >= 0 }
+  }
+  return { label: '—', positive: null }
+}
+
+const SPORT_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  football:   { bg: '#faeeda', text: '#92400e', label: '🏈 FB' },
+  basketball: { bg: '#e6f1fb', text: '#1e40af', label: '🏀 BB' },
+}
+
+function gradePill(grade: string) {
+  const g = grade.toUpperCase()
+  if (g.includes('PSA 10') || g.includes('PSA10')) return { bg: '#fef3c7', text: '#b45309' }
+  if (g.includes('PSA 9')  || g.includes('PSA9'))  return { bg: '#dbeafe', text: '#1d4ed8' }
+  return { bg: '#f1f5f9', text: '#475569' }
 }
 
 export function EntryTable({ entries, onEdit, onDelete, onMarkSold }: Props) {
   if (entries.length === 0) {
-    return <p style={{ color: '#64748b', fontStyle: 'italic' }}>No entries yet. Add your first card.</p>
+    return <p style={{ color: '#94a3b8', fontStyle: 'italic', padding: '16px 0' }}>No entries yet. Add your first card.</p>
   }
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+    <div style={{ overflowX: 'auto', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+      <table className="data-table">
         <thead>
-          <tr style={{ borderBottom: '2px solid #334155', textAlign: 'left' }}>
-            <th style={th}>Card</th>
-            <th style={th}>Sport</th>
-            <th style={th}>Grade</th>
-            <th style={th}>Cost</th>
-            <th style={th}>Target</th>
-            <th style={th}>Sold</th>
-            <th style={th}>P/L</th>
-            <th style={th}>Date</th>
-            <th style={th}></th>
+          <tr>
+            <th>CARD</th>
+            <th>SPORT</th>
+            <th>GRADE</th>
+            <th>7D AVG</th>
+            <th>30D AVG</th>
+            <th>TARGET SELL</th>
+            <th>ACTUAL SALE</th>
+            <th>SALE VENUE</th>
+            <th>PROFIT</th>
+            <th>DATE</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {entries.map(e => {
             const sold = e.actual_sale !== null
-            const pl = profit(e)
-            const plPositive = pl.startsWith('+') || pl.startsWith('~+')
+            const { label: pl, positive } = calcProfit(e)
+            const sp = SPORT_BADGE[e.sport] ?? SPORT_BADGE['football']
+            const gp = gradePill(e.grade)
             return (
-              <tr key={e.id} style={{ borderBottom: '1px solid #1e293b', opacity: e.pc ? 0.6 : 1 }}>
-                <td style={td}>
+              <tr key={e.id} style={{ opacity: e.pc ? 0.65 : 1 }}>
+                <td style={{ fontWeight: 500, minWidth: 180 }}>
                   {e.card_name}
-                  {e.pc && <span style={badge('#6366f1')}>PC</span>}
-                  {sold && <span style={badge('#22c55e')}>SOLD</span>}
+                  {e.pc && <span className="pill" style={{ marginLeft: 6, background: '#ede9fe', color: '#7c3aed', fontSize: 10 }}>PC</span>}
+                  {sold && <span className="pill" style={{ marginLeft: 6, background: '#dcfce7', color: '#15803d', fontSize: 10 }}>SOLD</span>}
                 </td>
-                <td style={{ ...td, textTransform: 'capitalize' }}>{e.sport}</td>
-                <td style={td}>{e.grade}</td>
-                <td style={td}>{fmt(e.price_paid + e.grading_cost)}</td>
-                <td style={td}>{fmt(e.target_sell)}</td>
-                <td style={td}>{sold ? `${fmt(e.actual_sale)} (${e.sale_venue ?? '—'})` : '—'}</td>
-                <td style={{ ...td, color: plPositive ? '#22c55e' : pl.startsWith('-') ? '#ef4444' : '#94a3b8', fontWeight: 600 }}>
+                <td>
+                  <span className="pill" style={{ background: sp.bg, color: sp.text, fontSize: 11 }}>
+                    {sp.label}
+                  </span>
+                </td>
+                <td>
+                  <span className="pill" style={{ background: gp.bg, color: gp.text }}>
+                    {e.grade}
+                  </span>
+                </td>
+                <td style={{ color: '#94a3b8' }}>—</td>
+                <td style={{ color: '#94a3b8' }}>—</td>
+                <td>{fmt(e.target_sell, { decimals: 2 })}</td>
+                <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
+                <td style={{ color: '#64748b' }}>{e.sale_venue ?? '—'}</td>
+                <td style={{
+                  fontWeight: 600,
+                  color: positive === true ? '#16a34a' : positive === false ? '#dc2626' : '#94a3b8',
+                }}>
                   {pl}
                 </td>
-                <td style={{ ...td, color: '#64748b' }}>{e.purchase_date ?? '—'}</td>
-                <td style={{ ...td, whiteSpace: 'nowrap' }}>
+                <td style={{ color: '#94a3b8', fontSize: 12 }}>{e.purchase_date ?? '—'}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>
                   {!sold && (
-                    <button onClick={() => onMarkSold(e)} style={actionBtn('#f59e0b')}>Sold</button>
+                    <button onClick={() => onMarkSold(e)} className="btn-ghost" style={{ color: '#d97706' }}>Sold</button>
                   )}
-                  <button onClick={() => onEdit(e)} style={actionBtn('#2563eb')}>Edit</button>
-                  <button onClick={() => onDelete(e.id)} style={actionBtn('#ef4444')}>Del</button>
+                  <button onClick={() => onEdit(e)} className="btn-ghost" style={{ color: '#2563eb' }}>Edit</button>
+                  <button onClick={() => onDelete(e.id)} className="btn-ghost" style={{ color: '#dc2626' }}>Del</button>
                 </td>
               </tr>
             )
@@ -82,22 +113,4 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold }: Props) {
       </table>
     </div>
   )
-}
-
-const th: React.CSSProperties = { padding: '8px 10px', fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap' }
-const td: React.CSSProperties = { padding: '7px 10px', color: '#e2e8f0' }
-
-function badge(color: string): React.CSSProperties {
-  return {
-    marginLeft: 5, fontSize: 10, padding: '1px 5px',
-    background: color, color: '#fff', borderRadius: 4, verticalAlign: 'middle',
-  }
-}
-
-function actionBtn(color: string): React.CSSProperties {
-  return {
-    marginLeft: 4, fontSize: 11, padding: '2px 8px', cursor: 'pointer',
-    background: 'transparent', border: `1px solid ${color}`, color: color,
-    borderRadius: 4,
-  }
 }

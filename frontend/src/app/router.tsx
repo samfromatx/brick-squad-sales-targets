@@ -5,6 +5,9 @@ import { ImportPage } from '../pages/ImportPage'
 import { PortfolioPage } from '../pages/PortfolioPage'
 import { SignInPage } from '../pages/SignInPage'
 import { TrendPage } from '../pages/TrendPage'
+import { OverviewPage } from '../pages/OverviewPage'
+import { ToolsPage } from '../pages/ToolsPage'
+import { EbayPage } from '../pages/EbayPage'
 
 export function AppRouter() {
   return (
@@ -12,7 +15,10 @@ export function AppRouter() {
       <NavBar />
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/overview" element={<OverviewPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/tools/*" element={<ToolsPage />} />
+        <Route path="/ebay" element={<EbayPage />} />
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/trends" element={<TrendPage />} />
         <Route path="/import" element={<ImportPage />} />

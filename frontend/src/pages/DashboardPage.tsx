@@ -4,24 +4,37 @@ import { TargetFilters } from '../features/targets/TargetFilters'
 import { TargetTable } from '../features/targets/TargetTable'
 import type { Category, Sport, Target } from '../lib/types'
 
+type TypeFilter = '' | 'graded' | 'raw'
+
 const CATEGORY_LABELS: Record<string, string> = {
   graded: 'Graded',
-  raw: 'Raw → Grade',
+  raw: 'Raw',
   bounce_back: 'Bounce Back',
 }
 
-const SPORT_LABELS: Record<string, string> = {
-  football: 'Football',
-  basketball: 'Basketball',
+const SPORT_BADGE: Record<Sport, React.CSSProperties> = {
+  football:   { background: '#faeeda', color: '#92400e' },
+  basketball: { background: '#e6f1fb', color: '#1e40af' },
+}
+const SPORT_EMOJI: Record<Sport, string> = { football: '🏈', basketball: '🏀' }
+
+function defaultGrade(targets: Target[], sport: Sport, category: Category): string {
+  const row = targets.find(t => t.sport === sport && t.category === category && t.grade)
+  if (!row?.grade) return ''
+  const g = row.grade.toUpperCase()
+  if (g.includes('PSA 10')) return 'Default: PSA 10'
+  if (g.includes('PSA 9'))  return 'Default: PSA 9'
+  return ''
 }
 
-function groupTargets(targets: Target[], sport: Sport | '', category: Category | '') {
+function groupTargets(targets: Target[], sport: Sport | '', typeFilter: TypeFilter) {
   const filtered = targets.filter(t => {
     if (sport && t.sport !== sport) return false
-    if (category && t.category !== category) return false
-    return true
+    // typeFilter '' = show graded + raw (not bounce_back, which lives in Tools)
+    // typeFilter 'graded' | 'raw' = show only that category
+    if (typeFilter === '') return t.category === 'graded' || t.category === 'raw'
+    return t.category === typeFilter
   })
-
   const groups: Record<string, Record<string, Target[]>> = {}
   for (const t of filtered) {
     if (!groups[t.category]) groups[t.category] = {}
@@ -34,73 +47,83 @@ function groupTargets(targets: Target[], sport: Sport | '', category: Category |
 export function DashboardPage() {
   const { data, isLoading, isError, error } = useBootstrap()
   const [sport, setSport] = useState<Sport | ''>('')
-  const [category, setCategory] = useState<Category | ''>('')
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('')
 
-  if (isLoading) {
-    return (
-      <div style={page}>
-        <p style={{ color: '#94a3b8' }}>Loading targets…</p>
-      </div>
-    )
-  }
-
+  if (isLoading) return <div className="page-content"><p style={{ color: '#94a3b8' }}>Loading targets…</p></div>
   if (isError) {
     const msg = error instanceof Error ? error.message : 'Unknown error'
-    return (
-      <div style={page}>
-        <p style={{ color: '#ef4444' }}>Failed to load: {msg}</p>
-      </div>
-    )
+    return <div className="page-content"><p style={{ color: '#dc2626' }}>Failed to load: {msg}</p></div>
   }
 
   const targets = data?.data.targets ?? []
-  const groups = groupTargets(targets, sport, category)
   const lastUpdated = data?.last_updated
 
+  const visibleTargets = targets.filter(t => t.category === 'graded' || t.category === 'raw')
+  const buyNow  = visibleTargets.filter(t => t.trend_pct !== null && t.trend_pct > 50).length
+  const watch   = visibleTargets.filter(t => t.trend_pct !== null && t.trend_pct >= 0 && t.trend_pct <= 50).length
+  const monitor = visibleTargets.filter(t => t.trend_pct === null || t.trend_pct < 0).length
+
+  const kpis = [
+    { label: 'Total',   value: visibleTargets.length, sub: 'targets',  color: '#2563eb' },
+    { label: 'Buy Now', value: buyNow,                sub: 'trending', color: '#16a34a' },
+    { label: 'Watch',   value: watch,                 sub: 'building', color: '#d97706' },
+    { label: 'Monitor', value: monitor,               sub: 'cooling',  color: '#94a3b8' },
+  ]
+
+  const groups = groupTargets(targets, sport, typeFilter)
+
   return (
-    <div style={page}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: 22, color: '#f1f5f9' }}>
-          Buy Targets
-          {lastUpdated && (
-            <span style={{ fontSize: 12, color: '#64748b', marginLeft: 10, fontWeight: 400 }}>
-              updated {lastUpdated}
-            </span>
-          )}
-        </h1>
-        <span style={{ fontSize: 13, color: '#64748b' }}>
-          {targets.length} target{targets.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
-      <TargetFilters
-        sport={sport}
-        category={category}
-        onSport={setSport}
-        onCategory={setCategory}
-      />
-
-      {Object.entries(groups).length === 0 && (
-        <p style={{ color: '#888', fontStyle: 'italic' }}>No targets match the current filters.</p>
+    <div className="page-content">
+      {lastUpdated && (
+        <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 16 }}>
+          Updated {lastUpdated}
+        </p>
       )}
 
-      {(['graded', 'raw', 'bounce_back'] as Category[]).map(cat => {
+      {/* KPI strip */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+        {kpis.map(k => (
+          <div key={k.label} className="kpi-card" style={{ borderTop: `3px solid ${k.color}` }}>
+            <div className="kpi-value">{k.value}</div>
+            <div className="kpi-label">{k.label}</div>
+            <div className="kpi-sub">{k.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <TargetFilters
+        sport={sport}
+        typeFilter={typeFilter}
+        onSport={setSport}
+        onTypeFilter={setTypeFilter}
+      />
+
+      {/* Target sections */}
+      {Object.entries(groups).length === 0 && (
+        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>No targets match the current filters.</p>
+      )}
+
+      {(['graded', 'raw'] as Category[]).map(cat => {
         const sportGroups = groups[cat]
         if (!sportGroups) return null
         return (
-          <section key={cat} style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 16, color: '#cbd5e1', marginBottom: 12, borderBottom: '1px solid #1e293b', paddingBottom: 6 }}>
-              {CATEGORY_LABELS[cat]}
-            </h2>
+          <section key={cat} style={{ marginBottom: 36 }}>
             {(['football', 'basketball'] as Sport[]).map(sp => {
               const rows = sportGroups[sp]
               if (!rows?.length) return null
+              const def = defaultGrade(rows, sp, cat)
               return (
-                <div key={sp} style={{ marginBottom: 20 }}>
-                  <h3 style={{ fontSize: 13, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {SPORT_LABELS[sp]}
-                  </h3>
-                  <TargetTable targets={rows} />
+                <div key={sp} style={{ marginBottom: 28 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <span className="pill" style={{ ...SPORT_BADGE[sp], fontSize: 12, padding: '4px 12px' }}>
+                      {SPORT_EMOJI[sp]} {CATEGORY_LABELS[cat] === 'Graded'
+                        ? `${sp === 'football' ? 'Football' : 'Basketball'} Targets`
+                        : `${sp === 'football' ? 'Football' : 'Basketball'} ${CATEGORY_LABELS[cat]}`}
+                    </span>
+                    {def && <span style={{ fontSize: 12, color: '#94a3b8' }}>{def}</span>}
+                  </div>
+                  <TargetTable targets={rows} category={cat} />
                 </div>
               )
             })}
@@ -109,11 +132,4 @@ export function DashboardPage() {
       })}
     </div>
   )
-}
-
-const page: React.CSSProperties = {
-  maxWidth: 1100,
-  margin: '0 auto',
-  padding: '32px 16px',
-  color: '#e2e8f0',
 }

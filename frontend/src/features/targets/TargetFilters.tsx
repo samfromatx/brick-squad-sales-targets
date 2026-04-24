@@ -1,32 +1,53 @@
-import type { Category, Sport } from '../../lib/types'
+import type { Sport } from '../../lib/types'
+
+type TypeFilter = '' | 'graded' | 'raw'
 
 interface Props {
   sport: Sport | ''
-  category: Category | ''
+  typeFilter: TypeFilter
   onSport: (v: Sport | '') => void
-  onCategory: (v: Category | '') => void
+  onTypeFilter: (v: TypeFilter) => void
 }
 
-export function TargetFilters({ sport, category, onSport, onCategory }: Props) {
+const SPORTS: { value: Sport; label: string; emoji: string }[] = [
+  { value: 'football',   label: 'Football',   emoji: '🏈' },
+  { value: 'basketball', label: 'Basketball', emoji: '🏀' },
+]
+
+const TYPES: { value: TypeFilter; label: string }[] = [
+  { value: '',       label: 'All'    },
+  { value: 'graded', label: 'Graded' },
+  { value: 'raw',    label: 'Raw'    },
+]
+
+export function TargetFilters({ sport, typeFilter, onSport, onTypeFilter }: Props) {
   return (
-    <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-      <label>
-        Sport{' '}
-        <select value={sport} onChange={e => onSport(e.target.value as Sport | '')}>
-          <option value="">All</option>
-          <option value="football">Football</option>
-          <option value="basketball">Basketball</option>
-        </select>
-      </label>
-      <label>
-        Category{' '}
-        <select value={category} onChange={e => onCategory(e.target.value as Category | '')}>
-          <option value="">All</option>
-          <option value="graded">Graded</option>
-          <option value="raw">Raw → Grade</option>
-          <option value="bounce_back">Bounce Back</option>
-        </select>
-      </label>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+      {/* Sport pills — always badge-colored, thicker border when selected */}
+      <div style={{ display: 'flex', gap: 6 }}>
+        {SPORTS.map(s => (
+          <button
+            key={s.value}
+            className={`pill-btn sport-${s.value}${sport === s.value ? ' selected' : ''}`}
+            onClick={() => onSport(sport === s.value ? '' : s.value)}
+          >
+            {s.emoji} {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Type pills */}
+      <div style={{ display: 'flex', gap: 6 }}>
+        {TYPES.map(t => (
+          <button
+            key={t.value}
+            className={`pill-btn${typeFilter === t.value ? ' active' : ''}`}
+            onClick={() => onTypeFilter(t.value)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

@@ -10,3 +10,8 @@ __pycache__/
 # Old report files in root (we use docs/index.html now)
 report-*.html
 reports/
+
+# Secrets — never commit service keys
+.env
+.env.local
+*.env

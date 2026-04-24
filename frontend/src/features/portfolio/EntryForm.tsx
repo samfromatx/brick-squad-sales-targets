@@ -57,7 +57,7 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
   return (
     <div style={overlay}>
       <div style={modal}>
-        <h2 style={{ margin: '0 0 16px', fontSize: 16, color: '#f1f5f9' }}>
+        <h2 style={{ margin: '0 0 16px', fontSize: 16, color: '#1e293b' }}>
           {initial ? 'Edit entry' : 'Add entry'}
         </h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -123,7 +123,7 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 12, color: '#94a3b8' }}>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 12, color: '#475569' }}>
       {label}
       {children}
     </label>
@@ -131,22 +131,22 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 const overlay: React.CSSProperties = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
 }
 const modal: React.CSSProperties = {
-  background: '#1e293b', borderRadius: 8, padding: 24,
-  width: 420, maxHeight: '90vh', overflowY: 'auto',
+  background: '#fff', borderRadius: 10, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+  width: 440, maxHeight: '90vh', overflowY: 'auto', border: '1px solid #e2e8f0',
 }
 const input: React.CSSProperties = {
-  background: '#0f172a', border: '1px solid #334155', borderRadius: 4,
-  padding: '5px 8px', color: '#e2e8f0', fontSize: 13, width: '100%',
+  background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6,
+  padding: '6px 10px', color: '#1e293b', fontSize: 13, width: '100%',
 }
 const btnPrimary: React.CSSProperties = {
   background: '#2563eb', color: '#fff', border: 'none',
-  borderRadius: 4, padding: '7px 16px', cursor: 'pointer', fontSize: 13,
+  borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600,
 }
 const btnSecondary: React.CSSProperties = {
-  background: '#334155', color: '#e2e8f0', border: 'none',
-  borderRadius: 4, padding: '7px 16px', cursor: 'pointer', fontSize: 13,
+  background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
+  borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontSize: 13,
 }
