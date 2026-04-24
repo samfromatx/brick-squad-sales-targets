@@ -26,7 +26,7 @@ export function NavBar() {
 
   async function handleSignOut() {
     await signOut()
-    navigate('/')
+    navigate('/sign-in')
   }
 
   return (
