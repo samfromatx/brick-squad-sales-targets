@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Query, Request, Response
 
-from app.core.auth import get_current_user_id
 from app.core.cache import make_etag
+from app.core.config import settings
 from app.core.logging import get_request_id
 from app.db.queries.ebay import fetch_ebay_searches
 from app.models.domain import EbaySearch, Category, Sport
@@ -27,9 +27,8 @@ async def list_ebay_searches(
     request: Request,
     response: Response,
     cursor: str | None = Query(None),
-    user_id: str = Depends(get_current_user_id),
 ):
-    rows = fetch_ebay_searches(user_id, cursor_id=cursor, limit=LIMIT)
+    rows = fetch_ebay_searches(settings.owner_user_id, cursor_id=cursor, limit=LIMIT)
     has_more = len(rows) > LIMIT
     page = rows[:LIMIT]
     searches = [_row_to_ebay(r) for r in page]
@@ -40,6 +39,6 @@ async def list_ebay_searches(
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers={"ETag": etag, "X-Request-ID": get_request_id()})
     response.headers["ETag"] = etag
-    response.headers["Cache-Control"] = "private, must-revalidate"
+    response.headers["Cache-Control"] = "public, must-revalidate"
     response.headers["X-Request-ID"] = get_request_id()
     return {"data": data, "next_cursor": next_cursor, "has_more": has_more}
