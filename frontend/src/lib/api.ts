@@ -1,3 +1,4 @@
+import { getAccessToken, refreshAccessToken } from './auth'
 import type {
   EbaySearch,
   ExportSnapshot,
@@ -15,14 +16,30 @@ class ApiClient {
   private async request<T>(
     path: string,
     options: RequestInit = {},
+    retry = true,
   ): Promise<T> {
+    const token = await getAccessToken()
+
     const response = await fetch(`${BASE_URL}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     })
+
+    if (response.status === 401 && retry) {
+      const newToken = await refreshAccessToken()
+      if (!newToken) {
+        window.location.href = '/sign-in'
+        throw new Error('Session expired')
+      }
+      return this.request<T>(path, {
+        ...options,
+        headers: { ...options.headers, Authorization: `Bearer ${newToken}` },
+      }, false)
+    }
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}))
