@@ -5,6 +5,7 @@ interface Props {
   onEdit: (entry: PortfolioEntry) => void
   onDelete: (id: string) => void
   onMarkSold: (entry: PortfolioEntry) => void
+  onPcFilterClick?: () => void
 }
 
 function fmt(val: number | null, opts?: { decimals?: number; prefix?: string }): string {
@@ -29,31 +30,38 @@ function calcProfit(entry: PortfolioEntry): { label: string; positive: boolean |
   return { label: '—', positive: null }
 }
 
-const SPORT_BADGE: Record<string, { bg: string; text: string; label: string }> = {
-  football:   { bg: '#faeeda', text: '#92400e', label: '🏈 FB' },
-  basketball: { bg: '#e6f1fb', text: '#1e40af', label: '🏀 BB' },
+const SPORT_BADGE: Record<string, { bg: string; text: string; border: string; label: string }> = {
+  football:   { bg: '#faeeda', text: '#633806', border: '#fac775', label: '🏈 FB' },
+  basketball: { bg: '#e6f1fb', text: '#0c447c', border: '#85b7eb', label: '🏀 BB' },
 }
 
 function gradePill(grade: string) {
   const g = grade.toUpperCase()
-  if (g.includes('PSA 10') || g.includes('PSA10')) return { bg: '#fef3c7', text: '#b45309' }
-  if (g.includes('PSA 9')  || g.includes('PSA9'))  return { bg: '#dbeafe', text: '#1d4ed8' }
-  return { bg: '#f1f5f9', text: '#475569' }
+  if (g.includes('PSA 10') || g.includes('PSA10')) return { bg: '#eaf3de', text: '#3b6d11', border: '#97c459' }
+  if (g.includes('PSA 9')  || g.includes('PSA9'))  return { bg: '#e6f1fb', text: '#0c447c', border: '#85b7eb' }
+  return { bg: '#faeeda', text: '#633806', border: '#fac775' }
 }
 
-export function EntryTable({ entries, onEdit, onDelete, onMarkSold }: Props) {
+export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterClick }: Props) {
   if (entries.length === 0) {
-    return <p style={{ color: '#94a3b8', fontStyle: 'italic', padding: '16px 0' }}>No entries yet. Add your first card.</p>
+    return <p style={{ color: '#888780', fontStyle: 'italic', padding: '16px 0' }}>No entries yet. Add your first card.</p>
   }
 
   return (
-    <div style={{ overflowX: 'auto', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+    <div className="tbl-wrap">
       <table className="data-table">
         <thead>
           <tr>
             <th>CARD</th>
             <th>SPORT</th>
             <th>GRADE</th>
+            <th
+              title="Personal Collection — click to filter"
+              style={{ cursor: onPcFilterClick ? 'pointer' : undefined, userSelect: 'none' }}
+              onClick={onPcFilterClick}
+            >
+              PC {onPcFilterClick ? '▾' : ''}
+            </th>
             <th>7D AVG</th>
             <th>30D AVG</th>
             <th>TARGET SELL</th>
@@ -71,40 +79,51 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold }: Props) {
             const sp = SPORT_BADGE[e.sport] ?? SPORT_BADGE['football']
             const gp = gradePill(e.grade)
             return (
-              <tr key={e.id} style={{ opacity: e.pc ? 0.65 : 1 }}>
-                <td style={{ fontWeight: 500, minWidth: 180 }}>
+              <tr key={e.id} style={{ opacity: e.pc ? 0.75 : 1 }}>
+                <td style={{ fontWeight: 500, minWidth: 180, color: '#1a1a18' }}>
                   {e.card_name}
-                  {e.pc && <span className="pill" style={{ marginLeft: 6, background: '#ede9fe', color: '#7c3aed', fontSize: 10 }}>PC</span>}
-                  {sold && <span className="pill" style={{ marginLeft: 6, background: '#dcfce7', color: '#15803d', fontSize: 10 }}>SOLD</span>}
+                  {sold && <span className="pill" style={{ marginLeft: 6, background: '#eaf3de', color: '#3b6d11', borderColor: '#97c459', fontSize: 10 }}>SOLD</span>}
                 </td>
                 <td>
-                  <span className="pill" style={{ background: sp.bg, color: sp.text, fontSize: 11 }}>
+                  <span className="pill" style={{ background: sp.bg, color: sp.text, borderColor: sp.border }}>
                     {sp.label}
                   </span>
                 </td>
                 <td>
-                  <span className="pill" style={{ background: gp.bg, color: gp.text }}>
+                  <span className="pill" style={{ background: gp.bg, color: gp.text, borderColor: gp.border }}>
                     {e.grade}
                   </span>
                 </td>
-                <td style={{ color: '#94a3b8' }}>—</td>
-                <td style={{ color: '#94a3b8' }}>—</td>
+                <td style={{ textAlign: 'center' }}>
+                  {e.pc && (
+                    <span
+                      className="pill"
+                      style={{ background: '#ede9fe', color: '#7c3aed', borderColor: '#c4b5fd', fontSize: 11, cursor: onPcFilterClick ? 'pointer' : undefined }}
+                      onClick={onPcFilterClick}
+                      title="Personal Collection"
+                    >
+                      🎴 PC
+                    </span>
+                  )}
+                </td>
+                <td style={{ color: '#888780' }}>—</td>
+                <td style={{ color: '#888780' }}>—</td>
                 <td>{fmt(e.target_sell, { decimals: 2 })}</td>
                 <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
-                <td style={{ color: '#64748b' }}>{e.sale_venue ?? '—'}</td>
+                <td style={{ color: '#52524e' }}>{e.sale_venue ?? '—'}</td>
                 <td style={{
                   fontWeight: 600,
-                  color: positive === true ? '#16a34a' : positive === false ? '#dc2626' : '#94a3b8',
+                  color: positive === true ? '#3b6d11' : positive === false ? '#a32d2d' : '#888780',
                 }}>
                   {pl}
                 </td>
-                <td style={{ color: '#94a3b8', fontSize: 12 }}>{e.purchase_date ?? '—'}</td>
+                <td style={{ color: '#888780', fontSize: 12 }}>{e.purchase_date ?? '—'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   {!sold && (
-                    <button onClick={() => onMarkSold(e)} className="btn-ghost" style={{ color: '#d97706' }}>Sold</button>
+                    <button onClick={() => onMarkSold(e)} className="btn-ghost" style={{ color: '#633806' }}>Sold</button>
                   )}
-                  <button onClick={() => onEdit(e)} className="btn-ghost" style={{ color: '#2563eb' }}>Edit</button>
-                  <button onClick={() => onDelete(e.id)} className="btn-ghost" style={{ color: '#dc2626' }}>Del</button>
+                  <button onClick={() => onEdit(e)} className="btn-ghost" style={{ color: '#0c447c' }}>Edit</button>
+                  <button onClick={() => onDelete(e.id)} className="btn-ghost" style={{ color: '#a32d2d' }}>Del</button>
                 </td>
               </tr>
             )

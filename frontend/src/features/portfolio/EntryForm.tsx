@@ -57,7 +57,7 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
   return (
     <div style={overlay}>
       <div style={modal}>
-        <h2 style={{ margin: '0 0 16px', fontSize: 16, color: '#1e293b' }}>
+        <h2 style={{ margin: '0 0 16px', fontSize: 16, color: '#1a1a18' }}>
           {initial ? 'Edit entry' : 'Add entry'}
         </h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -123,7 +123,7 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 12, color: '#475569' }}>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '.72rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.4px' }}>
       {label}
       {children}
     </label>
@@ -131,22 +131,23 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 const overlay: React.CSSProperties = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.25)',
   display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
 }
 const modal: React.CSSProperties = {
-  background: '#fff', borderRadius: 10, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-  width: 440, maxHeight: '90vh', overflowY: 'auto', border: '1px solid #e2e8f0',
+  background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+  width: 440, maxHeight: '90vh', overflowY: 'auto', border: '1px solid #e2e0d8',
 }
 const input: React.CSSProperties = {
-  background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6,
-  padding: '6px 10px', color: '#1e293b', fontSize: 13, width: '100%',
+  background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 6,
+  padding: '7px 10px', color: '#111827', fontSize: '.82rem', width: '100%',
+  fontFamily: 'inherit', outline: 'none',
 }
 const btnPrimary: React.CSSProperties = {
-  background: '#2563eb', color: '#fff', border: 'none',
-  borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+  background: '#E8593C', color: '#fff', border: 'none',
+  borderRadius: 6, padding: '8px 18px', cursor: 'pointer', fontSize: '.82rem', fontWeight: 600,
 }
 const btnSecondary: React.CSSProperties = {
-  background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0',
-  borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontSize: 13,
+  background: '#f9fafb', color: '#374151', border: '1px solid #e5e7eb',
+  borderRadius: 6, padding: '8px 18px', cursor: 'pointer', fontSize: '.82rem',
 }

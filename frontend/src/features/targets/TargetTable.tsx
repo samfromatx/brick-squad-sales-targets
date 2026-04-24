@@ -104,15 +104,15 @@ function sortTargets(targets: Target[], sort: SortState): Target[] {
 }
 
 function SortIndicator({ active, dir }: { active: boolean; dir: SortDir }) {
-  if (!active) return <span style={{ color: '#cbd5e1', marginLeft: 4 }}>↕</span>
-  return <span style={{ marginLeft: 4 }}>{dir === 'asc' ? '▲' : '▼'}</span>
+  if (!active) return <span style={{ color: '#d0cec6', marginLeft: 4, fontSize: 9 }}>↕</span>
+  return <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>{dir === 'asc' ? '▲' : '▼'}</span>
 }
 
 export function TargetTable({ targets, category }: Props) {
   const [sort, setSort] = useState<SortState>({ key: 'rank', dir: 'asc' })
 
   if (targets.length === 0) {
-    return <p style={{ color: '#94a3b8', fontStyle: 'italic', padding: '16px 0' }}>No targets match the current filters.</p>
+    return <p style={{ color: '#888780', fontStyle: 'italic', padding: '16px 0' }}>No targets match the current filters.</p>
   }
 
   const isRaw = category === 'raw'
@@ -140,44 +140,40 @@ export function TargetTable({ targets, category }: Props) {
   }
 
   return (
-    <div style={{ overflowX: 'auto', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+    <div className="tbl-wrap">
       <table className="data-table">
         <thead>
           <tr>
-            {th('rank', '#')}
+            {th('rank', '#', { width: 36 })}
             {th('card_name', 'CARD')}
-            <th>TYPE</th>
             {th('grade', 'GRADE')}
-            {th('target_price', 'BUY TARGET')}
-            {th('trend_pct', 'TREND')}
+            {th('target_price', 'TARGET')}
             {th('sell_at', 'SELL AT')}
+            {th('trend_pct', 'TREND')}
             {th('vol', 'VOL')}
             {isRaw && <>
-              {th('est_psa9', 'EST PSA 9')}
-              {th('est_psa10', 'EST PSA 10')}
-              {th('gem_rate', 'GEM RATE')}
+              {th('est_psa9', 'PSA 9')}
+              {th('est_psa10', 'PSA 10')}
+              {th('gem_rate', 'GEM %')}
               {th('roi', 'ROI')}
             </>}
-            {th('rationale', 'RATIONALE')}
             {th('signal', 'SIGNAL')}
+            {th('rationale', 'RATIONALE')}
           </tr>
         </thead>
         <tbody>
           {sorted.map(t => (
             <tr key={t.id}>
-              <td style={{ color: '#94a3b8', width: 36 }}>{t.rank}</td>
-              <td style={{ fontWeight: 500, maxWidth: 200 }}>
-                <span style={{ whiteSpace: 'nowrap' }}>
-                  {t.card_name}
+              <td style={{ color: '#888780' }}>{t.rank}</td>
+              <td style={{ fontWeight: 500, color: '#1a1a18' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, maxWidth: 200 }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+                    {t.card_name}
+                  </span>
                   {t.is_new && (
-                    <span className="pill pill-new" style={{ marginLeft: 6, fontSize: 10 }}>NEW</span>
+                    <span className="pill pill-new" style={{ fontSize: 10, flexShrink: 0 }}>NEW</span>
                   )}
-                </span>
-              </td>
-              <td>
-                <span className={t.category === 'graded' ? 'pill pill-graded' : 'pill pill-raw'}>
-                  {t.category === 'graded' ? 'Graded' : 'Raw'}
-                </span>
+                </div>
               </td>
               <td>
                 <span className={gradePillClass(t.grade)}>
@@ -185,16 +181,16 @@ export function TargetTable({ targets, category }: Props) {
                 </span>
               </td>
               <td style={{ fontWeight: 500 }}>{fmt(t.target_price)}</td>
+              <td>{fmt(t.sell_at)}</td>
               <td>
                 <span className={trendClass(t.trend_pct)}>
                   {t.trend_pct !== null ? `${t.trend_pct > 0 ? '+' : ''}${t.trend_pct}%` : '—'}
                 </span>
               </td>
-              <td>{fmt(t.sell_at)}</td>
               <td>
                 {t.vol
                   ? <span className={volClass(t.vol)}>{t.vol}</span>
-                  : <span style={{ color: '#94a3b8' }}>—</span>
+                  : <span style={{ color: '#888780' }}>—</span>
                 }
               </td>
               {isRaw && <>
@@ -208,11 +204,11 @@ export function TargetTable({ targets, category }: Props) {
                   }
                 </td>
               </>}
-              <td style={{ maxWidth: 220, color: '#475569', fontSize: 12 }}>
-                {t.rationale ?? '—'}
-              </td>
               <td>
                 <span className={signalClass(t.trend_pct)}>{signalLabel(t.trend_pct)}</span>
+              </td>
+              <td className="wrap">
+                {t.rationale ?? '—'}
               </td>
             </tr>
           ))}

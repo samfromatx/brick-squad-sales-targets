@@ -66,8 +66,8 @@ export function PortfolioPage() {
     await deleteEntry.mutateAsync(id)
   }
 
-  if (isLoading) return <div style={page}><p style={{ color: '#94a3b8' }}>Loading portfolio…</p></div>
-  if (isError)   return <div style={page}><p style={{ color: '#dc2626' }}>Failed to load portfolio.</p></div>
+  if (isLoading) return <div style={page}><p style={{ color: '#888780' }}>Loading portfolio…</p></div>
+  if (isError)   return <div style={page}><p style={{ color: '#a32d2d' }}>Failed to load portfolio.</p></div>
 
   const nonPc = allEntries.filter(e => !e.pc)
   const totalInvested = nonPc.reduce((s, e) => s + e.price_paid + e.grading_cost, 0)
@@ -85,15 +85,15 @@ export function PortfolioPage() {
   const sign = (v: number) => v >= 0 ? '+' : '-'
 
   const kpis = [
-    { label: 'Total Cards',    value: allEntries.length.toString(), sub: 'Across all entries', color: '#2563eb' },
-    { label: 'Total Invested', value: fmtMoney(totalInvested),      sub: 'Cost + grading fees', color: '#7c3aed' },
-    { label: 'Target Value',   value: fmtMoney(targetValue),        sub: 'At target sell price', color: '#d97706' },
+    { label: 'Total Cards',    value: allEntries.length.toString(), sub: 'Across all entries',   color: '#85b7eb' },
+    { label: 'Total Invested', value: fmtMoney(totalInvested),      sub: 'Cost + grading fees',  color: '#d0cec6' },
+    { label: 'Target Value',   value: fmtMoney(targetValue),        sub: 'At target sell price', color: '#f59e0b' },
     { label: 'Target Profit',  value: `${sign(targetProfit)}${fmtMoney(targetProfit)}`,
       sub: totalInvested > 0 ? `${((targetProfit / totalInvested) * 100).toFixed(1)}% ROI` : '',
-      color: targetProfit >= 0 ? '#16a34a' : '#dc2626', valueColor: targetProfit >= 0 ? '#16a34a' : '#dc2626' },
+      color: targetProfit >= 0 ? '#22c55e' : '#ef4444', valueColor: targetProfit >= 0 ? '#3b6d11' : '#a32d2d' },
     { label: 'Actual Profit',  value: `${sign(actualProfit)}${fmtMoney(actualProfit)}`,
       sub: `${sold.length} cards sold`,
-      color: actualProfit >= 0 ? '#16a34a' : '#dc2626', valueColor: actualProfit >= 0 ? '#16a34a' : '#dc2626' },
+      color: actualProfit >= 0 ? '#22c55e' : '#ef4444', valueColor: actualProfit >= 0 ? '#3b6d11' : '#a32d2d' },
   ]
 
   const FILTERS: { key: Filter; label: string }[] = [
@@ -116,17 +116,17 @@ export function PortfolioPage() {
       )}
 
       {/* Page header */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, color: '#1e293b', marginBottom: 4 }}>🏀🏈 Brick Squad — My Portfolio</h1>
-        <p style={{ fontSize: 13, color: '#64748b' }}>Track purchases, cost basis, and target returns · Data synced to the cloud</p>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: '1.45rem', letterSpacing: '-0.3px', color: '#1a1a18', marginBottom: 4 }}>🏀🏈 My Portfolio</h1>
+        <p style={{ fontSize: 13, color: '#888780' }}>Track purchases, cost basis, and target returns · Data synced to the cloud</p>
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
         {kpis.map(k => (
           <div key={k.label} className="kpi-card" style={{ borderTop: `3px solid ${k.color}`, flex: '1 1 140px' }}>
             <div className="kpi-label">{k.label}</div>
-            <div className="kpi-value" style={{ fontSize: 20, color: (k as {valueColor?: string}).valueColor ?? '#1e293b' }}>
+            <div className="kpi-value" style={{ color: (k as {valueColor?: string}).valueColor ?? '#1a1a18' }}>
               {k.value}
             </div>
             <div className="kpi-sub">{k.sub}</div>
@@ -134,15 +134,11 @@ export function PortfolioPage() {
         ))}
       </div>
 
-      {/* Add button */}
-      <div style={{ marginBottom: 20 }}>
-        <button onClick={openAdd} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* Add button + filters row */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button onClick={openAdd} className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           + Add Purchase
         </button>
-      </div>
-
-      {/* Filter pills */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         {FILTERS.map(f => (
           <button
             key={f.key}
@@ -155,15 +151,18 @@ export function PortfolioPage() {
       </div>
 
       {/* Table header row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <h2 style={{ fontSize: 14, color: '#1e293b' }}>
-          Purchase Log ({entries.length} {filter !== 'all' ? `of ${allEntries.length} ` : ''}entries)
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <h2 className="section-title" style={{ marginBottom: 0 }}>
+          Purchase Log
+          <span style={{ fontSize: '.78rem', fontWeight: 400, color: '#888780' }}>
+            {entries.length}{filter !== 'all' ? ` of ${allEntries.length}` : ''} entries
+          </span>
         </h2>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-secondary" style={{ fontSize: 12, padding: '5px 12px' }}>
+          <button className="btn-secondary" style={{ fontSize: '.78rem', padding: '5px 12px' }}>
             ↑ Import CSV
           </button>
-          <button className="btn-secondary" style={{ fontSize: 12, padding: '5px 12px' }}>
+          <button className="btn-secondary" style={{ fontSize: '.78rem', padding: '5px 12px' }}>
             ↓ Export CSV
           </button>
         </div>
@@ -174,10 +173,11 @@ export function PortfolioPage() {
         onEdit={openEdit}
         onDelete={handleDelete}
         onMarkSold={openMarkSold}
+        onPcFilterClick={() => setFilter(f => f === 'pc_only' ? 'all' : 'pc_only')}
       />
 
       {(createEntry.isError || updateEntry.isError || deleteEntry.isError) && (
-        <p style={{ color: '#dc2626', marginTop: 12, fontSize: 13 }}>
+        <p style={{ color: '#a32d2d', marginTop: 12, fontSize: 13 }}>
           {((createEntry.error ?? updateEntry.error ?? deleteEntry.error) as Error)?.message ?? 'An error occurred'}
         </p>
       )}
@@ -188,5 +188,5 @@ export function PortfolioPage() {
 const page: React.CSSProperties = {
   maxWidth: 1200,
   margin: '0 auto',
-  padding: '28px 20px',
+  padding: '24px 20px',
 }

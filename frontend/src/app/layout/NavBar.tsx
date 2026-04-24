@@ -42,7 +42,7 @@ export function NavBar() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div className="nav-top-user">
-            {email && <span style={{ fontSize: 12, color: '#64748b' }}>{email}</span>}
+            {email && <span style={{ fontSize: 12, color: '#888780' }}>{email}</span>}
             {email && (
               <button onClick={handleSignOut} style={signOutBtn}>Sign Out</button>
             )}
@@ -85,7 +85,7 @@ export function NavBar() {
               {label}
             </NavLink>
           ))}
-          <div style={{ borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+          <div style={{ borderTop: '1px solid #e2e0d8', margin: '4px 0' }} />
           <NavLink to="/portfolio" onClick={() => setMenuOpen(false)} style={() => mobileLink(false)}>
             My Portfolio
           </NavLink>
@@ -94,8 +94,8 @@ export function NavBar() {
           </NavLink>
           {email && (
             <>
-              <div style={{ borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
-              <span style={{ padding: '8px 20px', fontSize: 12, color: '#64748b', display: 'block' }}>{email}</span>
+              <div style={{ borderTop: '1px solid #e2e0d8', margin: '4px 0' }} />
+              <span style={{ padding: '8px 20px', fontSize: 12, color: '#888780', display: 'block' }}>{email}</span>
               <button
                 onClick={() => { setMenuOpen(false); void handleSignOut() }}
                 style={mobileSignOutBtn}
@@ -112,7 +112,7 @@ export function NavBar() {
 
 const headerWrap: React.CSSProperties = {
   background: '#fff',
-  borderBottom: '1px solid #e2e8f0',
+  borderBottom: '1px solid #e2e0d8',
   position: 'sticky',
   top: 0,
   zIndex: 100,
@@ -123,21 +123,21 @@ const topBar: React.CSSProperties = {
   justifyContent: 'space-between',
   alignItems: 'center',
   padding: '10px 20px',
-  borderBottom: '1px solid #f1f5f9',
+  borderBottom: '1px solid #f0efe9',
 }
 
 const logo: React.CSSProperties = {
   fontWeight: 700,
   fontSize: 15,
-  color: '#1e293b',
+  color: '#1a1a18',
 }
 
 const myPortfolioBtn: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 500,
-  color: '#475569',
-  background: '#f1f5f9',
-  border: '1px solid #e2e8f0',
+  color: '#374151',
+  background: '#f3f4f6',
+  border: '1px solid #e5e7eb',
   borderRadius: 6,
   padding: '4px 10px',
   textDecoration: 'none',
@@ -148,7 +148,7 @@ const importBtn: React.CSSProperties = {
   fontSize: 12,
   fontWeight: 600,
   color: '#fff',
-  background: '#2563eb',
+  background: '#E8593C',
   border: 'none',
   borderRadius: 6,
   padding: '4px 12px',
@@ -158,11 +158,12 @@ const importBtn: React.CSSProperties = {
 
 const signOutBtn: React.CSSProperties = {
   fontSize: 12,
-  color: '#64748b',
+  color: '#6b7280',
   background: 'none',
-  border: 'none',
+  border: '1px solid #e5e7eb',
+  borderRadius: 6,
+  padding: '3px 10px',
   cursor: 'pointer',
-  padding: '2px 6px',
 }
 
 const tabNav: React.CSSProperties = {
@@ -176,7 +177,7 @@ const hamburgerBtn: React.CSSProperties = {
   border: 'none',
   fontSize: 20,
   cursor: 'pointer',
-  color: '#475569',
+  color: '#6b7280',
   padding: '4px 6px',
   lineHeight: 1,
 }
@@ -185,7 +186,7 @@ const mobileMenuWrap: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   background: '#fff',
-  borderTop: '1px solid #e2e8f0',
+  borderTop: '1px solid #e2e0d8',
   padding: '8px 0',
   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
 }
@@ -196,9 +197,9 @@ function mobileLink(isActive: boolean): React.CSSProperties {
     padding: '10px 20px',
     fontSize: 14,
     fontWeight: isActive ? 600 : 400,
-    color: isActive ? '#2563eb' : '#1e293b',
+    color: isActive ? '#E8593C' : '#1a1a18',
     textDecoration: 'none',
-    background: isActive ? '#eff6ff' : 'transparent',
+    background: isActive ? '#fdf1ea' : 'transparent',
   }
 }
 
@@ -208,7 +209,7 @@ const mobileSignOutBtn: React.CSSProperties = {
   textAlign: 'left',
   padding: '10px 20px',
   fontSize: 14,
-  color: '#64748b',
+  color: '#6b7280',
   background: 'none',
   border: 'none',
   cursor: 'pointer',
@@ -221,9 +222,10 @@ function tabStyle(isActive: boolean): React.CSSProperties {
     padding: '10px 16px',
     fontSize: 13,
     fontWeight: isActive ? 600 : 400,
-    color: isActive ? '#2563eb' : '#64748b',
+    color: isActive ? '#E8593C' : '#6b7280',
     textDecoration: 'none',
-    borderBottom: isActive ? '2px solid #2563eb' : '2px solid transparent',
-    transition: 'color 0.1s, border-color 0.1s',
+    borderBottom: isActive ? '2px solid #E8593C' : '2px solid transparent',
+    transition: 'color 0.15s, border-color 0.15s',
+    marginBottom: -1,
   }
 }

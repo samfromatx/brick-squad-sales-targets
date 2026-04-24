@@ -13,8 +13,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 const SPORT_BADGE: Record<Sport, React.CSSProperties> = {
-  football:   { background: '#faeeda', color: '#92400e' },
-  basketball: { background: '#e6f1fb', color: '#1e40af' },
+  football:   { background: '#faeeda', color: '#633806', border: '1px solid #fac775' },
+  basketball: { background: '#e6f1fb', color: '#0c447c', border: '1px solid #85b7eb' },
 }
 const SPORT_EMOJI: Record<Sport, string> = { football: '🏈', basketball: '🏀' }
 
@@ -49,10 +49,10 @@ export function DashboardPage() {
   const [sport, setSport] = useState<Sport | ''>('')
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('')
 
-  if (isLoading) return <div className="page-content"><p style={{ color: '#94a3b8' }}>Loading targets…</p></div>
+  if (isLoading) return <div className="page-content"><p style={{ color: '#888780' }}>Loading targets…</p></div>
   if (isError) {
     const msg = error instanceof Error ? error.message : 'Unknown error'
-    return <div className="page-content"><p style={{ color: '#dc2626' }}>Failed to load: {msg}</p></div>
+    return <div className="page-content"><p style={{ color: '#a32d2d' }}>Failed to load: {msg}</p></div>
   }
 
   const targets = data?.data.targets ?? []
@@ -64,10 +64,10 @@ export function DashboardPage() {
   const monitor = visibleTargets.filter(t => t.trend_pct === null || t.trend_pct < 0).length
 
   const kpis = [
-    { label: 'Total',   value: visibleTargets.length, sub: 'targets',  color: '#2563eb' },
-    { label: 'Buy Now', value: buyNow,                sub: 'trending', color: '#16a34a' },
-    { label: 'Watch',   value: watch,                 sub: 'building', color: '#d97706' },
-    { label: 'Monitor', value: monitor,               sub: 'cooling',  color: '#94a3b8' },
+    { label: 'Total',   value: visibleTargets.length, sub: 'targets',  color: '#85b7eb' },
+    { label: 'Buy Now', value: buyNow,                sub: 'trending', color: '#22c55e' },
+    { label: 'Watch',   value: watch,                 sub: 'building', color: '#f59e0b' },
+    { label: 'Monitor', value: monitor,               sub: 'cooling',  color: '#d1d5db' },
   ]
 
   const groups = groupTargets(targets, sport, typeFilter)
@@ -75,7 +75,7 @@ export function DashboardPage() {
   return (
     <div className="page-content">
       {lastUpdated && (
-        <p style={{ fontSize: 12, color: '#94a3b8', marginBottom: 16 }}>
+        <p style={{ fontSize: 12, color: '#888780', marginBottom: 16 }}>
           Updated {lastUpdated}
         </p>
       )}
@@ -101,14 +101,15 @@ export function DashboardPage() {
 
       {/* Target sections */}
       {Object.entries(groups).length === 0 && (
-        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>No targets match the current filters.</p>
+        <p style={{ color: '#888780', fontStyle: 'italic' }}>No targets match the current filters.</p>
       )}
 
       {(['graded', 'raw'] as Category[]).map(cat => {
         const sportGroups = groups[cat]
         if (!sportGroups) return null
         return (
-          <section key={cat} style={{ marginBottom: 36 }}>
+          <section key={cat} style={{ marginBottom: 40 }}>
+            <h2 className="section-title">{CATEGORY_LABELS[cat]} Targets</h2>
             {(['football', 'basketball'] as Sport[]).map(sp => {
               const rows = sportGroups[sp]
               if (!rows?.length) return null
@@ -116,12 +117,10 @@ export function DashboardPage() {
               return (
                 <div key={sp} style={{ marginBottom: 28 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <span className="pill" style={{ ...SPORT_BADGE[sp], fontSize: 12, padding: '4px 12px' }}>
-                      {SPORT_EMOJI[sp]} {CATEGORY_LABELS[cat] === 'Graded'
-                        ? `${sp === 'football' ? 'Football' : 'Basketball'} Targets`
-                        : `${sp === 'football' ? 'Football' : 'Basketball'} ${CATEGORY_LABELS[cat]}`}
+                    <span className="pill" style={{ ...SPORT_BADGE[sp], fontSize: 11, padding: '3px 12px' }}>
+                      {SPORT_EMOJI[sp]} {sp === 'football' ? 'Football' : 'Basketball'}
                     </span>
-                    {def && <span style={{ fontSize: 12, color: '#94a3b8' }}>{def}</span>}
+                    {def && <span style={{ fontSize: 12, color: '#888780' }}>{def}</span>}
                   </div>
                   <TargetTable targets={rows} category={cat} />
                 </div>

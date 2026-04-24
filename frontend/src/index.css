@@ -3,11 +3,11 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #1e293b;
-  background: #f1f5f9;
+  color: var(--ink);
+  background: var(--bg-2);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -17,49 +17,38 @@ body {
   flex-direction: column;
 }
 
-h1, h2, h3 { margin: 0; font-weight: 600; color: #1e293b; }
+h1, h2, h3 { margin: 0; font-weight: 600; color: var(--ink); }
 p { margin: 0; }
 button { font-family: inherit; }
 
 /* ── Design tokens ── */
 :root {
-  /* Sport badges */
-  --sport-football-bg: #faeeda;
-  --sport-football-text: #92400e;
-  --sport-basketball-bg: #e6f1fb;
-  --sport-basketball-text: #1e40af;
+  /* Brand */
+  --brand:      #E8593C;
+  --brand-dark: #c04020;
+  --navy:       #1a3d5c;
 
-  /* Grade pills */
-  --grade-psa9-bg: #dbeafe;
-  --grade-psa9-text: #1d4ed8;
-  --grade-psa10-bg: #fef3c7;
-  --grade-psa10-text: #b45309;
-  --grade-raw-bg: #f1f5f9;
-  --grade-raw-text: #475569;
+  /* Ink (text) */
+  --ink:   #1a1a18;
+  --ink-2: #52524e;
+  --ink-3: #888780;
 
-  /* Signal pills */
-  --signal-buy-bg: #dcfce7;
-  --signal-buy-text: #15803d;
-  --signal-watch-bg: #fef3c7;
-  --signal-watch-text: #92400e;
-  --signal-monitor-bg: #f1f5f9;
-  --signal-monitor-text: #475569;
+  /* Backgrounds */
+  --bg:   #ffffff;
+  --bg-2: #f7f6f2;
+  --bg-3: #f0efe9;
 
-  /* KPI accent colors */
-  --kpi-blue: #2563eb;
-  --kpi-green: #16a34a;
-  --kpi-amber: #d97706;
-  --kpi-purple: #7c3aed;
-  --kpi-red: #dc2626;
+  /* Borders */
+  --border:   #e2e0d8;
+  --border-2: #d0cec6;
 
-  /* Surfaces */
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --text: #1e293b;
-  --text-2: #475569;
-  --text-3: #94a3b8;
+  /* Semantic color sets */
+  --amber-bg:  #faeeda; --amber-text:  #633806; --amber-border:  #fac775;
+  --blue-bg:   #e6f1fb; --blue-text:   #0c447c; --blue-border:   #85b7eb;
+  --green-bg:  #eaf3de; --green-text:  #3b6d11; --green-border:  #97c459;
+  --teal-bg:   #e1f5ee; --teal-text:   #085041; --teal-border:   #5dcaa5;
+  --red-bg:    #fcebeb; --red-text:    #a32d2d; --red-border:    #f09595;
+  --orange-bg: #fdf1ea; --orange-text: #4a1b0c; --orange-border: #d85a30;
 }
 
 /* ── Layout ── */
@@ -72,37 +61,58 @@ button { font-family: inherit; }
 
 /* ── Cards / surfaces ── */
 .card {
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
 }
 
+.tbl-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.05);
+}
+
 /* ── KPI stat cards ── */
 .kpi-card {
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 20px;
+  border-radius: 10px;
+  padding: 12px 14px;
   min-width: 100px;
 }
 .kpi-card .kpi-label {
-  font-size: 11px;
+  font-size: .7rem;
   font-weight: 600;
-  color: var(--text-3);
+  color: var(--ink-3);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: .5px;
   margin-bottom: 4px;
 }
 .kpi-card .kpi-value {
-  font-size: 24px;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.1;
 }
 .kpi-card .kpi-sub {
-  font-size: 11px;
-  color: var(--text-3);
+  font-size: .7rem;
+  color: var(--ink-3);
   margin-top: 2px;
+}
+
+/* ── Section title ── */
+.section-title {
+  font-size: .95rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  padding-left: 10px;
+  border-left: 3px solid var(--brand);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ── Pill badges ── */
@@ -110,117 +120,155 @@ button { font-family: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 99px;
+  border: 1px solid transparent;
   white-space: nowrap;
   line-height: 1.6;
 }
-.pill-new       { background: #dbeafe; color: #1d4ed8; }
-.pill-buy       { background: var(--signal-buy-bg);     color: var(--signal-buy-text); }
-.pill-watch     { background: var(--signal-watch-bg);   color: var(--signal-watch-text); }
-.pill-monitor   { background: var(--signal-monitor-bg); color: var(--signal-monitor-text); }
-.pill-graded    { background: #dbeafe; color: #1d4ed8; }
-.pill-raw       { background: #f1f5f9; color: #475569; }
-.pill-psa9      { background: var(--grade-psa9-bg);  color: var(--grade-psa9-text); }
-.pill-psa10     { background: var(--grade-psa10-bg); color: var(--grade-psa10-text); }
-.pill-football  { background: var(--sport-football-bg);   color: var(--sport-football-text); }
-.pill-basketball{ background: var(--sport-basketball-bg); color: var(--sport-basketball-text); }
+
+/* Grade */
+.pill-psa10  { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+.pill-psa9   { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+.pill-raw    { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-border); }
+.pill-graded { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+
+/* Signal */
+.pill-buy     { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+.pill-watch   { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+.pill-monitor { background: var(--bg-2);     color: var(--ink-3);      border-color: var(--border); }
+
+/* Sport */
+.pill-football   { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+.pill-basketball { background: var(--blue-bg);  color: var(--blue-text);  border-color: var(--blue-border); }
+
+/* New */
+.pill-new { background: var(--blue-bg); color: var(--blue-text); border-color: var(--blue-border); }
+
+/* ── Chips ── */
+.chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 99px;
+  border: 1px solid;
+}
+.chip-buy         { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+.chip-watch       { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-border); }
+.chip-graded      { background: var(--blue-bg);   color: var(--blue-text);   border-color: var(--blue-border); }
+.chip-raw         { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-border); }
+.chip-sell-now    { background: var(--green-bg);  color: var(--green-text);  border-color: var(--green-border); }
+.chip-strong-sell { background: var(--teal-bg);   color: var(--teal-text);   border-color: var(--teal-border); }
+.chip-consider    { background: var(--amber-bg);  color: var(--amber-text);  border-color: var(--amber-border); }
+.chip-hold        { background: var(--bg-2);      color: var(--ink-3);       border-color: var(--border); }
 
 /* ── Filter pill buttons ── */
 .pill-btn {
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  color: var(--text-2);
-  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: #374151;
+  border-radius: 20px;
   padding: 4px 14px;
-  font-size: 12px;
+  font-size: .75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  transition: background .15s, color .15s, border-color .15s;
   white-space: nowrap;
 }
-.pill-btn:hover { border-color: #94a3b8; background: #f8fafc; }
-.pill-btn.active { background: #1e40af; border-color: #1e40af; color: #fff; }
-/* Sport filter buttons — always badge-colored, stronger border when selected */
-.pill-btn.sport-football   { background: #faeeda; border-color: #f5d0a9; color: #92400e; }
-.pill-btn.sport-basketball { background: #e6f1fb; border-color: #bfdbfe; color: #1e40af; }
-.pill-btn.sport-football.selected   { border-color: #92400e; border-width: 2px; }
-.pill-btn.sport-basketball.selected { border-color: #1e40af; border-width: 2px; }
+.pill-btn:hover { border-color: var(--border-2); background: var(--bg-3); }
+.pill-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; font-weight: 600; }
+
+/* Sport filter buttons */
+.pill-btn.sport-football   { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); }
+.pill-btn.sport-basketball { background: var(--blue-bg);  border-color: var(--blue-border);  color: var(--blue-text); }
+.pill-btn.sport-football.selected   { border-color: var(--amber-text); border-width: 2px; }
+.pill-btn.sport-basketball.selected { border-color: var(--blue-text);  border-width: 2px; }
 
 /* ── Tables ── */
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
-  background: var(--surface);
+  font-size: .82rem;
+  background: var(--bg);
 }
-.data-table thead tr {
-  background: var(--surface-2);
-  border-bottom: 2px solid var(--border);
-}
+.data-table thead tr { background: var(--bg-2); }
 .data-table thead th {
-  padding: 9px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-3);
+  padding: 10px 12px;
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--ink-3);
   text-align: left;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: .4px;
+  cursor: pointer;
+  user-select: none;
 }
-.data-table tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
-}
-.data-table tbody tr:hover { background: var(--surface-2); }
+.data-table thead th:hover { background: var(--bg-3); }
+.data-table tbody tr { border-top: 1px solid var(--border); transition: background .1s; }
+.data-table tbody tr:nth-child(even) { background: var(--bg-2); }
+.data-table tbody tr:hover { background: var(--bg-3); }
 .data-table tbody td {
-  padding: 8px 12px;
-  color: var(--text);
+  padding: 11px 12px;
+  color: var(--ink-2);
   white-space: nowrap;
+  vertical-align: middle;
 }
-.data-table tbody td.wrap { white-space: normal; max-width: 260px; font-size: 12px; color: var(--text-2); }
+.data-table tbody td.wrap {
+  white-space: normal;
+  max-width: 300px;
+  min-width: 140px;
+  font-size: .78rem;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
 
 /* ── Trend colors ── */
 .trend-up   { color: #16a34a; font-weight: 600; }
 .trend-down { color: #dc2626; font-weight: 600; }
-.trend-flat { color: var(--text-3); }
+.trend-flat { color: var(--ink-3); }
 
 /* ── Buttons ── */
 .btn-primary {
-  background: #2563eb;
+  background: var(--brand);
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 7px 16px;
-  font-size: 13px;
+  padding: 8px 18px;
+  font-size: .82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background .15s;
 }
-.btn-primary:hover { background: #1d4ed8; }
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
 .btn-secondary {
-  background: var(--surface);
-  color: var(--text-2);
-  border: 1px solid var(--border-strong);
+  background: #f9fafb;
+  color: #374151;
+  border: 1px solid #e5e7eb;
   border-radius: 6px;
-  padding: 7px 16px;
-  font-size: 13px;
+  padding: 8px 18px;
+  font-size: .82rem;
   font-weight: 500;
   cursor: pointer;
+  transition: background .15s;
 }
-.btn-secondary:hover { background: var(--surface-2); }
+.btn-secondary:hover { background: #f3f4f6; }
+
 .btn-ghost {
   background: transparent;
-  color: var(--text-2);
+  color: var(--ink-2);
   border: none;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: .78rem;
   cursor: pointer;
   border-radius: 4px;
 }
-.btn-ghost:hover { background: var(--surface-2); }
+.btn-ghost:hover { background: var(--bg-3); }
 
 /* ── Responsive nav ── */
 .nav-hamburger { display: none; align-items: center; }
@@ -235,6 +283,8 @@ button { font-family: inherit; }
 
   .page-content { padding: 16px 12px; }
 
+  .data-table { font-size: .76rem; min-width: 480px; }
   .data-table tbody td,
-  .data-table thead th { padding: 7px 8px; }
+  .data-table thead th { padding: 8px 8px; }
+  .data-table thead th { font-size: .66rem; }
 }
