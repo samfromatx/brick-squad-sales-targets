@@ -149,7 +149,6 @@ export function ReadyToSellTable() {
 
   const buyCount     = enriched.filter(r => r.signal === 'Buy').length
   const watchCount   = enriched.filter(r => r.signal === 'Watch').length
-  const totalCost    = unsold.reduce((s, e) => s + e.price_paid + (e.grading_cost ?? 0), 0)
   const avgUpside    = (() => {
     const withTarget = enriched.filter(r => r.entry.target_sell !== null)
     if (!withTarget.length) return null

@@ -9,13 +9,6 @@ function fmt(val: number | null, prefix = '$'): string {
   return `${prefix}${val.toLocaleString()}`
 }
 
-function scoreColor(score: number | null): string {
-  if (score === null) return '#94a3b8'
-  if (score >= 4) return '#16a34a'
-  if (score >= 3) return '#d97706'
-  return '#dc2626'
-}
-
 function scorePillStyle(score: number | null): React.CSSProperties {
   if (score === null) return { color: '#94a3b8' }
   if (score >= 4) return { background: '#dcfce7', color: '#15803d', borderRadius: 999, padding: '2px 10px', fontWeight: 700 }
