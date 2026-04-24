@@ -44,6 +44,7 @@ function getSortValue(e: PortfolioEntry, key: string): string | number {
     case 'card_name':    return e.card_name.toLowerCase()
     case 'sport':        return e.sport
     case 'grade':        return e.grade.toLowerCase()
+    case 'price_paid':   return e.price_paid
     case 'target_sell':  return e.target_sell ?? -Infinity
     case 'actual_sale':  return isSold(e) ? (e.actual_sale ?? 0) : -Infinity
     case 'profit': {
@@ -124,6 +125,7 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterCl
             {th('card_name', 'CARD')}
             {th('sport', 'SPORT')}
             {th('grade', 'GRADE')}
+            {th('price_paid', 'PAID')}
             <th
               title="Personal Collection — click to filter"
               style={{ cursor: onPcFilterClick ? 'pointer' : undefined, userSelect: 'none' }}
@@ -138,6 +140,7 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterCl
             <th>SALE VENUE</th>
             {th('profit', 'PROFIT')}
             {th('purchase_date', 'DATE')}
+            <th>NOTES</th>
             <th></th>
           </tr>
         </thead>
@@ -163,6 +166,7 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterCl
                     {e.grade}
                   </span>
                 </td>
+                <td style={{ fontWeight: 500 }}>{fmt(e.price_paid, { decimals: 2 })}</td>
                 <td style={{ textAlign: 'center' }}>
                   {e.pc && (
                     <span
@@ -187,6 +191,7 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterCl
                   {pl}
                 </td>
                 <td style={{ color: '#888780', fontSize: 12 }}>{e.purchase_date ?? '—'}</td>
+                <td style={{ color: '#52524e', fontSize: 12, maxWidth: 200, whiteSpace: 'normal' }}>{e.notes ?? '—'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   {!sold && (
                     <button onClick={() => onMarkSold(e)} className="btn-ghost" style={{ color: '#633806' }}>Sold</button>
