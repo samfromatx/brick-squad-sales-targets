@@ -25,6 +25,7 @@ from app.services.trends import (
     _market_confidence,
     _net_prices,
     _recency_check,
+    _short_term_price_anchor,
     _trend_signal,
     _volatility_check,
     _volume_signal,
@@ -331,6 +332,91 @@ def test_gem_rate_lookup_sport_fallback_basketball():
         rate, source = _gem_rate_lookup("Unknown Card", "basketball", warnings)
     assert rate == 0.55
     assert source == "sport_fallback"
+
+
+# ── Short-term price anchor tests ─────────────────────────────────────────
+
+def _make_grouped_with_short_term(avg_7d: float, avg_14d: float, avg_30d: float,
+                                   sales_7d: int = 3, sales_14d: int = 3) -> dict:
+    rows = [
+        make_row(window_days=7,  grade="PSA 9", avg=avg_7d,  num_sales=sales_7d),
+        make_row(window_days=14, grade="PSA 9", avg=avg_14d, num_sales=sales_14d),
+        make_row(window_days=30, grade="PSA 9", avg=avg_30d, num_sales=5),
+    ]
+    return _group_by_window_grade(rows)
+
+
+def test_short_term_downtrend_uses_7d_14d_avg():
+    grouped = _make_grouped_with_short_term(avg_7d=160.0, avg_14d=165.0, avg_30d=175.0)
+    warnings: list[AnalysisWarning] = []
+    ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", 175.0, warnings)
+    assert abs(ceiling - 162.5) < 0.01
+    assert basis == "7d/14d avg (continuing decline)"
+
+
+def test_short_term_uptrend_uses_7d_14d_avg():
+    grouped = _make_grouped_with_short_term(avg_7d=190.0, avg_14d=185.0, avg_30d=175.0)
+    warnings: list[AnalysisWarning] = []
+    ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", 175.0, warnings)
+    assert abs(ceiling - 187.5) < 0.01
+    assert basis == "7d/14d avg (momentum)"
+
+
+def test_short_term_conflicting_signals_falls_back_to_30d():
+    grouped = _make_grouped_with_short_term(avg_7d=160.0, avg_14d=185.0, avg_30d=175.0)
+    warnings: list[AnalysisWarning] = []
+    ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", 175.0, warnings)
+    assert ceiling == 175.0
+    assert basis == "30d avg"
+
+
+def test_short_term_below_min_sales_falls_back_to_30d():
+    grouped = _make_grouped_with_short_term(avg_7d=160.0, avg_14d=165.0, avg_30d=175.0, sales_7d=1)
+    warnings: list[AnalysisWarning] = []
+    ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", 175.0, warnings)
+    assert ceiling == 175.0
+    assert basis == "30d avg"
+
+
+def test_short_term_divergence_warning_fires():
+    # avg_7d=$140, avg_14d=$145, avg_30d=$175 → anchor=$142.5, divergence≈18.6%
+    grouped = _make_grouped_with_short_term(avg_7d=140.0, avg_14d=145.0, avg_30d=175.0)
+    warnings: list[AnalysisWarning] = []
+    _short_term_price_anchor(grouped, "PSA 9", 175.0, warnings)
+    assert any(w.code == "SHORT_TERM_DIVERGENCE" for w in warnings)
+    assert any(w.severity == "medium" for w in warnings if w.code == "SHORT_TERM_DIVERGENCE")
+
+
+def test_short_term_divergence_warning_suppressed_when_small():
+    # avg_7d=$168, avg_14d=$170, avg_30d=$175 → divergence≈4% → no warning
+    grouped = _make_grouped_with_short_term(avg_7d=168.0, avg_14d=170.0, avg_30d=175.0)
+    warnings: list[AnalysisWarning] = []
+    _short_term_price_anchor(grouped, "PSA 9", 175.0, warnings)
+    assert not any(w.code == "SHORT_TERM_DIVERGENCE" for w in warnings)
+
+
+def test_short_term_anchor_cap_holds_at_90d_discount():
+    # Short-term anchor ($200) > anchor*0.90 ($180) → min() clamps to $180
+    from app.models.api import AnchorObject, TrendHealth
+    from app.services.trends import _buy_target
+    psa9 = AnchorObject(grade="PSA 9", anchor_value=200.0, anchor_window=90, anchor_sales_count=6, anchor_source="90d_avg")
+    psa10 = AnchorObject(grade="PSA 10", anchor_value=450.0, anchor_window=90, anchor_sales_count=6, anchor_source="90d_avg")
+    trend = TrendHealth(direction="Stable", ratio=1.0, source_grade="PSA 9", source_window="30d_vs_90d")
+    grouped = _make_grouped_with_short_term(avg_7d=210.0, avg_14d=205.0, avg_30d=190.0)
+    # Add 30d PSA 9 row so _buy_target picks it up
+    grouped[30]["PSA 9"] = make_row(window_days=30, grade="PSA 9", avg=190.0, num_sales=5)
+    warnings: list[AnalysisWarning] = []
+    target = _buy_target("Buy PSA 9", grouped, None, psa9, psa10, None, trend, warnings)
+    assert target is not None
+    assert target.price <= 200.0 * 0.90 + 0.01  # never exceeds anchor × 0.90
+
+
+def test_short_term_zero_avg_30d_no_division_error():
+    grouped = _make_grouped_with_short_term(avg_7d=5.0, avg_14d=4.0, avg_30d=0.0)
+    warnings: list[AnalysisWarning] = []
+    # Should not raise ZeroDivisionError; 7d/14d < 30d (0) is false, falls back
+    ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", 0.0, warnings)
+    assert not any(w.code == "SHORT_TERM_DIVERGENCE" for w in warnings)
 
 
 # ── Full integration (mocked DB) ──────────────────────────────────────────

@@ -34,6 +34,8 @@ STALE_DAYS = 30
 VOLUME_ACCEL_THRESHOLD = 0.20
 VOLUME_DECAY_THRESHOLD = -0.20
 RAW_MIN_VIABLE = 15.00
+SHORT_TERM_DIVERGENCE_WARN = 0.15
+MIN_SHORT_TERM_SALES = 2
 
 _GRADES = ("Raw", "PSA 9", "PSA 10")
 
@@ -500,6 +502,52 @@ def _final_verdict(
     return "Pass"
 
 
+# ── Short-term price anchor ────────────────────────────────────────────────
+
+def _short_term_price_anchor(
+    grouped: dict[int, dict[str, CardMarketRow]],
+    grade: str,
+    avg_30d: float,
+    warnings: list[AnalysisWarning],
+) -> tuple[float, str]:
+    row_7d  = grouped.get(7,  {}).get(grade)
+    row_14d = grouped.get(14, {}).get(grade)
+
+    if not row_7d or row_7d.num_sales < MIN_SHORT_TERM_SALES:
+        return avg_30d, "30d avg"
+    if not row_14d or row_14d.num_sales < MIN_SHORT_TERM_SALES:
+        return avg_30d, "30d avg"
+
+    avg_7d  = row_7d.avg
+    avg_14d = row_14d.avg
+
+    downtrend = avg_7d < avg_30d and avg_14d < avg_30d
+    uptrend   = avg_7d > avg_30d and avg_14d > avg_30d
+
+    if not downtrend and not uptrend:
+        return avg_30d, "30d avg"
+
+    short_term_anchor = (avg_7d + avg_14d) / 2
+
+    if avg_30d > 0:
+        divergence = abs(short_term_anchor - avg_30d) / avg_30d
+        if divergence > SHORT_TERM_DIVERGENCE_WARN:
+            direction_label = "declining" if downtrend else "rising"
+            warnings.append(AnalysisWarning(
+                code="SHORT_TERM_DIVERGENCE",
+                severity="medium",
+                message=(
+                    f"7d/14d avg (${short_term_anchor:.2f}) diverges "
+                    f"{divergence:.0%} from 30d avg (${avg_30d:.2f}) — "
+                    f"market is actively {direction_label}."
+                ),
+            ))
+
+    if downtrend:
+        return short_term_anchor, "7d/14d avg (continuing decline)"
+    return short_term_anchor, "7d/14d avg (momentum)"
+
+
 # ── Buy Target ─────────────────────────────────────────────────────────────
 
 def _buy_target(
@@ -544,9 +592,11 @@ def _buy_target(
         avg_30 = float(row_30.avg) if row_30 and row_30.avg else None
         anchor_disc = psa9_anchor.anchor_value * 0.90
         if avg_30:
-            price = min(avg_30, anchor_disc)
+            price_ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", avg_30, warnings)
+            price = min(price_ceiling, anchor_disc)
         else:
             price = anchor_disc
+            basis = "anchor × 0.90"
         thin = psa9_anchor.anchor_sales_count < MIN_SALES
         if thin:
             warnings.append(AnalysisWarning(
@@ -554,7 +604,7 @@ def _buy_target(
                 severity="low",
                 message="Buy target sourced from window with fewer than 3 sales.",
             ))
-        return BuyTarget(grade="PSA 9", price=round(price, 2), basis="min(30d avg, anchor × 0.90)", warning="THIN_BUY_TARGET" if thin else None)
+        return BuyTarget(grade="PSA 9", price=round(price, 2), basis=basis, warning="THIN_BUY_TARGET" if thin else None)
 
     if verdict == "Buy PSA 10" and psa10_anchor:
         price = psa10_anchor.anchor_value * 0.85
