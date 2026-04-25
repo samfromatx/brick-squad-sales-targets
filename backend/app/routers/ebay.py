@@ -4,7 +4,7 @@ from app.core.auth import get_current_user_id
 from app.core.cache import make_etag
 from app.core.logging import get_request_id
 from app.db.queries.ebay import fetch_ebay_searches
-from app.models.domain import EbaySearch, Category, Sport
+from app.models.domain import Category, EbaySearch, Sport
 
 router = APIRouter(prefix="/ebay-searches", tags=["ebay"])
 

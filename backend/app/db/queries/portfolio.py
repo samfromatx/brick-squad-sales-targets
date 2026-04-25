@@ -1,6 +1,5 @@
 from app.db.connection import db_cursor
 
-
 # --- portfolio_targets (budget allocations) ---
 
 def fetch_portfolio_allocations(user_id: str) -> list[dict]:

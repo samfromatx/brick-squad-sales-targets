@@ -1,6 +1,5 @@
 from datetime import UTC, datetime
 
-from app.models.domain import EbaySearch, PortfolioEntry
 from app.models.export import ExportData, ExportSnapshot, ExportUser
 from app.services.portfolio import get_portfolio_allocations, get_portfolio_entries
 from app.services.targets import get_targets

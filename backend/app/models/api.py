@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from typing import Literal
+
+from pydantic import BaseModel
 
 from app.models.domain import (
     Category,
@@ -9,7 +10,6 @@ from app.models.domain import (
     Sport,
     Target,
 )
-
 
 # --- Request bodies ---
 

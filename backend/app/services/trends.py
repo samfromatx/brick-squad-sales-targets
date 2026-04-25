@@ -70,9 +70,9 @@ def _build_window_prices(
         psa9_r = grades.get("PSA 9")
         p10_r  = grades.get("PSA 10")
 
-        raw_avg  = raw_r.avg  if raw_r  and raw_r.avg  > 0 else None
-        psa9_avg = psa9_r.avg if psa9_r and psa9_r.avg > 0 else None
-        psa10_avg = p10_r.avg if p10_r  and p10_r.avg  > 0 else None
+        raw_avg  = raw_r.avg  if raw_r  and raw_r.avg  is not None and raw_r.avg  > 0 else None
+        psa9_avg = psa9_r.avg if psa9_r and psa9_r.avg is not None and psa9_r.avg > 0 else None
+        psa10_avg = p10_r.avg if p10_r  and p10_r.avg  is not None and p10_r.avg  > 0 else None
 
         raw_psa9  = round(raw_avg / psa9_avg, 2)   if raw_avg  and psa9_avg else None
         psa10_psa9 = round(psa10_avg / psa9_avg, 2) if psa10_avg and psa9_avg else None
@@ -101,7 +101,7 @@ def _build_anchor(
                 grade=grade,
                 anchor_value=float(row.avg),
                 anchor_window=window,
-                anchor_sales_count=int(row.num_sales),
+                anchor_sales_count=row.num_sales or 0,
                 anchor_source=f"{window}d_avg",
             )
     return None
@@ -513,13 +513,16 @@ def _short_term_price_anchor(
     row_7d  = grouped.get(7,  {}).get(grade)
     row_14d = grouped.get(14, {}).get(grade)
 
-    if not row_7d or row_7d.num_sales < MIN_SHORT_TERM_SALES:
+    if not row_7d or row_7d.num_sales is None or row_7d.num_sales < MIN_SHORT_TERM_SALES:
         return avg_30d, "30d avg"
-    if not row_14d or row_14d.num_sales < MIN_SHORT_TERM_SALES:
+    if not row_14d or row_14d.num_sales is None or row_14d.num_sales < MIN_SHORT_TERM_SALES:
         return avg_30d, "30d avg"
 
     avg_7d  = row_7d.avg
     avg_14d = row_14d.avg
+
+    if avg_7d is None or avg_14d is None:
+        return avg_30d, "30d avg"
 
     downtrend = avg_7d < avg_30d and avg_14d < avg_30d
     uptrend   = avg_7d > avg_30d and avg_14d > avg_30d
