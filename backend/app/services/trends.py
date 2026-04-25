@@ -763,8 +763,6 @@ def run_trend_analysis(
 
     # Steps 10–12: EV model gating
     ev: Optional[EvModel] = None
-    gem_rate = 0.0
-    gem_rate_source = "sport_fallback"
 
     raw_blocked = (
         raw_anchor is None
@@ -786,10 +784,10 @@ def run_trend_analysis(
             message="Strong downtrend detected. Grading path blocked.",
         ))
 
-    if not raw_blocked and not strong_downtrend:
-        # Step 11: gem rate
-        gem_rate, gem_rate_source = _gem_rate_lookup(card, sport, warnings)
+    # Step 11: gem rate — always looked up; needed for verdict even when EV is blocked
+    gem_rate, gem_rate_source = _gem_rate_lookup(card, sport, warnings)
 
+    if not raw_blocked and not strong_downtrend:
         # Step 12: run EV model if all anchors present and ratio viable
         if (
             psa9_anchor is not None
