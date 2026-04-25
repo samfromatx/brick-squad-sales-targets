@@ -411,6 +411,59 @@ def test_short_term_anchor_cap_holds_at_90d_discount():
     assert target.price <= 200.0 * 0.90 + 0.01  # never exceeds anchor × 0.90
 
 
+def test_short_term_psa10_downtrend_applied():
+    """PSA 10 buy target uses short-term anchor when 7d/14d are below 30d."""
+    from app.models.api import AnchorObject, TrendHealth
+    from app.services.trends import _buy_target
+
+    psa10 = AnchorObject(grade="PSA 10", anchor_value=260.0, anchor_window=90, anchor_sales_count=6, anchor_source="90d_avg")
+    psa9  = AnchorObject(grade="PSA 9",  anchor_value=50.0,  anchor_window=90, anchor_sales_count=6, anchor_source="90d_avg")
+    trend = TrendHealth(direction="Stable", ratio=1.0, source_grade="PSA 10", source_window="30d_vs_90d")
+
+    grouped = {
+        7:  {"PSA 10": make_row(window_days=7,  grade="PSA 10", avg=168.0, num_sales=5)},
+        14: {"PSA 10": make_row(window_days=14, grade="PSA 10", avg=174.0, num_sales=8)},
+        30: {"PSA 10": make_row(window_days=30, grade="PSA 10", avg=175.0, num_sales=15)},
+    }
+    warnings: list[AnalysisWarning] = []
+    target = _buy_target("Buy PSA 10", grouped, None, psa9, psa10, None, trend, warnings)
+    assert target is not None
+    assert target.grade == "PSA 10"
+    # short-term anchor = (168+174)/2 = 171 < anchor*0.85 = 221 → price = 171
+    assert abs(target.price - 171.0) < 0.01
+    assert "continuing decline" in target.basis
+
+
+def test_short_term_raw_downtrend_applied():
+    """Raw buy target uses short-term anchor when 7d/14d raw are below 30d."""
+    from app.models.api import AnchorObject, EvModel, TrendHealth
+    from app.services.trends import _buy_target
+
+    raw   = AnchorObject(grade="Raw",   anchor_value=20.0, anchor_window=90, anchor_sales_count=10, anchor_source="90d_avg")
+    psa9  = AnchorObject(grade="PSA 9", anchor_value=80.0, anchor_window=90, anchor_sales_count=6,  anchor_source="90d_avg")
+    psa10 = AnchorObject(grade="PSA 10",anchor_value=180.0,anchor_window=90, anchor_sales_count=6,  anchor_source="90d_avg")
+    trend = TrendHealth(direction="Stable", ratio=1.0, source_grade="Raw", source_window="30d_vs_90d")
+    ev = EvModel(
+        raw_anchor=20.0, grading_cost=38.0, total_cost=58.0,
+        psa9_anchor=80.0, psa10_anchor=180.0, gem_rate=0.38,
+        gem_rate_source="sport_fallback",
+        estimated_outcomes={"psa10": 0.38, "psa9": 0.40, "psa8_or_lower": 0.22},
+        expected_resale_after_fees=120.0, expected_profit=42.0, profit_floor=20.0,
+    )
+    # ev_ceiling = 120 - 38 - 20 = 62; short-term raw anchor = (14+16)/2 = 15 < 62 → price = 15
+    grouped = {
+        7:  {"Raw": make_row(window_days=7,  grade="Raw", avg=14.0, num_sales=5)},
+        14: {"Raw": make_row(window_days=14, grade="Raw", avg=16.0, num_sales=8)},
+        30: {"Raw": make_row(window_days=30, grade="Raw", avg=18.0, num_sales=20)},
+    }
+    warnings: list[AnalysisWarning] = []
+    target = _buy_target("Buy raw & grade", grouped, raw, psa9, psa10, ev, trend, warnings)
+    assert target is not None
+    assert target.grade == "Raw"
+    assert abs(target.price - 15.0) < 0.01
+    assert "continuing decline" in target.basis
+
+
 def test_short_term_zero_avg_30d_no_division_error():
     grouped = _make_grouped_with_short_term(avg_7d=5.0, avg_14d=4.0, avg_30d=0.0)
     warnings: list[AnalysisWarning] = []

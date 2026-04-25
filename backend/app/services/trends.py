@@ -564,9 +564,9 @@ def _buy_target(
 
     if verdict == "Buy raw & grade":
         if ev_model:
-            max_raw = ev_model.expected_resale_after_fees - GRADING_COST - MIN_PROFIT_FLOOR - downtrend_penalty
+            ev_ceiling = ev_model.expected_resale_after_fees - GRADING_COST - MIN_PROFIT_FLOOR - downtrend_penalty
             warning_code = None
-            if raw_anchor and raw_anchor.anchor_value > max_raw:
+            if raw_anchor and raw_anchor.anchor_value > ev_ceiling:
                 warnings.append(AnalysisWarning(
                     code="RAW_ABOVE_EV_TARGET",
                     severity="medium",
@@ -582,9 +582,17 @@ def _buy_target(
                     severity="low",
                     message="No raw sales data. Buy target derived from PSA 9 anchor × 0.40.",
                 ))
-                return BuyTarget(grade="Raw", price=round(derived_price, 2), basis="Derived from PSA 9 × 0.40", warning="DERIVED_BUY_TARGET")
+                return BuyTarget(grade="Raw", price=round(derived_price, 2), basis="derived from PSA 9 × 0.40", warning="DERIVED_BUY_TARGET")
 
-            return BuyTarget(grade="Raw", price=round(max_raw, 2), basis="EV-safe max raw price", warning=warning_code)
+            row_30 = grouped.get(30, {}).get("Raw")
+            avg_30 = float(row_30.avg) if row_30 and row_30.avg else None
+            if avg_30:
+                price_ceiling, basis = _short_term_price_anchor(grouped, "Raw", avg_30, warnings)
+                price = min(price_ceiling, ev_ceiling)
+            else:
+                price = ev_ceiling
+                basis = "EV-safe max raw price"
+            return BuyTarget(grade="Raw", price=round(price, 2), basis=basis, warning=warning_code)
         return None
 
     if verdict == "Buy PSA 9" and psa9_anchor:
@@ -607,7 +615,15 @@ def _buy_target(
         return BuyTarget(grade="PSA 9", price=round(price, 2), basis=basis, warning="THIN_BUY_TARGET" if thin else None)
 
     if verdict == "Buy PSA 10" and psa10_anchor:
-        price = psa10_anchor.anchor_value * 0.85
+        anchor_disc = psa10_anchor.anchor_value * 0.85
+        row_30 = grouped.get(30, {}).get("PSA 10")
+        avg_30 = float(row_30.avg) if row_30 and row_30.avg else None
+        if avg_30:
+            price_ceiling, basis = _short_term_price_anchor(grouped, "PSA 10", avg_30, warnings)
+            price = min(price_ceiling, anchor_disc)
+        else:
+            price = anchor_disc
+            basis = "anchor × 0.85"
         thin = psa10_anchor.anchor_sales_count < MIN_SALES
         if thin:
             warnings.append(AnalysisWarning(
@@ -615,7 +631,7 @@ def _buy_target(
                 severity="low",
                 message="Buy target sourced from window with fewer than 3 sales.",
             ))
-        return BuyTarget(grade="PSA 10", price=round(price, 2), basis="anchor × 0.85", warning="THIN_BUY_TARGET" if thin else None)
+        return BuyTarget(grade="PSA 10", price=round(price, 2), basis=basis, warning="THIN_BUY_TARGET" if thin else None)
 
     return None
 
