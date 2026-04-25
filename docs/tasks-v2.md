@@ -186,14 +186,23 @@ The old site had a `<select>` dropdown for navigation on screens under 600px.
 
 ---
 
-## Phase 6 — Auth UX
+## Phase 6 — Auth UX and redirects
 
-### Task 10 — Add sign-up flow to sign-in page
-The old site had a toggle between Sign In and Create Account on the auth modal.
+### Task 10 — Remove signin box to access the page. It should no longer have this in front of it. Also remove redirects that were put in place earlier. 
 
-- Add a "Create account" toggle to `SignInPage.tsx`
-- Show email + password + confirm password fields when in sign-up mode
-- Call `supabase.auth.signUp()` on submit
-- Show success message prompting email verification
+- Remove SignInPage.tsx`
+- Remove redirects for the old pages: docs/index.html and docs/portfolio.html
 
-**Done when:** A new user can create an account from the sign-in page.
+**Done when:** Signin and redirects removed
+
+---
+
+## Phase 7 — Style cleanup
+
+### Task 11 - Clean up legacy styles that are not in the new design system. The site still has a lot of blacks and dark gray backgrounds.
+
+- Look at body background. If it is a dark color like ##1e293b, then update to new style background colors. 
+- Review docs/site-overview.png to see colors. 
+- Do a full review of css to make sure all colors match new design styles.  
+
+**Done when:** Style cleanup done

@@ -135,3 +135,101 @@ export interface ApiError {
     request_id: string
   }
 }
+
+// ── Trend analysis types (T-11) ────────────────────────────────────────────
+
+export interface TrendSearchResult {
+  card: string
+  sport: Sport
+}
+
+export interface AnchorObject {
+  grade: string
+  anchor_value: number
+  anchor_window: number
+  anchor_sales_count: number
+  anchor_source: string
+}
+
+export interface TrendHealth {
+  direction: string
+  ratio: number | null
+  source_grade: string | null
+  source_window: string | null
+}
+
+export interface VolumeSignal {
+  signal: 'Accelerating' | 'Stable' | 'Declining'
+  change_pct: number | null
+}
+
+export interface LiquiditySignal {
+  label: 'Very thin' | 'Thin' | 'Moderate' | 'Liquid'
+  total_90d_sales: number
+}
+
+export interface VolatilitySignal {
+  label: string
+  ratio: number | null
+}
+
+export interface MarketHealth {
+  trend: TrendHealth
+  volume: VolumeSignal
+  liquidity: LiquiditySignal
+  volatility: VolatilitySignal
+}
+
+export interface EvModel {
+  raw_anchor: number
+  grading_cost: number
+  total_cost: number
+  psa9_anchor: number
+  psa10_anchor: number
+  gem_rate: number
+  gem_rate_source: string
+  estimated_outcomes: {
+    psa10: number
+    psa9: number
+    psa8_or_lower: number
+  }
+  expected_resale_after_fees: number
+  expected_profit: number
+  profit_floor: number
+}
+
+export interface BuyTarget {
+  grade: string
+  price: number
+  basis: string
+  warning: string | null
+}
+
+export interface AnalysisWarning {
+  code: string
+  severity: 'low' | 'medium' | 'high'
+  message: string
+}
+
+export interface BounceBackSignals {
+  b1_cheap: boolean
+  b2_recent_liquidity: boolean
+  b3_stabilizing: boolean
+  b4_recovery_not_priced: boolean
+  b5_market_active: boolean
+  b6_no_spike: boolean
+  score: number
+  qualifies: boolean
+}
+
+export interface TrendAnalysisResponse {
+  verdict: string
+  market_confidence: string
+  primary_reason: string
+  buy_target: BuyTarget | null
+  market_health: MarketHealth
+  ev_model: EvModel | null
+  break_even_grade: string | null
+  warnings: AnalysisWarning[]
+  bounce_back: BounceBackSignals | null
+}

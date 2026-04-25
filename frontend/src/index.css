@@ -51,6 +51,8 @@ button { font-family: inherit; }
   --orange-bg: #fdf1ea; --orange-text: #4a1b0c; --orange-border: #d85a30;
 }
 
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ── Layout ── */
 .page-content {
   max-width: 1200px;

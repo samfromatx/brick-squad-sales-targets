@@ -8,6 +8,8 @@ import type {
   PortfolioEntryCreate,
   PortfolioEntryUpdate,
   Target,
+  TrendAnalysisResponse,
+  TrendSearchResult,
 } from './types'
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) ?? ''
@@ -125,16 +127,14 @@ class ApiClient {
 
   // ── Trends ─────────────────────────────────────────────────────────────────
 
-  searchTrends(q: string): Promise<{ data: { card: string; sport: string }[] }> {
-    return this.request<{ data: { card: string; sport: string }[] }>(
-      `/api/v1/trends/search?q=${encodeURIComponent(q)}`,
-    )
+  searchCards(q: string, sport: Sport): Promise<TrendSearchResult[]> {
+    const qs = new URLSearchParams({ q, sport })
+    return this.request<TrendSearchResult[]>(`/api/v1/trends/search?${qs.toString()}`)
   }
 
-  getTrendDetail(card: string, sport?: string): Promise<unknown> {
-    const qs = new URLSearchParams({ card })
-    if (sport) qs.set('sport', sport)
-    return this.request<unknown>(`/api/v1/trends/detail?${qs.toString()}`)
+  getTrendAnalysis(card: string, sport: Sport): Promise<TrendAnalysisResponse> {
+    const qs = new URLSearchParams({ card, sport })
+    return this.request<TrendAnalysisResponse>(`/api/v1/trends/detail?${qs.toString()}`)
   }
 
   // ── Import ─────────────────────────────────────────────────────────────────
@@ -146,5 +146,8 @@ class ApiClient {
     })
   }
 }
+
+// Re-export Sport type so api.ts callers don't need a separate import
+type Sport = 'football' | 'basketball'
 
 export const api = new ApiClient()

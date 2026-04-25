@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase, signOut } from '../../lib/auth'
+import { TrendBar } from './TrendBar'
 
 const TAB_LINKS = [
   { to: '/overview',   label: 'Overview' },
@@ -58,6 +59,9 @@ export function NavBar() {
           </button>
         </div>
       </div>
+
+      {/* Trend analysis bar — persistent across all pages */}
+      <TrendBar />
 
       {/* Desktop tab nav */}
       <nav className="nav-tab-row" style={tabNav}>

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from datetime import date
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -91,3 +93,31 @@ class PortfolioEntry(BaseModel):
     purchase_date: str | None = None
     notes: str | None = None
     pc: bool = False
+
+
+# --- Internal domain types for trend analysis (T-04) ---
+
+@dataclass
+class CardMarketRow:
+    sport: str
+    window_days: int
+    card: str
+    grade: str
+    avg: float | None
+    num_sales: int | None
+    price_change_pct: float | None
+    price_change_dollar: float | None
+    starting_price: float | None
+    last_sale: float | None
+    last_sale_date: date | None
+    min_sale: float | None
+    max_sale: float | None
+    volume_change_pct: float | None
+    total_sales_dollar: float | None
+
+
+@dataclass
+class GemRateRow:
+    card: str
+    sport: str
+    gem_rate: float

@@ -1,33 +1,39 @@
-from fastapi import APIRouter, Depends, Query, Response
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from app.core.auth import get_current_user_id
 from app.core.logging import get_request_id
-from app.services.trends import get_trend_detail, search_trend_cards
+from app.models.api import TrendAnalysisResponse, TrendSearchResult
+from app.services.trends import run_trend_analysis, search_trend_cards
 
 router = APIRouter(prefix="/trends", tags=["trends"])
 
 
-@router.get("/search")
+@router.get("/search", response_model=list[TrendSearchResult])
 async def search_trends(
     response: Response,
     q: str = Query(""),
-    limit: int = Query(20, le=50),
+    sport: Literal["football", "basketball"] = Query(...),
+    limit: int = Query(10, le=50),
     user_id: str = Depends(get_current_user_id),
 ):
-    results = search_trend_cards(q, limit=limit)
+    results = search_trend_cards(q, sport=sport, limit=limit)
     response.headers["Cache-Control"] = "private, max-age=30"
     response.headers["X-Request-ID"] = get_request_id()
-    return {"data": results}
+    return results
 
 
-@router.get("/detail")
+@router.get("/detail", response_model=TrendAnalysisResponse)
 async def trend_detail(
     response: Response,
     card: str = Query(...),
-    sport: str | None = Query(None),
+    sport: Literal["football", "basketball"] = Query(...),
     user_id: str = Depends(get_current_user_id),
 ):
-    detail = get_trend_detail(card, sport=sport)
+    result = run_trend_analysis(card, sport)
+    if result is None:
+        raise HTTPException(status_code=404, detail="No market data found for this card")
     response.headers["Cache-Control"] = "private, max-age=30"
     response.headers["X-Request-ID"] = get_request_id()
-    return detail
+    return result
