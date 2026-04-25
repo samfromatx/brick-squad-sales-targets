@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTrendSearch } from '../../features/trends/useTrends'
 import type { Sport } from '../../lib/types'
 
@@ -10,12 +10,15 @@ const SPORTS: { value: Sport; emoji: string; label: string }[] = [
 
 export function TrendBar() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const [sport, setSport]               = useState<Sport>('football')
   const [query, setQuery]               = useState('')
   const [debouncedQ, setDebouncedQ]     = useState('')
   const [selectedCard, setSelectedCard] = useState('')
   const [open, setOpen]                 = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
+
+  const showClear = !!(query || params.get('card'))
 
   // debounce
   useEffect(() => {
@@ -64,6 +67,14 @@ export function TrendBar() {
     if (e.key === 'Enter' && selectedCard) handleAnalyze()
   }
 
+  function handleClear() {
+    setQuery('')
+    setSelectedCard('')
+    setDebouncedQ('')
+    setOpen(false)
+    navigate('/trends')
+  }
+
   const showDropdown = open && (results?.length ?? 0) > 0 && !selectedCard
 
   return (
@@ -108,6 +119,13 @@ export function TrendBar() {
             </button>
           ))}
         </div>
+
+        {/* Clear */}
+        {showClear && (
+          <button onClick={handleClear} style={clearBtn}>
+            Clear
+          </button>
+        )}
 
         {/* Analyze */}
         <button
@@ -193,6 +211,19 @@ function sportBtn(active: boolean): React.CSSProperties {
     transition: 'all .15s',
     flexShrink: 0,
   }
+}
+
+const clearBtn: React.CSSProperties = {
+  padding: '7px 14px',
+  borderRadius: 6,
+  border: '1px solid var(--border)',
+  background: '#fff',
+  color: 'var(--ink-2)',
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: 'pointer',
+  flexShrink: 0,
+  fontFamily: 'inherit',
 }
 
 function analyzeBtn(disabled: boolean): React.CSSProperties {
