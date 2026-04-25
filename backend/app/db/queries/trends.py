@@ -2,16 +2,19 @@ from app.db.connection import db_cursor
 from app.models.domain import CardMarketRow
 
 
-def search_cards(q: str, sport: str, limit: int = 10) -> list[str]:
+def search_cards(q: str, sport: str, limit: int = 25) -> list[str]:
     sql = """
-        SELECT DISTINCT card
+        SELECT card,
+               MAX(num_sales) AS top_sales,
+               CASE WHEN card ILIKE %s THEN 0 ELSE 1 END AS prefix_rank
         FROM card_market_data
         WHERE sport = %s AND card ILIKE %s
-        ORDER BY card
+        GROUP BY card
+        ORDER BY prefix_rank, top_sales DESC, card
         LIMIT %s
     """
     with db_cursor() as cur:
-        cur.execute(sql, [sport, f"%{q}%", limit])
+        cur.execute(sql, [f"{q}%", sport, f"%{q}%", limit])
         rows = cur.fetchall()
         return [r["card"] for r in rows]
 

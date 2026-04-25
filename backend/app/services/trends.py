@@ -15,6 +15,7 @@ from app.models.api import (
     TrendSearchResult,
     VolatilitySignal,
     VolumeSignal,
+    WindowRow,
 )
 from app.models.domain import CardMarketRow
 
@@ -54,6 +55,36 @@ def _group_by_window_grade(rows: list[CardMarketRow]) -> dict[int, dict[str, Car
             grouped[wd] = {}
         grouped[wd][row.grade] = row
     return grouped
+
+
+def _build_window_prices(
+    grouped: dict[int, dict[str, CardMarketRow]],
+    anchor_window: int = 90,
+) -> list[WindowRow]:
+    rows = []
+    for wd in sorted(grouped.keys()):
+        grades = grouped[wd]
+        raw_r  = grades.get("Raw")
+        psa9_r = grades.get("PSA 9")
+        p10_r  = grades.get("PSA 10")
+
+        raw_avg  = raw_r.avg  if raw_r  and raw_r.avg  > 0 else None
+        psa9_avg = psa9_r.avg if psa9_r and psa9_r.avg > 0 else None
+        psa10_avg = p10_r.avg if p10_r  and p10_r.avg  > 0 else None
+
+        raw_psa9  = round(raw_avg / psa9_avg, 2)   if raw_avg  and psa9_avg else None
+        psa10_psa9 = round(psa10_avg / psa9_avg, 2) if psa10_avg and psa9_avg else None
+
+        rows.append(WindowRow(
+            window_days=wd,
+            raw_avg=raw_avg,
+            psa9_avg=psa9_avg,
+            psa10_avg=psa10_avg,
+            raw_psa9_ratio=raw_psa9,
+            psa10_psa9_ratio=psa10_psa9,
+            is_anchor=(wd == anchor_window),
+        ))
+    return rows
 
 
 # ── Step 1 ─────────────────────────────────────────────────────────────────
@@ -750,6 +781,8 @@ def run_trend_analysis(
 
     primary_reason = _primary_reason(verdict, market_confidence, ev, trend, liquidity, raw_anchor)
 
+    anchor_window = raw_anchor.anchor_window if raw_anchor else 90
+
     return TrendAnalysisResponse(
         verdict=verdict,
         market_confidence=market_confidence,
@@ -765,4 +798,5 @@ def run_trend_analysis(
         break_even_grade=be_grade,
         warnings=warnings,
         bounce_back=bounce_back,
+        window_prices=_build_window_prices(grouped, anchor_window),
     )

@@ -128,7 +128,7 @@ class ApiClient {
   // ── Trends ─────────────────────────────────────────────────────────────────
 
   searchCards(q: string, sport: Sport): Promise<TrendSearchResult[]> {
-    const qs = new URLSearchParams({ q, sport })
+    const qs = new URLSearchParams({ q, sport, limit: '25' })
     return this.request<TrendSearchResult[]>(`/api/v1/trends/search?${qs.toString()}`)
   }
 

@@ -3,6 +3,7 @@ import type {
   BounceBackSignals,
   EvModel,
   TrendAnalysisResponse,
+  WindowRow,
 } from '../../lib/types'
 
 interface Props {
@@ -249,6 +250,59 @@ function BounceBackSection({ bb }: { bb: BounceBackSignals }) {
   )
 }
 
+function WindowPricesTable({ rows }: { rows: WindowRow[] }) {
+  if (!rows.length) return null
+  return (
+    <div style={sectionWrap}>
+      <SectionTitle>Price Ranges by Window</SectionTitle>
+      <div style={tblWrap}>
+        <table style={tbl}>
+          <thead>
+            <tr>
+              {['Window', 'Raw Avg', 'PSA 9 Avg', 'PSA 10 Avg', 'Raw / PSA 9', 'PSA 10 / PSA 9'].map(h => (
+                <th key={h} style={th}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(row => {
+              const anchor = row.is_anchor
+              const rowStyle: React.CSSProperties = anchor
+                ? { borderTop: '1px solid var(--border)', background: '#fdf8f0' }
+                : { borderTop: '1px solid var(--border)' }
+              return (
+                <tr key={row.window_days} style={rowStyle}>
+                  <td style={td}>
+                    <span style={{ fontWeight: anchor ? 700 : 400 }}>{row.window_days}d</span>
+                    {anchor && (
+                      <span style={anchorChip}>anchor</span>
+                    )}
+                  </td>
+                  <td style={td}>{fmtAvg(row.raw_avg)}</td>
+                  <td style={td}>{fmtAvg(row.psa9_avg)}</td>
+                  <td style={td}>{fmtAvg(row.psa10_avg)}</td>
+                  <td style={td}>{fmtRatio(row.raw_psa9_ratio)}</td>
+                  <td style={td}>{fmtRatio(row.psa10_psa9_ratio)}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function fmtAvg(v: number | null): string {
+  if (v == null) return '—'
+  return `$${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+function fmtRatio(v: number | null): string {
+  if (v == null) return '—'
+  return `${Number(v).toFixed(2)}×`
+}
+
 function WarningsList({ warnings }: { warnings: AnalysisWarning[] }) {
   if (warnings.length === 0) return null
   return (
@@ -296,6 +350,9 @@ export function TrendAnalysisResult({ card, sport, data }: Props) {
 
       {/* Market signals table */}
       <MarketTable data={data} />
+
+      {/* Window price ranges table */}
+      <WindowPricesTable rows={data.window_prices} />
 
       {/* EV model */}
       {data.ev_model && <EvSection ev={data.ev_model} />}
@@ -444,4 +501,17 @@ const td: React.CSSProperties = {
   color: 'var(--ink-2)',
   verticalAlign: 'middle',
   whiteSpace: 'nowrap',
+}
+
+const anchorChip: React.CSSProperties = {
+  display: 'inline-block',
+  marginLeft: 6,
+  fontSize: 10,
+  fontWeight: 600,
+  padding: '1px 6px',
+  borderRadius: 99,
+  background: '#fde68a',
+  color: '#92400e',
+  border: '1px solid #fbbf24',
+  verticalAlign: 'middle',
 }

@@ -222,6 +222,16 @@ export interface BounceBackSignals {
   qualifies: boolean
 }
 
+export interface WindowRow {
+  window_days: number
+  raw_avg: number | null
+  psa9_avg: number | null
+  psa10_avg: number | null
+  raw_psa9_ratio: number | null
+  psa10_psa9_ratio: number | null
+  is_anchor: boolean
+}
+
 export interface TrendAnalysisResponse {
   verdict: string
   market_confidence: string
@@ -232,4 +242,5 @@ export interface TrendAnalysisResponse {
   break_even_grade: string | null
   warnings: AnalysisWarning[]
   bounce_back: BounceBackSignals | null
+  window_prices: WindowRow[]
 }

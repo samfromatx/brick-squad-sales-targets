@@ -168,6 +168,16 @@ class BounceBackSignals(BaseModel):
     qualifies: bool
 
 
+class WindowRow(BaseModel):
+    window_days: int
+    raw_avg: float | None = None
+    psa9_avg: float | None = None
+    psa10_avg: float | None = None
+    raw_psa9_ratio: float | None = None
+    psa10_psa9_ratio: float | None = None
+    is_anchor: bool = False
+
+
 class TrendAnalysisResponse(BaseModel):
     verdict: str
     market_confidence: str
@@ -178,6 +188,7 @@ class TrendAnalysisResponse(BaseModel):
     break_even_grade: str | None = None
     warnings: list[AnalysisWarning]
     bounce_back: BounceBackSignals | None = None
+    window_prices: list[WindowRow] = []
 
 
 class TrendSearchResult(BaseModel):
