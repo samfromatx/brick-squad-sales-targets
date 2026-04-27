@@ -112,7 +112,7 @@ function SortIndicator({ active, dir }: { active: boolean; dir: SortDir }) {
 export function ReadyToSellTable() {
   const { data: entriesData, isLoading: entriesLoading, isError } = usePortfolioEntries()
   const allEntries = entriesData?.data ?? []
-  const { marketDataMap, isLoading: marketLoading } = useMarketData(allEntries)
+  const { marketDataMap, isLoading: marketLoading, isError: marketError, error: marketErrorDetail } = useMarketData(allEntries)
 
   const [sportFilter, setSportFilter] = useState<SportFilter>('all')
   const [sortCol, setSortCol] = useState<SortCol>('verdict')
@@ -120,6 +120,7 @@ export function ReadyToSellTable() {
 
   if (entriesLoading) return <p style={{ color: '#94a3b8' }}>Loading portfolio…</p>
   if (isError) return <p style={{ color: '#dc2626' }}>Failed to load portfolio.</p>
+  if (marketError) return <p style={{ color: '#dc2626' }}>Market data error: {(marketErrorDetail as Error)?.message ?? 'Unknown error'}</p>
 
   // Build unsold, non-pc entries
   const unsold = allEntries.filter(e => e.actual_sale === null && !e.pc)

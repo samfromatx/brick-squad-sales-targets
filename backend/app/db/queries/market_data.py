@@ -108,38 +108,41 @@ def fuzzy_match_card(card_name: str, grade: str) -> tuple[list[MarketDataRow], s
     return [], "none"
 
 
-async def batch_market_data(
-    cards: list[dict],
-) -> list[dict]:
+async def batch_market_data(cards: list[dict]) -> list[dict]:
     """
     cards: list of {id, card, grade}
-    Returns list of result dicts in same order.
+    Returns list of result dicts in same order as input.
+    Caps concurrency at 8 to avoid exhausting Supabase connection limits.
     """
     import asyncio
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
+    sem = asyncio.Semaphore(8)
 
     async def resolve_one(item: dict) -> dict:
-        rows, confidence = await loop.run_in_executor(
-            None, fuzzy_match_card, item["card"], item["grade"]
-        )
-
         result: dict = {
             "id": item["id"],
             "matched_card": None,
-            "match_confidence": confidence,
+            "match_confidence": "none",
             "avg_7d": None,
             "avg_30d": None,
             "trend_7d_pct": None,
             "trend_30d_pct": None,
             "num_sales_30d": None,
         }
+        async with sem:
+            try:
+                rows, confidence = await loop.run_in_executor(
+                    None, fuzzy_match_card, item["card"], item["grade"]
+                )
+            except Exception:
+                return result
 
+        result["match_confidence"] = confidence
         if not rows:
             return result
 
         result["matched_card"] = rows[0].card
-
         for r in rows:
             if r.window_days == 7:
                 result["avg_7d"] = r.avg

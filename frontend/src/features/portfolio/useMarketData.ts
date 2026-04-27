@@ -26,5 +26,5 @@ export function useMarketData(entries: PortfolioEntry[]) {
     marketDataMap.set(r.id, r)
   }
 
-  return { marketDataMap, isLoading: query.isLoading }
+  return { marketDataMap, isLoading: query.isLoading, isError: query.isError, error: query.error }
 }
