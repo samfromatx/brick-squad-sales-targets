@@ -8,7 +8,7 @@ export function marketDataKey(entryIds: string[]): readonly [string, string] {
 }
 
 export function useMarketData(entries: PortfolioEntry[]) {
-  const eligible = entries.filter(e => e.actual_sale === null && !e.pc)
+  const eligible = entries.filter(e => !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)
   const ids = eligible.map(e => e.id)
 
   const query = useQuery({

@@ -123,7 +123,7 @@ export function ReadyToSellTable() {
   if (marketError) return <p style={{ color: '#dc2626' }}>Market data error: {(marketErrorDetail as Error)?.message ?? 'Unknown error'}</p>
 
   // Build unsold, non-pc entries
-  const unsold = allEntries.filter(e => e.actual_sale === null && !e.pc)
+  const unsold = allEntries.filter(e => !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)
 
   // Compute summary stats (over all unsold, non-pc)
   const costBasis = unsold.reduce((s, e) => s + calcCost(e), 0)

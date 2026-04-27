@@ -187,8 +187,8 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
                     </span>
                   )}
                 </td>
-                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_7d, marketDataLoading && e.actual_sale === null && !e.pc)}</td>
-                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_30d, marketDataLoading && e.actual_sale === null && !e.pc)}</td>
+                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_7d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
+                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_30d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
                 <td>{fmt(e.target_sell, { decimals: 2 })}</td>
                 <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
                 <td style={{ color: '#52524e' }}>{e.sale_venue ?? '—'}</td>
