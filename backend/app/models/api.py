@@ -194,3 +194,30 @@ class TrendAnalysisResponse(BaseModel):
 class TrendSearchResult(BaseModel):
     card: str
     sport: str
+
+
+# --- Market data batch models ---
+
+class MarketDataBatchItem(BaseModel):
+    id: str
+    card: str
+    grade: str
+
+
+class MarketDataBatchRequest(BaseModel):
+    cards: list[MarketDataBatchItem]
+
+
+class CardMarketDataResult(BaseModel):
+    id: str
+    matched_card: str | None = None
+    match_confidence: Literal["exact", "fuzzy", "none"]
+    avg_7d: float | None = None
+    avg_30d: float | None = None
+    trend_7d_pct: float | None = None
+    trend_30d_pct: float | None = None
+    num_sales_30d: int | None = None
+
+
+class MarketDataBatchResponse(BaseModel):
+    results: list[CardMarketDataResult]

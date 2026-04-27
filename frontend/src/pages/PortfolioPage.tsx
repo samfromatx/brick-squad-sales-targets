@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { EntryForm } from '../features/portfolio/EntryForm'
 import { EntryTable } from '../features/portfolio/EntryTable'
+import { useMarketData } from '../features/portfolio/useMarketData'
 import {
   useCreateEntry,
   useDeleteEntry,
@@ -42,6 +43,7 @@ export function PortfolioPage() {
 
   const allEntries = entriesData?.data ?? []
   const entries = applyFilter(allEntries, filter)
+  const { marketDataMap, isLoading: marketDataLoading } = useMarketData(allEntries)
 
   function openAdd() { setEditing(null); setShowForm(true) }
   function openEdit(e: PortfolioEntry) { setEditing(e); setShowForm(true) }
@@ -170,6 +172,8 @@ export function PortfolioPage() {
 
       <EntryTable
         entries={entries}
+        marketDataMap={marketDataMap}
+        marketDataLoading={marketDataLoading}
         onEdit={openEdit}
         onDelete={handleDelete}
         onMarkSold={openMarkSold}

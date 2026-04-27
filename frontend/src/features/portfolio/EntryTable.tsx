@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import type { PortfolioEntry } from '../../lib/types'
+import type { CardMarketDataResult, PortfolioEntry } from '../../lib/types'
 
 interface Props {
   entries: PortfolioEntry[]
+  marketDataMap?: Map<string, CardMarketDataResult>
+  marketDataLoading?: boolean
   onEdit: (entry: PortfolioEntry) => void
   onDelete: (id: string) => void
   onMarkSold: (entry: PortfolioEntry) => void
@@ -88,7 +90,13 @@ function gradePill(grade: string) {
   return { bg: '#faeeda', text: '#633806', border: '#fac775' }
 }
 
-export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterClick }: Props) {
+function fmtAvg(val: number | null | undefined, loading: boolean): string {
+  if (loading) return '…'
+  if (val === null || val === undefined) return '—'
+  return `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+export function EntryTable({ entries, marketDataMap, marketDataLoading = false, onEdit, onDelete, onMarkSold, onPcFilterClick }: Props) {
   const [sort, setSort] = useState<SortState>({ key: 'card_name', dir: 'asc' })
 
   if (entries.length === 0) {
@@ -179,8 +187,8 @@ export function EntryTable({ entries, onEdit, onDelete, onMarkSold, onPcFilterCl
                     </span>
                   )}
                 </td>
-                <td style={{ color: '#888780' }}>—</td>
-                <td style={{ color: '#888780' }}>—</td>
+                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_7d, marketDataLoading && e.actual_sale === null && !e.pc)}</td>
+                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_30d, marketDataLoading && e.actual_sale === null && !e.pc)}</td>
                 <td>{fmt(e.target_sell, { decimals: 2 })}</td>
                 <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
                 <td style={{ color: '#52524e' }}>{e.sale_venue ?? '—'}</td>

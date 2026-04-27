@@ -10,6 +10,7 @@ from app.routers import (
     exports,
     health,
     imports,
+    market_data,
     portfolio_entries,
     portfolios,
     targets,
@@ -54,3 +55,4 @@ app.include_router(trends.router, prefix=API_PREFIX)
 app.include_router(ebay.router, prefix=API_PREFIX)
 app.include_router(imports.router, prefix=API_PREFIX)
 app.include_router(exports.router, prefix=API_PREFIX)
+app.include_router(market_data.router, prefix=API_PREFIX)

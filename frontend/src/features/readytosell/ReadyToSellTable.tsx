@@ -1,206 +1,274 @@
-import { useBootstrap } from '../targets/useBootstrap'
-import type { PortfolioEntry, Target } from '../../lib/types'
+import { useState } from 'react'
+import { useMarketData } from '../portfolio/useMarketData'
+import { usePortfolioEntries } from '../portfolio/usePortfolioEntries'
+import type { PortfolioEntry, ReadyToSellEntry, SellVerdict } from '../../lib/types'
 
-// ─── Signal from trend_pct ────────────────────────────────────────────────────
+// ─── Domain math ──────────────────────────────────────────────────────────────
 
-type Signal = 'Buy' | 'Watch' | 'Monitor'
-
-function signalFromPct(pct: number | null): Signal {
-  if (pct === null || pct < 0) return 'Monitor'
-  if (pct > 50) return 'Buy'
-  return 'Watch'
+function calcCost(entry: PortfolioEntry): number {
+  return entry.price_paid
 }
 
-function signalPillStyle(sig: Signal): React.CSSProperties {
-  if (sig === 'Buy')     return { background: '#dcfce7', color: '#15803d' }
-  if (sig === 'Watch')   return { background: '#fef3c7', color: '#92400e' }
-  return                        { background: '#f1f5f9', color: '#475569' }
+function calcRoi(avg30d: number, cost: number): number {
+  return ((avg30d * 0.87) - cost) / cost
 }
 
-const SIGNAL_ORDER: Record<Signal, number> = { Buy: 0, Watch: 1, Monitor: 2 }
-
-// ─── Cross-reference helpers ──────────────────────────────────────────────────
-
-function normalise(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, ' ').trim()
+function calcVerdict(roi: number, trend7d: number | null): SellVerdict {
+  const t = trend7d ?? 0
+  if (roi >= 0.25) return 'sell_now'
+  if (roi >= 0.20 && t >= 10) return 'strong_sell'
+  if (roi >= 0 || t >= 15) return 'consider'
+  if (roi < 0 && t >= -5) return 'hold'
+  return 'hold_wait'
 }
 
-function buildTargetMap(targets: Target[]): Map<string, Target> {
-  const map = new Map<string, Target>()
-  for (const t of targets) {
-    map.set(normalise(t.card_name), t)
-  }
-  return map
-}
-
-function matchTarget(entry: PortfolioEntry, map: Map<string, Target>): Target | null {
-  return map.get(normalise(entry.card_name)) ?? null
+const VERDICT_ORDER: Record<SellVerdict, number> = {
+  sell_now: 1,
+  strong_sell: 2,
+  consider: 3,
+  hold: 4,
+  hold_wait: 5,
 }
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
-function fmt(val: number | null): string {
-  if (val === null || val === undefined) return '—'
-  return `$${val.toLocaleString()}`
+function fmtMoney(v: number): string {
+  return `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+function fmtPct(v: number | null): string {
+  if (v === null) return '—'
+  return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
+}
+
+// ─── Pill styles ──────────────────────────────────────────────────────────────
+
+const GRADE_PSA10: React.CSSProperties = { background: '#eaf3de', color: '#3b6d11', border: '1px solid #97c459', borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 600, display: 'inline-block' }
+const GRADE_OTHER: React.CSSProperties = { background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 600, display: 'inline-block' }
+
+function gradePill(grade: string): React.CSSProperties {
+  const g = grade.toUpperCase()
+  return g.includes('PSA 10') || g.includes('PSA10') ? GRADE_PSA10 : GRADE_OTHER
+}
+
+const VERDICT_STYLES: Record<SellVerdict, React.CSSProperties> = {
+  sell_now:    { background: '#16a34a', color: '#fff',     border: '1px solid #16a34a', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 700, display: 'inline-block' },
+  strong_sell: { background: 'transparent', color: '#15803d', border: '1.5px solid #16a34a', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 700, display: 'inline-block' },
+  consider:    { background: 'transparent', color: '#b45309', border: '1.5px solid #d97706', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 700, display: 'inline-block' },
+  hold:        { background: 'transparent', color: '#64748b', border: '1.5px solid #94a3b8', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 700, display: 'inline-block' },
+  hold_wait:   { background: 'transparent', color: '#94a3b8', border: '1.5px solid #cbd5e1', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 700, display: 'inline-block' },
+}
+
+const VERDICT_LABELS: Record<SellVerdict, string> = {
+  sell_now: 'Sell Now',
+  strong_sell: 'Strong Sell',
+  consider: 'Consider',
+  hold: 'Hold',
+  hold_wait: 'Hold / Wait',
 }
 
 // ─── Sport badge ──────────────────────────────────────────────────────────────
 
-const SPORT_BADGE: Record<string, React.CSSProperties> = {
-  football:   { background: '#faeeda', color: '#92400e' },
-  basketball: { background: '#e6f1fb', color: '#1e40af' },
-}
-const SPORT_EMOJI: Record<string, string> = {
-  football: '🏈', basketball: '🏀',
-}
+type SportFilter = 'all' | 'football' | 'basketball'
 
-// ─── Row ─────────────────────────────────────────────────────────────────────
+const SPORT_EMOJI: Record<string, string> = { football: '🏈', basketball: '🏀' }
+const SPORT_ABBR: Record<string, string>  = { football: 'FB', basketball: 'BB' }
 
-interface EnrichedEntry {
-  entry: PortfolioEntry
-  matched: Target | null
-  signal: Signal
-  trend_pct: number | null
-}
+// ─── Sort ─────────────────────────────────────────────────────────────────────
 
-function Row({ row, index }: { row: EnrichedEntry; index: number }) {
-  const { entry, signal, trend_pct } = row
-  const sportStyle = SPORT_BADGE[entry.sport.toLowerCase()] ?? { background: '#f1f5f9', color: '#334155' }
-  const sportEmoji = SPORT_EMOJI[entry.sport.toLowerCase()] ?? ''
+type SortCol = 'card' | 'grade' | 'cost' | 'avg_30d' | 'roi' | 'trend_7d' | 'verdict'
+type SortDir = 'asc' | 'desc'
 
-  return (
-    <tr>
-      <td style={{ color: '#94a3b8', width: 36 }}>{index + 1}</td>
-      <td style={{ fontWeight: 500, maxWidth: 220 }}>
-        <span style={{ whiteSpace: 'nowrap' }}>{entry.card_name}</span>
-      </td>
-      <td>
-        <span className="pill" style={{ ...sportStyle, fontSize: 11, padding: '2px 8px' }}>
-          {sportEmoji} {entry.sport.charAt(0).toUpperCase() + entry.sport.slice(1)}
-        </span>
-      </td>
-      <td>
-        <span className={gradePillClass(entry.grade)}>{entry.grade || '—'}</span>
-      </td>
-      <td style={{ fontWeight: 500, color: '#16a34a' }}>
-        {fmt(entry.price_paid + (entry.grading_cost ?? 0))}
-      </td>
-      <td style={{ fontWeight: 500, color: '#2563eb' }}>
-        {fmt(entry.target_sell)}
-      </td>
-      <td>
-        {trend_pct !== null ? (
-          <span style={{ color: trend_pct >= 0 ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
-            {trend_pct > 0 ? '+' : ''}{trend_pct}%
-          </span>
-        ) : (
-          <span style={{ color: '#94a3b8' }}>—</span>
-        )}
-      </td>
-      <td>
-        <span className="pill" style={{ ...signalPillStyle(signal), fontSize: 12, padding: '2px 10px', fontWeight: 600 }}>
-          {signal}
-        </span>
-      </td>
-    </tr>
-  )
+function getSortVal(row: ReadyToSellEntry, col: SortCol): number | string {
+  switch (col) {
+    case 'card':    return row.entry.card_name.toLowerCase()
+    case 'grade':   return row.entry.grade.toLowerCase()
+    case 'cost':    return row.cost
+    case 'avg_30d': return row.avg_30d
+    case 'roi':     return row.roi
+    case 'trend_7d': return row.trend_7d_pct ?? -Infinity
+    case 'verdict': return VERDICT_ORDER[row.verdict] * 1000 - row.roi
+  }
 }
 
-function gradePillClass(grade: string): string {
-  if (!grade) return 'pill pill-raw'
-  const g = grade.toUpperCase()
-  if (g.includes('PSA 10') || g.includes('PSA10')) return 'pill pill-psa10'
-  if (g.includes('PSA 9')  || g.includes('PSA9'))  return 'pill pill-psa9'
-  return 'pill pill-raw'
+function sortRows(rows: ReadyToSellEntry[], col: SortCol, dir: SortDir): ReadyToSellEntry[] {
+  return [...rows].sort((a, b) => {
+    const av = getSortVal(a, col)
+    const bv = getSortVal(b, col)
+    let cmp = 0
+    if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv
+    else cmp = String(av).localeCompare(String(bv))
+    return dir === 'asc' ? cmp : -cmp
+  })
+}
+
+function SortIndicator({ active, dir }: { active: boolean; dir: SortDir }) {
+  if (!active) return <span style={{ color: '#d0cec6', marginLeft: 4, fontSize: 9 }}>↕</span>
+  return <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.6 }}>{dir === 'asc' ? '▲' : '▼'}</span>
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ReadyToSellTable() {
-  const { data, isLoading, isError, error } = useBootstrap()
+  const { data: entriesData, isLoading: entriesLoading, isError } = usePortfolioEntries()
+  const allEntries = entriesData?.data ?? []
+  const { marketDataMap, isLoading: marketLoading } = useMarketData(allEntries)
 
-  if (isLoading) return <p style={{ color: '#94a3b8' }}>Loading portfolio…</p>
-  if (isError) {
-    const msg = error instanceof Error ? error.message : 'Unknown error'
-    return <p style={{ color: '#dc2626' }}>Failed to load: {msg}</p>
+  const [sportFilter, setSportFilter] = useState<SportFilter>('all')
+  const [sortCol, setSortCol] = useState<SortCol>('verdict')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
+
+  if (entriesLoading) return <p style={{ color: '#94a3b8' }}>Loading portfolio…</p>
+  if (isError) return <p style={{ color: '#dc2626' }}>Failed to load portfolio.</p>
+
+  // Build unsold, non-pc entries
+  const unsold = allEntries.filter(e => e.actual_sale === null && !e.pc)
+
+  // Compute summary stats (over all unsold, non-pc)
+  const costBasis = unsold.reduce((s, e) => s + calcCost(e), 0)
+
+  // Build ready-to-sell rows
+  const readyRows: ReadyToSellEntry[] = []
+  for (const entry of unsold) {
+    const md = marketDataMap.get(entry.id)
+    if (!md || md.match_confidence === 'none') continue
+    if (md.avg_30d === null) continue
+    const cost = calcCost(entry)
+    if (md.avg_30d <= cost) continue
+    const roi = calcRoi(md.avg_30d, cost)
+    const verdict = calcVerdict(roi, md.trend_7d_pct)
+    readyRows.push({
+      entry,
+      cost,
+      avg_7d: md.avg_7d,
+      avg_30d: md.avg_30d,
+      trend_7d_pct: md.trend_7d_pct,
+      roi,
+      verdict,
+    })
   }
 
-  const targets    = data?.data.targets ?? []
-  const entries    = data?.data.portfolio_entries ?? []
-  const targetMap  = buildTargetMap(targets)
+  const profitable = readyRows.filter(r => r.roi > 0).length
 
-  // Unsold entries only (actual_sale is null)
-  const unsold = entries.filter(e => e.actual_sale === null && !e.pc)
+  // Sport filter
+  const filtered = sportFilter === 'all'
+    ? readyRows
+    : readyRows.filter(r => r.entry.sport === sportFilter)
 
-  // Enrich with matched target trend/signal
-  const enriched: EnrichedEntry[] = unsold.map(entry => {
-    const matched   = matchTarget(entry, targetMap)
-    const trend_pct = matched?.trend_pct ?? null
-    const signal    = signalFromPct(trend_pct)
-    return { entry, matched, signal, trend_pct }
-  })
+  const sorted = sortRows(filtered, sortCol, sortDir)
 
-  // Sort: Buy first, then Watch, then Monitor; within each group by card name
-  enriched.sort((a, b) => {
-    const sd = SIGNAL_ORDER[a.signal] - SIGNAL_ORDER[b.signal]
-    if (sd !== 0) return sd
-    return a.entry.card_name.localeCompare(b.entry.card_name)
-  })
+  function handleSort(col: SortCol) {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir('asc') }
+  }
 
-  const buyCount     = enriched.filter(r => r.signal === 'Buy').length
-  const watchCount   = enriched.filter(r => r.signal === 'Watch').length
-  const avgUpside    = (() => {
-    const withTarget = enriched.filter(r => r.entry.target_sell !== null)
-    if (!withTarget.length) return null
-    const ups = withTarget.map(r => {
-      const cost = r.entry.price_paid + (r.entry.grading_cost ?? 0)
-      const sell = r.entry.target_sell!
-      return ((sell - cost) / cost) * 100
-    })
-    return Math.round(ups.reduce((s, v) => s + v, 0) / ups.length)
-  })()
+  function th(col: SortCol, label: string) {
+    return (
+      <th onClick={() => handleSort(col)} style={{ cursor: 'pointer', userSelect: 'none' }}>
+        {label}<SortIndicator active={sortCol === col} dir={sortDir} />
+      </th>
+    )
+  }
 
   const kpis = [
-    { label: 'Total Unsold', value: unsold.length,                   sub: 'in portfolio',        color: '#2563eb' },
-    { label: 'Buy Signal',   value: buyCount,                        sub: 'momentum targets',    color: '#16a34a' },
-    { label: 'Watching',     value: watchCount,                      sub: 'building momentum',   color: '#d97706' },
-    { label: 'Avg Upside',   value: avgUpside !== null ? `${avgUpside}%` : '—', sub: 'to target sell', color: '#7c3aed' },
+    { label: 'CARDS HELD',    value: unsold.length,          color: '#1a1a18',  valueColor: '#1a1a18'  },
+    { label: 'READY TO SELL', value: readyRows.length,       color: '#d97706',  valueColor: '#92400e'  },
+    { label: 'PROFITABLE',    value: profitable,             color: '#16a34a',  valueColor: '#15803d'  },
+    { label: 'COST BASIS',    value: fmtMoney(costBasis),    color: '#1a1a18',  valueColor: '#1a1a18'  },
   ]
 
   return (
     <div>
       {/* KPI strip */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
         {kpis.map(k => (
-          <div key={k.label} className="kpi-card" style={{ borderTop: `3px solid ${k.color}` }}>
-            <div className="kpi-value" style={{ color: k.color }}>{k.value}</div>
-            <div className="kpi-label">{k.label}</div>
-            <div className="kpi-sub">{k.sub}</div>
+          <div key={k.label} className="kpi-card" style={{ flex: '1 1 140px', borderTop: `3px solid ${k.color}` }}>
+            <div className="kpi-value" style={{ color: k.valueColor, fontSize: '1.6rem', fontWeight: 700 }}>{k.value}</div>
+            <div className="kpi-label" style={{ fontSize: 11, color: '#888780', letterSpacing: '.06em' }}>{k.label}</div>
           </div>
         ))}
       </div>
 
-      {enriched.length === 0 ? (
-        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>No unsold portfolio entries found.</p>
-      ) : (
-        <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+      {/* Formula explainer */}
+      <p style={{ fontSize: 12, color: '#888780', marginBottom: 18, lineHeight: 1.5 }}>
+        <em>ROI = (30d avg × 0.87 − cost) ÷ cost. The 0.87 accounts for ~13% eBay fees, so a card needs to sell ~15% above your cost to break even. Cards are shown if the market price exceeds your cost paid, even if ROI is still negative after fees.</em>
+      </p>
+
+      {/* Sport filter pills */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        {(['all', 'football', 'basketball'] as SportFilter[]).map(s => (
+          <button
+            key={s}
+            className={`pill-btn${sportFilter === s ? ' active' : ''}`}
+            onClick={() => setSportFilter(s)}
+          >
+            {s === 'all' ? 'All' : s === 'football' ? '🏈 Football' : '🏀 Basketball'}
+          </button>
+        ))}
+      </div>
+
+      {/* Empty states */}
+      {allEntries.length === 0 && (
+        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>Add cards to your portfolio to see sell recommendations.</p>
+      )}
+      {allEntries.length > 0 && readyRows.length === 0 && !marketLoading && (
+        <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>No cards are currently above their purchase price.</p>
+      )}
+
+      {sorted.length > 0 && (
+        <div className="tbl-wrap">
           <table className="data-table">
             <thead>
               <tr>
                 <th>#</th>
-                <th>CARD</th>
-                <th>SPORT</th>
-                <th>GRADE</th>
-                <th>BUY</th>
-                <th>SELL TARGET</th>
-                <th>TREND</th>
-                <th>SIGNAL</th>
+                {th('card', 'CARD')}
+                {th('grade', 'GRADE')}
+                {th('cost', 'COST')}
+                {th('avg_30d', '30D AVG')}
+                {th('roi', 'ROI')}
+                {th('trend_7d', '7D TREND')}
+                {th('verdict', 'VERDICT')}
               </tr>
             </thead>
             <tbody>
-              {enriched.map((row, i) => (
-                <Row key={row.entry.id} row={row} index={i} />
-              ))}
+              {sorted.map((row, i) => {
+                const sport = row.entry.sport.toLowerCase()
+                const emoji = SPORT_EMOJI[sport] ?? ''
+                const abbr  = SPORT_ABBR[sport] ?? sport.toUpperCase()
+                const roiPositive = row.roi >= 0
+                const trendPositive = (row.trend_7d_pct ?? 0) >= 0
+
+                return (
+                  <tr key={row.entry.id}>
+                    <td style={{ color: '#94a3b8', width: 36 }}>{i + 1}</td>
+                    <td style={{ fontWeight: 500, minWidth: 200 }}>
+                      <div>{row.entry.card_name}</div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                        {emoji} {emoji} <span style={{ marginLeft: 4 }}>{abbr}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span style={gradePill(row.entry.grade)}>{row.entry.grade || '—'}</span>
+                    </td>
+                    <td style={{ fontWeight: 500 }}>{fmtMoney(row.cost)}</td>
+                    <td style={{ fontWeight: 500 }}>
+                      {marketLoading ? <span style={{ color: '#cbd5e1' }}>…</span> : fmtMoney(row.avg_30d)}
+                    </td>
+                    <td style={{ fontWeight: 700, color: roiPositive ? '#16a34a' : '#dc2626' }}>
+                      {marketLoading ? <span style={{ color: '#cbd5e1' }}>…</span> : fmtPct(row.roi * 100)}
+                    </td>
+                    <td style={{ color: row.trend_7d_pct === null ? '#94a3b8' : trendPositive ? '#16a34a' : '#dc2626' }}>
+                      {marketLoading ? <span style={{ color: '#cbd5e1' }}>…</span> : fmtPct(row.trend_7d_pct)}
+                    </td>
+                    <td>
+                      {marketLoading
+                        ? <span style={{ color: '#cbd5e1' }}>…</span>
+                        : <span style={VERDICT_STYLES[row.verdict]}>{VERDICT_LABELS[row.verdict]}</span>
+                      }
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

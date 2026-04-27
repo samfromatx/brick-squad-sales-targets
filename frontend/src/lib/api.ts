@@ -2,6 +2,7 @@ import { getAccessToken, refreshAccessToken } from './auth'
 import type {
   EbaySearch,
   ExportSnapshot,
+  MarketDataBatchResponse,
   PaginatedResponse,
   PortfolioAllocation,
   PortfolioEntry,
@@ -135,6 +136,17 @@ class ApiClient {
   getTrendAnalysis(card: string, sport: Sport): Promise<TrendAnalysisResponse> {
     const qs = new URLSearchParams({ card, sport })
     return this.request<TrendAnalysisResponse>(`/api/v1/trends/detail?${qs.toString()}`)
+  }
+
+  // ── Market data ────────────────────────────────────────────────────────────
+
+  batchMarketData(
+    cards: Array<{ id: string; card: string; grade: string }>,
+  ): Promise<MarketDataBatchResponse> {
+    return this.request<MarketDataBatchResponse>('/api/v1/market-data/batch', {
+      method: 'POST',
+      body: JSON.stringify({ cards }),
+    })
   }
 
   // ── Import ─────────────────────────────────────────────────────────────────

@@ -136,6 +136,35 @@ export interface ApiError {
   }
 }
 
+// ── Market data / Ready to Sell types ─────────────────────────────────────
+
+export interface CardMarketDataResult {
+  id: string
+  matched_card: string | null
+  match_confidence: 'exact' | 'fuzzy' | 'none'
+  avg_7d: number | null
+  avg_30d: number | null
+  trend_7d_pct: number | null
+  trend_30d_pct: number | null
+  num_sales_30d: number | null
+}
+
+export interface MarketDataBatchResponse {
+  results: CardMarketDataResult[]
+}
+
+export type SellVerdict = 'sell_now' | 'strong_sell' | 'consider' | 'hold' | 'hold_wait'
+
+export interface ReadyToSellEntry {
+  entry: PortfolioEntry
+  cost: number
+  avg_7d: number | null
+  avg_30d: number
+  trend_7d_pct: number | null
+  roi: number
+  verdict: SellVerdict
+}
+
 // ── Trend analysis types (T-11) ────────────────────────────────────────────
 
 export interface TrendSearchResult {
