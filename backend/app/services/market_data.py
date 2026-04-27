@@ -1,10 +1,13 @@
-from app.db.queries.market_data import batch_market_data as db_batch_market_data
+import asyncio
+
+from app.db.queries.market_data import batch_market_data as db_batch
 from app.models.api import CardMarketDataResult, MarketDataBatchRequest, MarketDataBatchResponse
 
 
 async def get_batch_market_data(request: MarketDataBatchRequest) -> MarketDataBatchResponse:
     cards = [{"id": c.id, "card": c.card, "grade": c.grade} for c in request.cards]
-    raw_results = await db_batch_market_data(cards)
+    loop = asyncio.get_running_loop()
+    raw_results = await loop.run_in_executor(None, db_batch, cards)
     results = [
         CardMarketDataResult(
             id=r["id"],
