@@ -55,6 +55,8 @@ export function TrendBar() {
     setSelectedCard(card)
     setQuery(card)
     setOpen(false)
+    const qs = new URLSearchParams({ card, sport })
+    navigate(`/trends?${qs.toString()}`)
   }
 
   function handleAnalyze() {

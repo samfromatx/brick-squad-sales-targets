@@ -21,7 +21,7 @@
 ## Phase 1 — Database
 > **Run T-01 and T-02 in parallel.**
 
-### T-01 — Create gem_rates Supabase table
+### T-01 — Create gem_rates Supabase table ✅
 **File:** `supabase/migrations/YYYYMMDD_gem_rates.sql`
 
 - Create table with columns: `id` (uuid pk), `card` (text), `sport` (text: `football` | `basketball`), `gem_rate` (numeric 0–1), `created_at` (timestamptz)
@@ -31,7 +31,7 @@
 
 ---
 
-### T-02 — Verify card_market_data schema
+### T-02 — Verify card_market_data schema ✅
 **File:** `supabase` — additive migration only if columns are missing
 
 - Confirm `last_sale_date` (date) column exists on `card_market_data`
@@ -43,10 +43,10 @@
 ## Phase 2 — Backend Models
 > **Run T-03 and T-04 in parallel.**
 
-### T-03 — Add Pydantic response models for v3 analysis output
+### T-03 — Add Pydantic response models for v3 analysis output ✅
 **File:** `backend/app/models/api.py`
 
-Add the following models. These are the API response types returned by `/trends/detail`.
+Models implemented:
 
 - `AnchorObject`: `grade`, `anchor_value`, `anchor_window`, `anchor_sales_count`, `anchor_source`
 - `TrendHealth`: `direction`, `ratio`, `source_grade`, `source_window`
@@ -58,16 +58,17 @@ Add the following models. These are the API response types returned by `/trends/
 - `BuyTarget`: `grade`, `price`, `basis`, `warning` (optional)
 - `AnalysisWarning`: `code`, `severity` (low | medium | high), `message`
 - `BounceBackSignals`: `b1_cheap` through `b6_no_spike` booleans, `score` (int 0–6), `qualifies` (bool)
-- `TrendAnalysisResponse`: `verdict`, `market_confidence`, `primary_reason`, `buy_target` (BuyTarget), `market_health` (MarketHealth), `ev_model` (EvModel | None), `break_even_grade` (str | None), `warnings` (list[AnalysisWarning]), `bounce_back` (BounceBackSignals | None)
+- `WindowRow` *(added post-launch)*: `window_days`, `raw_avg`, `psa9_avg`, `psa10_avg`, `raw_psa9_ratio`, `psa10_psa9_ratio`, `is_anchor` — all price/ratio fields are `float | None`
+- `TrendAnalysisResponse`: `verdict`, `market_confidence`, `primary_reason`, `buy_target` (BuyTarget), `market_health` (MarketHealth), `ev_model` (EvModel | None), `break_even_grade` (str | None), `warnings` (list[AnalysisWarning]), `bounce_back` (BounceBackSignals | None), `window_prices: list[WindowRow] = []` *(added post-launch)*
 - `TrendSearchResult`: `card` (text), `sport` (text)
 
 ---
 
-### T-04 — Add CardMarketRow and GemRateRow domain types
+### T-04 — Add CardMarketRow and GemRateRow domain types ✅
 **File:** `backend/app/models/domain.py`
 
-- Add `CardMarketRow` dataclass matching all `card_market_data` columns including `last_sale_date`
-- Add `GemRateRow` dataclass: `card`, `sport`, `gem_rate`
+- Added `CardMarketRow` dataclass matching all `card_market_data` columns including `last_sale_date`. `avg` and `num_sales` are typed `float | None` and `int | None` respectively — pyright strict mode requires explicit `is None` guards before comparisons.
+- Added `GemRateRow` dataclass: `card`, `sport`, `gem_rate`
 - These are internal types used by services only — not exposed in API responses
 
 ---
@@ -75,22 +76,35 @@ Add the following models. These are the API response types returned by `/trends/
 ## Phase 3 — Backend Data Layer
 > **Run T-05 and T-06 in parallel. Can also run in parallel with Phase 2.**
 
-### T-05 — Add trend and gem rate DB queries
+### T-05 — Add trend and gem rate DB queries ✅
 **File:** `backend/app/db/queries/trends.py`
 
-- `search_cards(q: str, sport: str, limit=10) → list[str]`
-  — `SELECT DISTINCT card FROM card_market_data WHERE sport = %s AND card ILIKE %s ORDER BY card LIMIT %s`
-  — Wrap `q` as `'%{q}%'`
+- `search_cards(q: str, sport: str, limit=25) → list[str]`
+  — Uses prefix-rank + sales volume ordering for relevance. High-volume base cards surface above obscure parallels:
+  ```sql
+  SELECT card,
+         MAX(num_sales) AS top_sales,
+         CASE WHEN card ILIKE '{q}%' THEN 0 ELSE 1 END AS prefix_rank
+  FROM card_market_data
+  WHERE sport = %s AND card ILIKE %s
+  GROUP BY card
+  ORDER BY prefix_rank, top_sales DESC, card
+  LIMIT %s
+  ```
+  — Params: `[f"{q}%", sport, f"%{q}%", limit]` (prefix-rank uses prefix match; ILIKE filter uses substring match)
+  — Default limit raised from 10 → 25 to surface more results for ambiguous queries
+
 - `get_card_market_data(card: str, sport: str) → list[CardMarketRow]`
   — `SELECT * FROM card_market_data WHERE card = %s AND sport = %s`
   — Returns all window/grade rows for the card in one query
+
 - `get_gem_rate(card: str, sport: str) → float | None`
   — `SELECT gem_rate FROM gem_rates WHERE card = %s AND sport = %s LIMIT 1`
   — Returns `None` if not found; triggers sport fallback in the service layer
 
 ---
 
-### T-06 — Update /trends/search endpoint to accept sport param
+### T-06 — Update /trends/search endpoint to accept sport param ✅
 **File:** `backend/app/routers/trends.py`
 
 - Add required query param: `sport: Literal["football", "basketball"]`
@@ -101,24 +115,12 @@ Add the following models. These are the API response types returned by `/trends/
 ---
 
 ## Phase 4 — Backend Analysis Engine
-> ⚠️ **Do not start T-07 or T-08 until the user uploads `trend-analysis-logic-v3.md`.**
 > T-07 and T-08 are sequential — complete T-07 before starting T-08.
 
-### T-07 — Build trend analysis engine — Steps 1–7
+### T-07 — Build trend analysis engine — Steps 1–7 ✅
 **File:** `backend/app/services/trends.py`
 
-Read `trend-analysis-logic-v3.md` in full before writing any code in this task.
-
-- Create `_group_by_window_grade(rows: list[CardMarketRow]) → dict[int, dict[str, CardMarketRow]]` — keys are `window_days` and grade string
-- Implement `_build_anchor(grouped, grade) → AnchorObject | None` — Step 1. 90d primary, 180d fallback, null if both fail `MIN_SALES=3`
-- Implement `_recency_check(grouped) → tuple[bool, int]` — Step 2. Use `last_sale_date` from the 90d row for the most data-rich grade, fallback to any available row. Returns `(stale, days_since_last_sale)`. Append `STALE_DATA` warning if stale
-- Implement `_volatility_check(anchor: AnchorObject, grouped) → VolatilitySignal` — Step 3. Requires `anchor_sales_count >= MIN_VOLATILITY_SALES (5)`. Ratio bands: `<0.35` Low, `0.35–0.75` Moderate, `0.75–1.0` High, `>=1.0` Extreme. Return `"Unknown - thin data"` label if below threshold
-- Implement `_trend_signal(grouped, raw_anchor) → TrendHealth` — Step 4. Source priority differs by slab vs raw grading path (raw_anchor null or < RAW_MIN_VIABLE uses slab priority). 5-level strength scale from ratio. Gate on `30d_sales >= MIN_TREND_SALES (2)` per grade
-- Implement `_volume_signal(grouped) → VolumeSignal` — Step 5. `+/-20%` thresholds using `volume_change_pct` from the 30d row
-- Implement `_liquidity_signal(grouped) → LiquiditySignal` — Step 6. Sum of 90d `num_sales` across all three grades. Bands: `<=2` Very thin, `3–5` Thin, `6–12` Moderate, `>=13` Liquid
-- Implement `_market_confidence(stale, anchors, liquidity, trend, volatility, volume) → str` — Step 7. Low / Medium / High rules as documented. Apply volume boost after initial classification. Volume boosts cannot override Low caused by stale data or null anchors
-
-**Constants to define at module top:**
+Constants defined at module top:
 ```python
 GRADING_COST = 38.00
 EBAY_FEE_MULT = 0.87
@@ -134,34 +136,97 @@ STALE_DAYS = 30
 VOLUME_ACCEL_THRESHOLD = 0.20
 VOLUME_DECAY_THRESHOLD = -0.20
 RAW_MIN_VIABLE = 15.00
+SHORT_TERM_DIVERGENCE_WARN = 0.15   # added post-launch
+MIN_SHORT_TERM_SALES = 2            # added post-launch
 ```
+
+Functions implemented:
+- `_group_by_window_grade(rows)` — keys are `window_days` and grade string
+- `_build_anchor(grouped, grade)` — Step 1. 90d primary, 180d fallback, null if both fail `MIN_SALES=3`. `anchor_sales_count` uses `row.num_sales or 0` (None-safe)
+- `_recency_check(grouped)` — Step 2. Returns `(stale, days_since_last_sale)`. Appends `STALE_DATA` warning if stale
+- `_volatility_check(anchor, grouped)` — Step 3
+- `_trend_signal(grouped, raw_anchor)` — Step 4
+- `_volume_signal(grouped)` — Step 5
+- `_liquidity_signal(grouped)` — Step 6
+- `_market_confidence(stale, anchors, liquidity, trend, volatility, volume)` — Step 7
 
 ---
 
-### T-08 — Build trend analysis engine — Steps 8–14 + verdict + buy target
+### T-08 — Build trend analysis engine — Steps 8–14 + verdict + buy target ✅
 **File:** `backend/app/services/trends.py`
 **Prerequisite:** T-07 complete.
 
-Read `trend-analysis-logic-v3.md` Steps 8–14 and the Final Verdict + Buy Target + Bounce Back sections before writing any code in this task.
+Functions implemented:
+- `_net_prices(anchors)` — Step 8
+- `_raw_viability_ratio(raw_anchor, psa9_anchor)` — Step 9
+- RAW_MIN_VIABLE gate — Step 10
+- `_gem_rate_lookup(card, sport, warnings)` — Step 11. **Important:** this call runs unconditionally (outside the EV block) so `gem_rate` is always populated before the `suggest_psa10` verdict check. A bug where `gem_rate` defaulted to `0.0` caused incorrect "Buy PSA 10" verdicts for raw-blocked cards — fixed by moving the lookup outside the EV gate.
+- `_ev_model(...)` — Step 12
+- `_multiplier_matrix(psa9_anchor, psa10_anchor)` — Step 13
+- `_break_even_grade(cost_basis, psa9_anchor, psa10_anchor)` — Step 14
+- `_final_verdict(...)` — full decision tree
+- `_buy_target(verdict, anchors, grouped, ev_model, downtrend_penalty, warnings)` — see updated spec below
+- `_bounce_back(grouped, grade)` — B1–B6 signals
+- `_build_window_prices(grouped, anchor_grade, anchor_window)` *(added post-launch)* — builds `list[WindowRow]` for the price ranges table; marks the anchor row with `is_anchor=True`
+- `_short_term_price_anchor(grouped, grade, avg_30d, warnings)` *(added post-launch)* — see spec below
+- `run_trend_analysis(card, sport, cursor)` — public entry point, now includes `window_prices` in return value
 
-- Implement `_net_prices(anchors) → dict` — Step 8. Multiply each anchor value by `EBAY_FEE_MULT`. PSA 8: `raw_anchor.value * PSA8_MULT * EBAY_FEE_MULT`
-- Implement `_raw_viability_ratio(raw_anchor, psa9_anchor) → float | None` — Step 9. Uses `anchor_sales_count` from each anchor object, not a hardcoded window check
-- Apply `RAW_MIN_VIABLE` gate — Step 10. Append `RAW_BELOW_THRESHOLD` warning if raw < $15. Append `STRONG_DOWNTREND` warning if trend ratio < 0.75. Either condition blocks the EV model and forces the slab path
-- Implement `_gem_rate_lookup(card: str, sport: str, cursor) → tuple[float, str]` — Step 11. Query `gem_rates` table via `get_gem_rate`. Returns `(rate, "card_specific")` or `(fallback_constant, "sport_fallback")`. Append `GEM_FALLBACK` warning (severity medium) if fallback used
-- Implement `_ev_model(raw_anchor, psa9_anchor, psa10_anchor, gem_rate, trend, net_prices) → EvModel | None` — Step 12. Dynamic `p9`: remaining probability after `p10` and `p_low` (min 0.10). `p10 + p9 <= 0.90`. Apply `DOWNTREND_PENALTY` to cost basis when trend is mild or strong downtrend. Returns None if raw is blocked by Step 10 gates
-- Implement `_multiplier_matrix(psa9_anchor, psa10_anchor) → tuple[float, str]` — Step 13 context overlay. EV verdict takes precedence; matrix is narrative only
-- Implement `_break_even_grade(cost_basis, psa9_anchor, psa10_anchor) → str` — Step 14. `be_gross = (cost_basis + 20) / 0.87`
-- Implement `_final_verdict(market_confidence, raw_anchor, trend, ev_model, multiplier, gem_rate) → str` — full decision tree from the Final Verdict section. Low confidence suppresses all Buy verdicts
-- Implement `_buy_target(verdict, anchors, data, ev_model, downtrend_penalty) → BuyTarget` — verdict-specific formulas. Raw: EV-safe max. PSA 9: `min(30d_avg, anchor * 0.90)`. PSA 10: `anchor * 0.85`. Append `RAW_ABOVE_EV_TARGET` if raw anchor exceeds max raw buy price. Append `THIN_BUY_TARGET` if sourced from window with < 3 sales. Append `DERIVED_BUY_TARGET` if raw price derived from `psa9 * 0.40`
-- Implement `_bounce_back(grouped, grade: str) → BounceBackSignals` — B1–B6 signals as documented. B1 and B2 are required gates. Score 0–6. `qualifies = B1 and B2 and score >= 4`. Run for PSA 9 and PSA 10 separately; return the higher-scoring result
-- Expose `run_trend_analysis(card: str, sport: str, cursor) → TrendAnalysisResponse` as the single public function — calls all private steps in order, accumulates warnings list throughout, returns fully assembled structured output
+#### `_short_term_price_anchor()` spec *(added post-launch)*
+
+Uses 7d/14d averages as the price ceiling when both windows agree on a direction relative to the 30d average. This makes buy targets more conservative when the market is still falling and more accurate when momentum is building.
+
+```python
+def _short_term_price_anchor(
+    grouped: dict[int, dict[str, CardMarketRow]],
+    grade: str,
+    avg_30d: float,
+    warnings: list[AnalysisWarning],
+) -> tuple[float, str]:
+```
+
+Returns `(price_anchor, basis_label)`.
+
+1. Pull 7d and 14d rows for the grade from `grouped`
+2. Sales gate: both windows must have `num_sales >= MIN_SHORT_TERM_SALES (2)`. Fall back to `(avg_30d, "30d avg")` if either fails
+3. None guard: if either `row.avg` is `None`, fall back to `(avg_30d, "30d avg")`
+4. Direction check: `downtrend = avg_7d < avg_30d and avg_14d < avg_30d`; `uptrend = avg_7d > avg_30d and avg_14d > avg_30d`. Fall back if neither
+5. `short_term_anchor = (avg_7d + avg_14d) / 2`
+6. Divergence warning: if `abs(short_term_anchor - avg_30d) / avg_30d > 0.15` and `avg_30d != 0`, append `SHORT_TERM_DIVERGENCE` warning (severity medium)
+7. Return `(short_term_anchor, "7d/14d avg (continuing decline)")` for downtrend or `(short_term_anchor, "7d/14d avg (momentum)")` for uptrend
+
+#### Updated `_buy_target()` formulas *(post-launch)*
+
+All three verdict paths now call `_short_term_price_anchor()` with grade-specific data:
+
+| Verdict | Formula |
+|---|---|
+| Buy raw & grade | `price = min(_short_term_price_anchor(grouped, "Raw", avg_30, warnings), ev_ceiling)` |
+| Buy PSA 9 | `price_ceiling, basis = _short_term_price_anchor(grouped, "PSA 9", avg_30, warnings)`; `price = min(price_ceiling, anchor × 0.90)` |
+| Buy PSA 10 | `price_ceiling, basis = _short_term_price_anchor(grouped, "PSA 10", avg_30, warnings)`; `price = min(price_ceiling, anchor × 0.85)` |
+
+The `basis` field on the returned `BuyTarget` uses the label from `_short_term_price_anchor()`.
+
+#### `BuyTarget.basis` values
+
+| Condition | `basis` label |
+|---|---|
+| Short windows unavailable or conflicting | `"30d avg"` |
+| Both 7d and 14d below 30d | `"7d/14d avg (continuing decline)"` |
+| Both 7d and 14d above 30d | `"7d/14d avg (momentum)"` |
+| Derived from PSA 9 (no raw data) | `"derived from PSA 9 × 0.40"` |
+
+#### Warning codes
+
+| Code | Severity | When |
+|---|---|---|
+| `SHORT_TERM_DIVERGENCE` | medium | Short-term anchor diverges >15% from 30d avg |
 
 ---
 
 ## Phase 5 — Backend Endpoint + Tests
 > **Run T-09 and T-10 in parallel.**
 
-### T-09 — Update /trends/detail endpoint
+### T-09 — Update /trends/detail endpoint ✅
 **File:** `backend/app/routers/trends.py`
 
 - `GET /trends/detail?card=&sport=` — both params required
@@ -169,78 +234,101 @@ Read `trend-analysis-logic-v3.md` Steps 8–14 and the Final Verdict + Buy Targe
 - Call `run_trend_analysis(card, sport, cursor)` from trends service
 - Return `TrendAnalysisResponse` directly (no wrapping envelope)
 - Keep auth-required (existing behavior)
-- Do not add ETag caching — analysis results change with market data refreshes
 
 ---
 
-### T-10 — Write pytest tests for the analysis engine
+### T-10 — Write pytest tests for the analysis engine ✅
 **File:** `backend/tests/test_trends_engine.py`
-> **Write this task alongside T-07 and T-08**, not after. Build the fixture factory before T-07 so tests can be added incrementally as each step is implemented.
 
-- Build `make_market_rows(**overrides)` fixture factory — creates a minimal valid set of `CardMarketRow` objects for 90d/180d/30d windows × Raw/PSA 9/PSA 10. All values should be realistic defaults so a single override produces a meaningful edge case
-- Test Step 1: anchor falls back to 180d when 90d has fewer than 3 sales
-- Test Step 1: anchor is null when both 90d and 180d fail `MIN_SALES`
-- Test Step 2: `stale=True` when `last_sale_date` is more than 30 days ago
-- Test Step 7: `market_confidence = "Low"` when `stale=True` regardless of other signals
-- Test Step 7: Low confidence suppresses all Buy verdicts in final verdict
-- Test Step 12: EV model clears profit floor → verdict is `"Buy raw & grade"`
-- Test Step 12: EV model below profit floor → falls to slab path
-- Test buy target: raw derivation fallback used when no raw sales exist — `psa9_anchor * 0.40`, `DERIVED_BUY_TARGET` warning appended
-- Test bounce back: qualifies when B1+B2 are true and score >= 4
-- Test bounce back: does not qualify when B1 or B2 is false even if score >= 4
-- Use `unittest.mock.patch` for `_gem_rate_lookup` — test both card-specific and sport-fallback paths independently
+29 tests total. Tests cover:
+
+**Engine steps (original):**
+- Step 1: anchor falls back to 180d when 90d < `MIN_SALES`
+- Step 1: anchor is null when both 90d and 180d fail `MIN_SALES`
+- Step 2: `stale=True` when `last_sale_date` > 30 days ago
+- Step 7: `market_confidence = "Low"` when `stale=True`
+- Step 7: Low confidence suppresses all Buy verdicts
+- Step 12: EV model clears profit floor → `"Buy raw & grade"`
+- Step 12: EV model below profit floor → slab path
+- Buy target: raw derivation fallback — `psa9_anchor × 0.40`, `DERIVED_BUY_TARGET` warning
+- Bounce back: qualifies when B1+B2 true and score >= 4
+- Bounce back: does not qualify when B1 or B2 false
+
+**Short-term price anchor (added post-launch):**
+- Downtrend detected: 7d=$160, 14d=$165, 30d=$175 → `price_ceiling = 162.50`, basis = `"7d/14d avg (continuing decline)"`
+- Uptrend detected: 7d=$190, 14d=$185, 30d=$175 → `price_ceiling = 187.50`, basis = `"7d/14d avg (momentum)"`
+- Conflicting signals: 7d=$160, 14d=$185, 30d=$175 → falls back to `avg_30d = 175`, basis = `"30d avg"`
+- Sales gate: 7d has 1 sale → falls back to 30d regardless of direction
+- Divergence warning fires: 7d=$140, 14d=$145, 30d=$175 → ~18.6% divergence → `SHORT_TERM_DIVERGENCE` warning (severity medium)
+- Divergence warning suppressed: 7d=$168, 14d=$170, 30d=$175 → ~4% → no warning
+- 90d anchor cap holds: short-term anchor high → `min()` clamps to `anchor × 0.90`
+- Zero avg_30d guard: no `ZeroDivisionError`, divergence warning skipped
+
+**Buy target path tests (added post-launch):**
+- `test_short_term_psa10_downtrend_applied`: PSA 10 path uses 7d/14d ceiling
+- `test_short_term_raw_downtrend_applied`: Raw path uses 7d/14d ceiling
 
 ---
 
 ## Phase 6 — Frontend
-> **T-11 and T-12 can run in parallel. T-13 and T-14 can run in parallel once T-11 and T-12 are done. All four can begin as soon as T-09 is complete.**
+> **T-11 and T-12 can run in parallel. T-13 and T-14 can run in parallel once T-11 and T-12 are done.**
 
-### T-11 — Add TypeScript types for analysis response
+### T-11 — Add TypeScript types for analysis response ✅
 **File:** `frontend/src/lib/types.ts`
 
-- Mirror all Pydantic models from T-03 as TypeScript interfaces
-- Add `TrendSearchResult: { card: string; sport: 'football' | 'basketball' }`
-- Add `TrendAnalysisResponse` with all nested types (`MarketHealth`, `EvModel`, `BuyTarget`, `BounceBackSignals`, `AnalysisWarning[]`)
-- Mark optional fields (`ev_model`, `break_even_grade`, `bounce_back`) as `T | null`
+- All Pydantic models from T-03 mirrored as TypeScript interfaces
+- `TrendSearchResult: { card: string; sport: 'football' | 'basketball' }`
+- `TrendAnalysisResponse` with all nested types
+- Optional fields (`ev_model`, `break_even_grade`, `bounce_back`) typed as `T | null`
+- `WindowRow` interface *(added post-launch)*:
+  ```ts
+  interface WindowRow {
+    window_days: number
+    raw_avg: number | null
+    psa9_avg: number | null
+    psa10_avg: number | null
+    raw_psa9_ratio: number | null
+    psa10_psa9_ratio: number | null
+    is_anchor: boolean
+  }
+  ```
+- `window_prices: WindowRow[]` added to `TrendAnalysisResponse` *(added post-launch)*
 
 ---
 
-### T-12 — Add trend API methods to ApiClient
+### T-12 — Add trend API methods to ApiClient ✅
 **File:** `frontend/src/lib/api.ts`
 
-- Add `searchCards(q: string, sport: string): Promise<TrendSearchResult[]>` — `GET /trends/search?q=&sport=`
-- Add `getTrendAnalysis(card: string, sport: string): Promise<TrendAnalysisResponse>` — `GET /trends/detail?card=&sport=`
+- `searchCards(q: string, sport: string): Promise<TrendSearchResult[]>` — `GET /trends/search?q=&sport=&limit=25`
+  - Passes `limit: '25'` *(raised post-launch)* so the dropdown surfaces more results for ambiguous queries
+- `getTrendAnalysis(card: string, sport: string): Promise<TrendAnalysisResponse>` — `GET /trends/detail?card=&sport=`
 - Both use the existing `ApiClient` Bearer token pattern
 
 ---
 
-### T-13 — Build TrendPage — sport toggle + search combobox
+### T-13 — Build TrendPage — sport toggle + search combobox ✅
 **File:** `frontend/src/pages/TrendPage.tsx`
 
-- Sport toggle: two buttons (`Football` / `Basketball`), default `Football`. Changing sport resets search input, selected card, and results
-- Search input: controlled text input. Debounce 300ms before calling `searchCards`. Show dropdown of up to 10 results beneath the input
-- Dropdown items: clicking an item selects the card, closes the dropdown, sets `selectedCard` state
-- Analyze button: enabled only when `selectedCard` is set. Triggers `getTrendAnalysis` via TanStack Query (`useQuery` with `enabled: !!selectedCard`). Show loading spinner on the button while fetching
-- If user edits the search input after a card is selected, clear `selectedCard` and results
-- Error states:
-  - 404 → `"No market data found for this card"`
-  - Other error → `"Analysis failed, please try again"`
-- Pass `TrendAnalysisResponse` result to `TrendAnalysisResult` component rendered below the search block
+- Sport toggle: Football / Basketball, default Football
+- Search input: debounced 300ms, dropdown of up to 25 results
+- Analyze button: enabled only when `selectedCard` is set
+- Loading, error, and 404 states handled
+- Result passed to `TrendAnalysisResult` component
 
 ---
 
-### T-14 — Build TrendAnalysisResult component
-**File:** `frontend/src/components/TrendAnalysisResult.tsx` (or inline in TrendPage.tsx)
+### T-14 — Build TrendAnalysisResult component ✅
+**Files:** `frontend/src/features/trends/TrendAnalysisResult.tsx`, `frontend/src/app/layout/TrendBar.tsx`
 
-Use existing shadcn/ui components (`Badge`, `Alert`, `Table`) throughout — do not add new dependencies.
+**TrendAnalysisResult:**
+- Signal strip, verdict block, market data table, EV model section, break-even grade, bounce back section, warnings list — all implemented per original spec
+- **Window price ranges table** *(added post-launch)*: rendered between Market Signals and EV Model. Shows Raw / PSA 9 / PSA 10 avg prices and ratios for each time window. The anchor row is highlighted with a cream background (`#fdf8f0`) and an amber "Anchor" chip. Implemented in `WindowPricesTable` component within the file.
 
-- **Signal strip:** compact single row at the top — 30d avg price, trend direction + label, volume signal, liquidity label, 30d sales count, Buy/Watch chip (`"Watch"` if verdict is Pass, Low confidence, or downtrend; `"Buy"` otherwise)
-- **Verdict block:** large verdict text, `market_confidence` badge (Low = red, Medium = amber, High = green), `primary_reason` text, buy target price + grade + basis
-- **Market data table:** rows = Raw / PSA 9 / PSA 10, columns = 30d avg, 90d avg, trend ratio, volatility label. Only render rows where anchor data exists
-- **EV model section** (only if `ev_model` is non-null): raw anchor, grading cost, total cost, expected resale, expected profit. Show `"(!) sport fallback"` label next to gem rate if `gem_rate_source === "sport_fallback"`
-- **Break-even grade** (only if non-null): single line below EV model
-- **Bounce back section** (only if `bounce_back` is non-null and `qualifies === true`): B1–B6 signal table with pass/fail per signal and total score
-- **Warnings list:** render each `AnalysisWarning` as an inline alert. Severity mapping: `low` = muted, `medium` = amber, `high` = red
+**TrendBar** *(Clear button added post-launch)*:
+- Located at `frontend/src/app/layout/TrendBar.tsx`
+- Clear button appears when a search query is active or a `?card=` param is in the URL
+- Clicking Clear resets query, selectedCard, dropdown state, and navigates to `/trends` (removing URL params)
+- Uses `useSearchParams` to detect an existing card param for the show/hide condition
 
 ---
 
@@ -266,3 +354,5 @@ Use existing shadcn/ui components (`Badge`, `Alert`, `Table`) throughout — do 
 - Domain math must follow `trend-analysis-logic-v3.md` exactly — do not simplify or approximate
 - `card_market_data` has no RLS — it is a shared read-only table. Do not add RLS to it
 - `gem_rates` follows the same pattern — no RLS, shared read-only
+- `CardMarketRow.avg` and `.num_sales` are nullable — always use explicit `is None` guards before comparison operators (pyright strict mode enforces this)
+- `_gem_rate_lookup()` must run unconditionally before the `suggest_psa10` check — never gate it inside the EV block

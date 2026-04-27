@@ -3,18 +3,25 @@ from app.models.domain import CardMarketRow
 
 
 def search_cards(q: str, sport: str, limit: int = 25) -> list[str]:
-    sql = """
+    tokens = q.strip().split()
+    if not tokens:
+        return []
+
+    token_conditions = " AND ".join(["card ILIKE %s"] * len(tokens))
+    sql = f"""
         SELECT card,
                MAX(num_sales) AS top_sales,
                CASE WHEN card ILIKE %s THEN 0 ELSE 1 END AS prefix_rank
         FROM card_market_data
-        WHERE sport = %s AND card ILIKE %s
+        WHERE sport = %s AND {token_conditions}
         GROUP BY card
         ORDER BY prefix_rank, top_sales DESC, card
         LIMIT %s
     """
+    # prefix_rank uses first token; each token matched as substring
+    params = [f"{tokens[0]}%", sport] + [f"%{t}%" for t in tokens] + [limit]
     with db_cursor() as cur:
-        cur.execute(sql, [f"{q}%", sport, f"%{q}%", limit])
+        cur.execute(sql, params)
         rows = cur.fetchall()
         return [r["card"] for r in rows]
 

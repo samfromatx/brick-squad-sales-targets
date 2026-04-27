@@ -365,7 +365,7 @@ export function TrendAnalysisResult({ card, sport, data }: Props) {
       )}
 
       {/* Bounce back */}
-      {data.bounce_back && data.bounce_back.qualifies && (
+      {data.bounce_back && (
         <BounceBackSection bb={data.bounce_back} />
       )}
 
