@@ -65,25 +65,18 @@ def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> di
         if all(t in csv_set for t in tokens) or all(t in token_set for t in csv_toks):
             matched.append(c)
 
+    if not matched:
+        return None
+    if len(matched) == 1:
+        return matched[0]
+
+    # Jaccard scoring to break ties among subset matches
     def jaccard(c: dict) -> float:
         csv_set = set(tokenize(c['card'] or ''))
         overlap = sum(1 for t in tokens if t in csv_set)
         union = len(token_set | csv_set)
         return overlap / union if union > 0 else 0.0
 
-    if not matched:
-        # Jaccard fallback: find closest card by score (threshold 0.45)
-        scored = [(jaccard(c), c) for c in grade_cands]
-        scored = [(s, c) for s, c in scored if s >= 0.45]
-        if not scored:
-            return None
-        scored.sort(key=lambda x: x[0], reverse=True)
-        return scored[0][1]
-
-    if len(matched) == 1:
-        return matched[0]
-
-    # Jaccard scoring to break ties among subset matches
     matched.sort(key=lambda c: (jaccard(c), -len(tokenize(c['card'] or ''))), reverse=True)
     best = jaccard(matched[0])
 
