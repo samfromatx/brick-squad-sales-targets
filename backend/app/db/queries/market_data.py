@@ -2,7 +2,6 @@ import re
 
 from app.db.connection import db_cursor
 
-# Card brand/set/parallel terms that are too generic to be useful for matching
 _COMMON_TERMS = {
     'prizm', 'optic', 'select', 'chrome', 'topps', 'panini', 'silver', 'refractor',
     'holo', 'parallel', 'rookie', 'auto', 'autograph', 'jersey', 'patch', 'black',
@@ -13,6 +12,8 @@ _COMMON_TERMS = {
     'luminance', 'revolution', 'zenith', 'playoff', 'prestige', 'numbered',
     'base', 'short', 'print', 'variation', 'crystal', 'scope',
 }
+
+_YEAR_RE = re.compile(r'^(19|20)\d{2}$')
 
 
 def normalize_grade(grade: str) -> str:
@@ -37,13 +38,19 @@ def tokenize(card_name: str) -> list[str]:
     return [t for t in normalize_name(card_name).split(' ') if t]
 
 
-def _distinctive_tokens(card_name: str) -> list[str]:
-    """Tokens to AND together for a per-card query.
+def _query_tokens(card_name: str) -> list[str]:
+    """Tokens for the DB AND-clause.
 
-    Includes player name parts (any length) and numbers like years/card numbers.
-    Excludes common brand/parallel terms which match too many rows.
+    Includes parallels (holo/silver/base etc.) so wrong parallels are excluded
+    at query time. Excludes years so DB cards with missing year still match.
+    Requires len >= 2 to skip single-char noise.
     """
-    return [t for t in tokenize(card_name) if t not in _COMMON_TERMS and len(t) >= 2]
+    return [t for t in tokenize(card_name)
+            if len(t) >= 2 and not _YEAR_RE.match(t)]
+
+
+def _is_year(token: str) -> bool:
+    return bool(_YEAR_RE.match(token))
 
 
 def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> dict | None:
@@ -53,23 +60,44 @@ def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> di
 
     grade_cands = [c for c in candidates if (c['grade'] or '').lower() == grade_lower]
 
-    # Exact match first
+    # Exact match (raw string, case-insensitive)
     exact = next((c for c in grade_cands if (c['card'] or '').lower() == card_name.lower()), None)
     if exact:
         return exact
 
-    # Bidirectional token subset match
+    # Bidirectional subset — with strict rule on the DB⊆portfolio direction:
+    # portfolio⊆DB: DB has all portfolio tokens plus extras → fine
+    # DB⊆portfolio: only match if the extra tokens in portfolio are ONLY years
+    #   (prevents "Holo" variant matching a "Base" card that is missing "holo")
     matched = []
     for c in grade_cands:
         csv_set = set(tokenize(c['card'] or ''))
-        if all(t in csv_set for t in tokens) or all(t in token_set for t in csv_set):
+        if all(t in csv_set for t in tokens):
+            # portfolio ⊆ DB — always OK
             matched.append(c)
+        elif all(t in token_set for t in csv_set):
+            # DB ⊆ portfolio — only OK if extra tokens are years
+            extra = token_set - csv_set
+            if all(_is_year(t) for t in extra):
+                matched.append(c)
 
+    # Jaccard fallback at 0.8 threshold for near-identical names (e.g. year missing)
     if not matched:
+        def jaccard_score(c: dict) -> float:
+            csv_set = set(tokenize(c['card'] or ''))
+            overlap = sum(1 for t in tokens if t in csv_set)
+            union = len(token_set | csv_set)
+            return overlap / union if union > 0 else 0.0
+
+        best_c = max(grade_cands, key=jaccard_score, default=None)
+        if best_c and jaccard_score(best_c) >= 0.8:
+            return best_c
         return None
+
     if len(matched) == 1:
         return matched[0]
 
+    # Jaccard tie-breaking among subset matches
     def jaccard(c: dict) -> float:
         csv_set = set(tokenize(c['card'] or ''))
         overlap = sum(1 for t in tokens if t in csv_set)
@@ -95,11 +123,10 @@ def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> di
 def batch_market_data(cards: list[dict]) -> list[dict]:
     """
     cards: list of {id, card, grade}
-    Returns list of result dicts in same order.
 
-    Builds a targeted query: per-card AND-clauses OR'd together. Each clause
-    requires ALL of a card's distinctive tokens, keeping result sets small
-    and specific. Then runs Jaccard matching on the candidates.
+    Per-card AND-clauses OR'd together. Each card's clause requires all its
+    non-year tokens (including parallels like 'holo'/'silver') so wrong
+    parallel variants are excluded from candidates at query time.
     """
     def empty(id_: str) -> dict:
         return {
@@ -114,11 +141,10 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
     norm_grades = {c['id']: normalize_grade(c['grade']) for c in cards}
     unique_grades = list(set(norm_grades.values()))
 
-    # Build per-card AND-clauses
     card_clauses: list[str] = []
     card_params: list[str] = []
     for item in cards:
-        toks = _distinctive_tokens(item['card'])
+        toks = _query_tokens(item['card'])
         if not toks:
             continue
         clause = '(' + ' AND '.join(['card ILIKE %s'] * len(toks)) + ')'
@@ -132,7 +158,7 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
     or_clauses = ' OR '.join(card_clauses)
 
     sql = f"""
-        SELECT card, grade, avg, window_days, price_change_pct, num_sales
+        SELECT card, grade, "avg", window_days, price_change_pct, num_sales
         FROM card_market_data
         WHERE window_days IN (7, 14, 30, 60, 90, 180)
           AND grade IN ({grade_placeholders})
