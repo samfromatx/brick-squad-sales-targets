@@ -2,7 +2,7 @@ import re
 
 from app.db.connection import db_cursor
 
-# Common card brand/set/parallel terms — avoid using these as the sole match key
+# Card brand/set/parallel terms that are too generic to be useful for matching
 _COMMON_TERMS = {
     'prizm', 'optic', 'select', 'chrome', 'topps', 'panini', 'silver', 'refractor',
     'holo', 'parallel', 'rookie', 'auto', 'autograph', 'jersey', 'patch', 'black',
@@ -11,7 +11,7 @@ _COMMON_TERMS = {
     'finest', 'stadium', 'ultra', 'hoops', 'chronicles', 'obsidian', 'spectra',
     'national', 'treasures', 'contenders', 'limited', 'certified', 'absolute',
     'luminance', 'revolution', 'zenith', 'playoff', 'prestige', 'numbered',
-    'base', 'short', 'print', 'variation', 'skewed', 'crystal', 'scope',
+    'base', 'short', 'print', 'variation', 'crystal', 'scope',
 }
 
 
@@ -38,11 +38,12 @@ def tokenize(card_name: str) -> list[str]:
 
 
 def _distinctive_tokens(card_name: str) -> list[str]:
-    """Return non-year, non-common tokens ≥4 chars (player name tokens)."""
-    tokens = [t for t in tokenize(card_name) if len(t) >= 4 and not re.match(r'^\d+$', t)]
-    preferred = [t for t in tokens if t not in _COMMON_TERMS]
-    # Fall back to common terms only if nothing else found
-    return preferred if preferred else tokens[:1]
+    """Tokens to AND together for a per-card query.
+
+    Includes player name parts (any length) and numbers like years/card numbers.
+    Excludes common brand/parallel terms which match too many rows.
+    """
+    return [t for t in tokenize(card_name) if t not in _COMMON_TERMS and len(t) >= 2]
 
 
 def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> dict | None:
@@ -60,9 +61,8 @@ def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> di
     # Bidirectional token subset match
     matched = []
     for c in grade_cands:
-        csv_toks = tokenize(c['card'] or '')
-        csv_set = set(csv_toks)
-        if all(t in csv_set for t in tokens) or all(t in token_set for t in csv_toks):
+        csv_set = set(tokenize(c['card'] or ''))
+        if all(t in csv_set for t in tokens) or all(t in token_set for t in csv_set):
             matched.append(c)
 
     if not matched:
@@ -70,7 +70,6 @@ def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> di
     if len(matched) == 1:
         return matched[0]
 
-    # Jaccard scoring to break ties among subset matches
     def jaccard(c: dict) -> float:
         csv_set = set(tokenize(c['card'] or ''))
         overlap = sum(1 for t in tokens if t in csv_set)
@@ -97,7 +96,10 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
     """
     cards: list of {id, card, grade}
     Returns list of result dicts in same order.
-    Uses one key token per card to keep DB result sets small, then Jaccard matching.
+
+    Builds a targeted query: per-card AND-clauses OR'd together. Each clause
+    requires ALL of a card's distinctive tokens, keeping result sets small
+    and specific. Then runs Jaccard matching on the candidates.
     """
     def empty(id_: str) -> dict:
         return {
@@ -112,33 +114,36 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
     norm_grades = {c['id']: normalize_grade(c['grade']) for c in cards}
     unique_grades = list(set(norm_grades.values()))
 
-    # Distinctive tokens per card — player name tokens only, not brand/set terms
-    all_tokens: set[str] = set()
+    # Build per-card AND-clauses
+    card_clauses: list[str] = []
+    card_params: list[str] = []
     for item in cards:
-        all_tokens.update(_distinctive_tokens(item['card']))
+        toks = _distinctive_tokens(item['card'])
+        if not toks:
+            continue
+        clause = '(' + ' AND '.join(['card ILIKE %s'] * len(toks)) + ')'
+        card_clauses.append(clause)
+        card_params.extend(f'%{t}%' for t in toks)
 
-    if not all_tokens:
+    if not card_clauses:
         return [empty(c['id']) for c in cards]
 
-    unique_tokens = list(all_tokens)
     grade_placeholders = ', '.join(['%s'] * len(unique_grades))
-    token_conditions = ' OR '.join(['card ILIKE %s'] * len(unique_tokens))
+    or_clauses = ' OR '.join(card_clauses)
 
     sql = f"""
         SELECT card, grade, avg, window_days, price_change_pct, num_sales
         FROM card_market_data
         WHERE window_days IN (7, 14, 30, 60, 90, 180)
           AND grade IN ({grade_placeholders})
-          AND ({token_conditions})
-        LIMIT 5000
+          AND ({or_clauses})
     """
-    params: list = unique_grades + [f'%{t}%' for t in unique_tokens]
+    params: list = unique_grades + card_params
 
     with db_cursor() as cur:
         cur.execute(sql, params)
         all_rows = [dict(r) for r in cur.fetchall()]
 
-    # Build (card, grade, window) lookup
     row_lookup: dict[tuple[str, str, int], dict] = {}
     for r in all_rows:
         key = (r['card'], r['grade'], int(r['window_days']))
