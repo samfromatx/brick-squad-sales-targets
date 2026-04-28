@@ -107,7 +107,7 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
     sql = f"""
         SELECT card, grade, avg, window_days, price_change_pct, num_sales
         FROM card_market_data
-        WHERE window_days IN (7, 30)
+        WHERE window_days IN (7, 14, 30, 60, 90, 180)
           AND grade IN ({grade_placeholders})
           AND ({token_conditions})
     """
@@ -123,6 +123,10 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
         key = (r['card'], r['grade'], int(r['window_days']))
         row_lookup[key] = r
 
+    # Fallback chains: prefer shorter windows, fall back to longer ones
+    windows_7d  = [7, 14, 30]
+    windows_30d = [30, 60, 90, 180]
+
     results = []
     for item in cards:
         result = empty(item['id'])
@@ -137,8 +141,8 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
         result['matched_card'] = matched_card
         result['match_confidence'] = 'fuzzy'
 
-        r7  = row_lookup.get((matched_card, norm_grade, 7))
-        r30 = row_lookup.get((matched_card, norm_grade, 30))
+        r7 = next((row_lookup[k] for w in windows_7d if (k := (matched_card, norm_grade, w)) in row_lookup), None)
+        r30 = next((row_lookup[k] for w in windows_30d if (k := (matched_card, norm_grade, w)) in row_lookup), None)
 
         if r7:
             result['avg_7d']       = float(r7['avg']) if r7['avg'] is not None else None
