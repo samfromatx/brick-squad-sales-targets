@@ -37,14 +37,12 @@ def tokenize(card_name: str) -> list[str]:
     return [t for t in normalize_name(card_name).split(' ') if t]
 
 
-def _key_token(card_name: str) -> str | None:
-    """Pick the single most distinctive token: longest non-year, preferring non-common terms."""
+def _distinctive_tokens(card_name: str) -> list[str]:
+    """Return non-year, non-common tokens ≥4 chars (player name tokens)."""
     tokens = [t for t in tokenize(card_name) if len(t) >= 4 and not re.match(r'^\d+$', t)]
     preferred = [t for t in tokens if t not in _COMMON_TERMS]
-    candidates = preferred if preferred else tokens
-    if not candidates:
-        return None
-    return max(candidates, key=len)
+    # Fall back to common terms only if nothing else found
+    return preferred if preferred else tokens[:1]
 
 
 def _jaccard_find(card_name: str, norm_grade: str, candidates: list[dict]) -> dict | None:
@@ -115,19 +113,17 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
     norm_grades = {c['id']: normalize_grade(c['grade']) for c in cards}
     unique_grades = list(set(norm_grades.values()))
 
-    # One key token per card — avoids pulling in massive result sets from common terms
-    key_tokens: dict[str, str] = {}
+    # Distinctive tokens per card — player name tokens only, not brand/set terms
+    all_tokens: set[str] = set()
     for item in cards:
-        kt = _key_token(item['card'])
-        if kt:
-            key_tokens[item['id']] = kt
+        all_tokens.update(_distinctive_tokens(item['card']))
 
-    if not key_tokens:
+    if not all_tokens:
         return [empty(c['id']) for c in cards]
 
-    unique_key_tokens = list(set(key_tokens.values()))
+    unique_tokens = list(all_tokens)
     grade_placeholders = ', '.join(['%s'] * len(unique_grades))
-    token_conditions = ' OR '.join(['card ILIKE %s'] * len(unique_key_tokens))
+    token_conditions = ' OR '.join(['card ILIKE %s'] * len(unique_tokens))
 
     sql = f"""
         SELECT card, grade, avg, window_days, price_change_pct, num_sales
@@ -137,7 +133,7 @@ def batch_market_data(cards: list[dict]) -> list[dict]:
           AND ({token_conditions})
         LIMIT 5000
     """
-    params: list = unique_grades + [f'%{t}%' for t in unique_key_tokens]
+    params: list = unique_grades + [f'%{t}%' for t in unique_tokens]
 
     with db_cursor() as cur:
         cur.execute(sql, params)
