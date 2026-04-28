@@ -8,7 +8,12 @@ from app.core.config import settings
 
 
 def get_connection() -> psycopg.Connection:
-    return psycopg.connect(settings.supabase_db_url, row_factory=dict_row)
+    return psycopg.connect(
+        settings.supabase_db_url,
+        row_factory=dict_row,
+        connect_timeout=10,
+        options="-c statement_timeout=20000",
+    )
 
 
 @contextmanager

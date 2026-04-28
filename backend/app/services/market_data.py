@@ -4,10 +4,20 @@ from app.db.queries.market_data import batch_market_data as db_batch
 from app.models.api import CardMarketDataResult, MarketDataBatchRequest, MarketDataBatchResponse
 
 
+def _chunked(lst: list, size: int):
+    for i in range(0, len(lst), size):
+        yield lst[i:i + size]
+
+
 async def get_batch_market_data(request: MarketDataBatchRequest) -> MarketDataBatchResponse:
     cards = [{"id": c.id, "card": c.card, "grade": c.grade} for c in request.cards]
     loop = asyncio.get_running_loop()
-    raw_results = await loop.run_in_executor(None, db_batch, cards)
+
+    raw_results: list[dict] = []
+    for chunk in _chunked(cards, 20):
+        chunk_results = await loop.run_in_executor(None, db_batch, chunk)
+        raw_results.extend(chunk_results)
+
     results = [
         CardMarketDataResult(
             id=r["id"],
