@@ -14,7 +14,8 @@ export function useMarketData(entries: PortfolioEntry[]) {
         eligible.map(e => ({ id: e.id, card: e.card_name, grade: e.grade })),
       ),
     enabled: eligible.length > 0,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
     retry: false,
   })
 
