@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Brick Squad Sports Cards favicon</title>
+  <desc id="desc">A navy sports card icon with gold border and basketball-inspired linework.</desc>
+  <defs>
+    <linearGradient id="gold" x1="80" y1="40" x2="432" y2="472" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0C96A"/>
+      <stop offset="0.5" stop-color="#D7AA4B"/>
+      <stop offset="1" stop-color="#F2CE78"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="140" y1="64" x2="372" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#062A44"/>
+      <stop offset="1" stop-color="#031E34"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer card -->
+  <rect x="106" y="46" width="300" height="420" rx="34" fill="url(#gold)"/>
+  <rect x="126" y="66" width="260" height="380" rx="22" fill="url(#navy)"/>
+
+  <!-- Inner sports-card border -->
+  <path
+    d="M158 427 V116
+       C174 116 184 106 184 88
+       H328
+       C328 106 338 116 354 116
+       V427
+       C338 427 328 437 328 454
+       H184
+       C184 437 174 427 158 427 Z"
+    fill="none"
+    stroke="url(#gold)"
+    stroke-width="8"
+    stroke-linejoin="round"
+    stroke-linecap="round"/>
+
+  <!-- Basketball linework -->
+  <g fill="none" stroke="url(#gold)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M254 90 C276 157 274 212 256 257 C236 306 200 365 159 397"/>
+    <path d="M255 257 C274 315 248 369 256 454"/>
+    <path d="M159 168 C207 174 243 206 255 257"/>
+    <path d="M159 255 C199 250 232 240 255 257"/>
+    <path d="M159 331 C203 319 243 295 255 257"/>
+    <path d="M354 222 C306 260 279 333 281 454"/>
+  </g>
+</svg>
