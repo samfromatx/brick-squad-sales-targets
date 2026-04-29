@@ -159,7 +159,7 @@ export function ReadyToSellTable() {
   // Sport filter
   const filtered = sportFilter === 'all'
     ? readyRows
-    : readyRows.filter(r => r.entry.sport === sportFilter)
+    : readyRows.filter(r => r.entry.sport?.toLowerCase() === sportFilter)
 
   const sorted = sortRows(filtered, sortCol, sortDir)
 

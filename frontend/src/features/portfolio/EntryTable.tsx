@@ -126,11 +126,16 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
   const sorted = sortEntries(entries, sort)
 
   return (
-    <div className="tbl-wrap">
+    <div className="tbl-wrap" style={{ overflow: 'auto', maxHeight: '75vh' }}>
       <table className="data-table">
         <thead>
           <tr>
-            {th('card_name', 'CARD')}
+            <th
+              onClick={() => handleSort('card_name')}
+              style={{ cursor: 'pointer', userSelect: 'none', position: 'sticky', left: 0, top: 0, zIndex: 4, background: 'var(--bg-2)' }}
+            >
+              CARD<SortIndicator active={sort.key === 'card_name'} dir={sort.dir} />
+            </th>
             {th('sport', 'SPORT')}
             {th('grade', 'GRADE')}
             {th('price_paid', 'PAID')}
@@ -158,9 +163,12 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
             const { label: pl, positive } = calcProfit(e)
             const sp = SPORT_BADGE[e.sport] ?? SPORT_BADGE['football']
             const gp = gradePill(e.grade)
+            const md = marketDataMap?.get(e.id)
+            const avg7dMint = !marketDataLoading && md?.avg_7d != null && md.avg_7d > e.price_paid
+            const avg30dMint = !marketDataLoading && md?.avg_30d != null && md.avg_30d > e.price_paid
             return (
               <tr key={e.id} style={{ opacity: e.pc ? 0.75 : 1 }}>
-                <td style={{ fontWeight: 500, minWidth: 180, color: '#1a1a18' }}>
+                <td className="col-sticky" style={{ fontWeight: 500, minWidth: 180, color: '#1a1a18' }}>
                   {e.card_name}
                   {sold && <span className="pill" style={{ marginLeft: 6, background: '#eaf3de', color: '#3b6d11', borderColor: '#97c459', fontSize: 10 }}>SOLD</span>}
                 </td>
@@ -187,8 +195,8 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
                     </span>
                   )}
                 </td>
-                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_7d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
-                <td style={{ color: '#52524e' }}>{fmtAvg(marketDataMap?.get(e.id)?.avg_30d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
+                <td style={{ color: '#52524e', backgroundColor: avg7dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_7d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
+                <td style={{ color: '#52524e', backgroundColor: avg30dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_30d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
                 <td>{fmt(e.target_sell, { decimals: 2 })}</td>
                 <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
                 <td style={{ color: '#52524e' }}>{e.sale_venue ?? '—'}</td>

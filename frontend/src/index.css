@@ -198,6 +198,9 @@ button { font-family: inherit; }
 }
 .data-table thead tr { background: var(--bg-2); }
 .data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   padding: 10px 12px;
   font-size: .72rem;
   font-weight: 600;
@@ -219,6 +222,15 @@ button { font-family: inherit; }
   white-space: nowrap;
   vertical-align: middle;
 }
+.data-table tbody td.col-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg);
+}
+.data-table tbody tr:nth-child(even) td.col-sticky { background: var(--bg-2); }
+.data-table tbody tr:hover td.col-sticky { background: var(--bg-3); }
+
 .data-table tbody td.wrap {
   white-space: normal;
   max-width: 300px;
