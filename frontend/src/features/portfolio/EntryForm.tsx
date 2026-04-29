@@ -72,16 +72,21 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
             </select>
           </Row>
           <Row label="Grade">
-            <input style={input} value={form.grade} required
-              onChange={e => set('grade', e.target.value)} />
+            <select style={input} value={form.grade} onChange={e => set('grade', e.target.value)}>
+              <option value="Raw">Raw</option>
+              <option value="PSA 9">PSA 9</option>
+              <option value="PSA 10">PSA 10</option>
+            </select>
           </Row>
           <Row label="Price paid">
-            <input style={input} type="number" step="0.01" value={form.price_paid} required
-              onChange={e => set('price_paid', parseFloat(e.target.value) || 0)} />
+            <input style={input} type="number" step="0.01" min="0"
+              value={form.price_paid === 0 ? '0' : form.price_paid} required
+              onChange={e => set('price_paid', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
           </Row>
           <Row label="Grading cost">
-            <input style={input} type="number" step="0.01" value={form.grading_cost ?? 0}
-              onChange={e => set('grading_cost', parseFloat(e.target.value) || 0)} />
+            <input style={input} type="number" step="0.01" min="0"
+              value={form.grading_cost === 0 ? '0' : (form.grading_cost ?? 0)}
+              onChange={e => set('grading_cost', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
           </Row>
           <Row label="Target sell">
             <input style={input} type="number" step="0.01"
