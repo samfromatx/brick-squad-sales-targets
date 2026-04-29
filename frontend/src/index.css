@@ -201,6 +201,7 @@ button { font-family: inherit; }
   position: sticky;
   top: 0;
   z-index: 3;
+  background: var(--bg-2);
   padding: 10px 12px;
   font-size: .72rem;
   font-weight: 600;
