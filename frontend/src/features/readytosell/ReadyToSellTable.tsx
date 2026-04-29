@@ -100,9 +100,7 @@ function sortRows(rows: ReadyToSellEntry[], col: SortCol, dir: SortDir): ReadyTo
   return [...rows].sort((a, b) => {
     const av = getSortVal(a, col)
     const bv = getSortVal(b, col)
-    let cmp = 0
-    if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv
-    else cmp = String(av).localeCompare(String(bv))
+    const cmp = (typeof av === 'number' && typeof bv === 'number') ? av - bv : String(av).localeCompare(String(bv))
     return dir === 'asc' ? cmp : -cmp
   })
 }

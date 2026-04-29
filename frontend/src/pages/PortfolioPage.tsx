@@ -110,6 +110,7 @@ export function PortfolioPage() {
     <div style={page}>
       {showForm && (
         <EntryForm
+          key={editing?.id ?? 'new'}
           initial={editing}
           onSubmit={handleSubmit}
           onCancel={() => { setShowForm(false); setEditing(null) }}

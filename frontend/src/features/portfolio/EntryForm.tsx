@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { PortfolioEntry, PortfolioEntryCreate } from '../../lib/types'
 
 interface Props {
@@ -23,27 +23,23 @@ const BLANK: PortfolioEntryCreate = {
 }
 
 export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
-  const [form, setForm] = useState<PortfolioEntryCreate>(BLANK)
-
-  useEffect(() => {
-    if (initial) {
-      setForm({
-        card_name: initial.card_name,
-        sport: initial.sport,
-        grade: initial.grade,
-        price_paid: initial.price_paid,
-        grading_cost: initial.grading_cost,
-        target_sell: initial.target_sell,
-        actual_sale: initial.actual_sale,
-        sale_venue: initial.sale_venue,
-        purchase_date: initial.purchase_date,
-        notes: initial.notes,
-        pc: initial.pc,
-      })
-    } else {
-      setForm(BLANK)
-    }
-  }, [initial])
+  const [form, setForm] = useState<PortfolioEntryCreate>(() =>
+    initial
+      ? {
+          card_name: initial.card_name,
+          sport: initial.sport,
+          grade: initial.grade,
+          price_paid: initial.price_paid,
+          grading_cost: initial.grading_cost,
+          target_sell: initial.target_sell,
+          actual_sale: initial.actual_sale,
+          sale_venue: initial.sale_venue,
+          purchase_date: initial.purchase_date,
+          notes: initial.notes,
+          pc: initial.pc,
+        }
+      : BLANK
+  )
 
   function set<K extends keyof PortfolioEntryCreate>(key: K, value: PortfolioEntryCreate[K]) {
     setForm(f => ({ ...f, [key]: value }))

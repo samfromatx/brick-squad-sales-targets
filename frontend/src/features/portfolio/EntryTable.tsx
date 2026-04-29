@@ -66,9 +66,7 @@ function sortEntries(entries: PortfolioEntry[], sort: SortState): PortfolioEntry
   return [...entries].sort((a, b) => {
     const av = getSortValue(a, sort.key)
     const bv = getSortValue(b, sort.key)
-    let cmp = 0
-    if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv
-    else cmp = String(av).localeCompare(String(bv))
+    const cmp = (typeof av === 'number' && typeof bv === 'number') ? av - bv : String(av).localeCompare(String(bv))
     return sort.dir === 'asc' ? cmp : -cmp
   })
 }
