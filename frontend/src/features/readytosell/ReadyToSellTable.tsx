@@ -43,12 +43,17 @@ function fmtPct(v: number | null): string {
 
 // ─── Pill styles ──────────────────────────────────────────────────────────────
 
-const GRADE_PSA10: React.CSSProperties = { background: '#eaf3de', color: '#3b6d11', border: '1px solid #97c459', borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 600, display: 'inline-block' }
-const GRADE_OTHER: React.CSSProperties = { background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 600, display: 'inline-block' }
-
 function gradePill(grade: string): React.CSSProperties {
   const g = grade.toUpperCase()
-  return g.includes('PSA 10') || g.includes('PSA10') ? GRADE_PSA10 : GRADE_OTHER
+  let bg: string, color: string, border: string
+  if (g.includes('PSA 10') || g.includes('PSA10')) {
+    bg = '#eaf3de'; color = '#3b6d11'; border = '#97c459'
+  } else if (g.includes('PSA 9') || g.includes('PSA9')) {
+    bg = '#e6f1fb'; color = '#0c447c'; border = '#85b7eb'
+  } else {
+    bg = '#faeeda'; color = '#633806'; border = '#fac775'
+  }
+  return { background: bg, color, border: `1px solid ${border}`, borderRadius: 6, padding: '2px 8px', fontSize: 12, fontWeight: 600, display: 'inline-block' }
 }
 
 const VERDICT_STYLES: Record<SellVerdict, React.CSSProperties> = {
