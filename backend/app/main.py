@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.logging import RequestIDMiddleware, configure_logging, get_request_id
 from app.routers import (
+    admin,
     bootstrap,
     ebay,
     exports,
@@ -47,6 +48,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(health.router, prefix=API_PREFIX)
+app.include_router(admin.router, prefix=API_PREFIX)
 app.include_router(bootstrap.router, prefix=API_PREFIX)
 app.include_router(targets.router, prefix=API_PREFIX)
 app.include_router(portfolios.router, prefix=API_PREFIX)
