@@ -66,9 +66,6 @@ npx playwright test        # e2e tests
 
 ## Before writing any code
 
-Read the existing repo first:
-- `docs/index.html` and `docs/portfolio.html` — understand current UI and workflows
-- `generate_report.py` and `config.yaml` — understand existing data shapes and logic
-- Any existing import/export JSON files in `data/` or `docs/data/` — these define the compatibility contract
+Read [`README.md`](README.md) first — it is the authoritative reference for the current app architecture, all features, DB schema, API endpoints, and operational runbooks (including how to trigger a Card Targets recalculation).
 
-Then check @docs/tasks.md and pick up at the first unchecked item.
+For task tracking, check @docs/tasks.md and pick up at the first unchecked item.

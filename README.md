@@ -523,6 +523,141 @@ Same structure as import, plus:
 
 ---
 
+## Card Targets Feature
+
+An automated buy-target ranking system that scores every card in the market data against player metadata, producing ranked buy/watchlist/avoid recommendations.
+
+### How it works
+
+1. **Data sources** — reads from three DB tables:
+   - `card_market_data` — raw eBay sales aggregations (549K+ rows, pre-loaded by sport)
+   - `gem_rates` — PSA 10 gem rates per card
+   - `player_metadata` — manually curated player scores (tier, upside, catalyst, risk)
+
+2. **Multi-player card filtering** — cards with `/` in the name (dual-player cards) are excluded at every query layer.
+
+3. **Scoring** — each card gets five component scores, summed into `target_score` (0–100):
+
+   | Component | Max | Key signals |
+   |---|---|---|
+   | `market_score` | 30 | Liquidity, volume signal, trend direction, confidence |
+   | `value_score` | 35 | Price vs target, anchor discount, raw grading EV |
+   | `timing_score` | 15 | Short-term vs long-term price comparison, 180d recovery pattern |
+   | `player_score` | 20 | `hobby_tier`, `upside_score`, `current_relevance_score`, `manual_catalyst_score` from player metadata |
+   | `risk_penalty` | −30 | Low confidence, stale data, strong downtrend, fragile premium, thin liquidity |
+
+4. **Classification thresholds** (tuned to actual score distribution):
+
+   | Strength | Min score | Additional conditions |
+   |---|---|---|
+   | Strong Buy Target | ≥ 60 | `current_price ≤ target_buy_price`, price in $10–$200 range, no blockers |
+   | Buy Target | ≥ 55 | same |
+   | Value Target | ≥ 65 (legacy, rarely reached) | same |
+   | Watchlist Target | ≥ 48 | score threshold only |
+   | Avoid / Overheated | < 48 | everything else |
+
+   **Blockers** that prevent any buy classification: Low market confidence, stale data, very thin liquidity, unresolved strong downtrend (unless it qualifies as a bounce-back).
+
+5. **Output** — results written to `card_targets` table (one row per card per sport).
+
+### DB tables
+
+#### `card_targets`
+
+Pre-computed per-card recommendations. No RLS — admin-written, user-read.
+
+| Column | Notes |
+|---|---|
+| sport | `football` \| `basketball` |
+| card | Card name |
+| player_name / player_key | Normalized player identity |
+| recommended_grade | `Raw` \| `PSA 9` \| `PSA 10` |
+| recommendation_strength | `Strong Buy Target` \| `Buy Target` \| `Value Target` \| `Watchlist Target` \| `Avoid / Overheated` |
+| strategy_type | `Buy & Hold` \| `Buy Raw & Grade` \| `Bounce Back` \| etc. |
+| rank | Ascending rank within sport |
+| target_score | Composite score (0–100) |
+| market_score / value_score / timing_score / player_score / risk_penalty | Component scores |
+| market_confidence | `Low` \| `Medium` \| `High` |
+| target_buy_price / current_price | Target and current market price |
+| avg_7d … avg_180d | Rolling average prices |
+| raw_avg_30d / psa9_avg_30d / psa10_avg_30d | Grade-specific 30d averages |
+| liquidity_label / trend_label / volume_signal / volatility_label | Market health labels |
+| justification | JSON array of bullet-point reasons |
+| warnings | JSON array of `{code, message}` warning objects |
+| full_analysis | Full `TrendAnalysisResponse` JSON (for detail panel) |
+| calculated_at | Timestamp of last recalculation |
+
+#### `player_metadata`
+
+Manually curated player scores. Upserted (never destructively replaced) by the recalculation script.
+
+| Column | Notes |
+|---|---|
+| player_name / player_key | Display name + normalized key |
+| sport | `football` \| `basketball` |
+| hobby_tier | 0–10. Weight: ×0.8 in player_score |
+| upside_score | 0–5. Weight: ×1.2 |
+| current_relevance_score | 0–5. Weight: ×1.0 |
+| manual_catalyst_score | 0–5. Weight: ×1.0 |
+| risk_score | 0–5. Penalizes both player_score and risk_penalty |
+| manual_catalyst | Free-text catalyst note |
+| notes | General notes |
+| needs_review | Flag for admin review queue |
+
+**Important:** The recalculation script only touches `last_seen_at` / `updated_at` timestamps on existing rows — all manually entered scores are preserved.
+
+### Triggering a recalculation
+
+Recalculation runs entirely offline via **GitHub Actions** (not the web backend — Render's free tier can't sustain a 30–60 min background job).
+
+1. Go to [Actions → Recalculate Card Targets](https://github.com/samfromatx/brick-squad-sales-targets/actions/workflows/recalculate-card-targets.yml)
+2. Click **Run workflow**
+3. Choose sport: `football basketball` (both), `football`, or `basketball`
+4. Wait ~10–20 min for completion
+5. Refresh the Card Targets page — data updates immediately from DB
+
+The workflow uses the **Supabase Session pooler URL** (IPv4-reachable from GitHub Actions). The direct DB hostname (`db.PROJECT_REF.supabase.co`) is IPv6-only and will fail. `SUPABASE_DB_URL` secret must be set to: `postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres`
+
+### Script (local / CI)
+
+```bash
+cd backend
+python scripts/recalculate_targets.py football basketball
+python scripts/recalculate_targets.py basketball   # single sport
+```
+
+Requires `SUPABASE_DB_URL` in environment.
+
+### Frontend page
+
+**Card Targets** (`/card-targets`) — `frontend/src/pages/CardTargetsPage.tsx`
+
+- Fetches from `GET /api/v1/card-targets?sport=&view=&min_price=&max_price=&q=`
+- View tabs: **Buy Targets** / **Watchlist** / **Overheated**
+- Sport tabs: Football / Basketball
+- Price range filter (default $10–$200)
+- Text search (card name or player name)
+- Sortable score detail panel on row click
+- **Recalculate** button links directly to the GitHub Actions workflow
+
+### API endpoint
+
+`GET /api/v1/card-targets` — auth required.
+
+| Param | Type | Description |
+|---|---|---|
+| `sport` | `football` \| `basketball` | Required |
+| `view` | `buy` \| `watchlist` \| `overheated` \| `all` | Optional filter |
+| `min_price` | float | Min `target_buy_price` |
+| `max_price` | float | Max `target_buy_price` |
+| `q` | string | Search card or player name |
+| `limit` | int | Default 20, max 200 |
+| `offset` | int | Pagination offset |
+
+Response: `{ data: CardTargetResponse[], total: int }`
+
+---
+
 ## MCP Servers
 
 Three MCP servers expose domain-specific tools to Claude Code.
