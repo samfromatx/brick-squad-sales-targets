@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.core.auth import get_current_user_id
+from app.core.cache import cache_delete, cache_delete_pattern
 from app.core.logging import get_request_id
 from app.services.imports import process_import
 
@@ -27,5 +28,10 @@ async def import_targets(
         raise HTTPException(status_code=422, detail="Payload contains no recognised import sections")
 
     result = process_import(user_id, body)
+
+    # Invalidate cached responses so next page load reflects imported data
+    cache_delete(f"bsst:bootstrap:{user_id}")
+    cache_delete_pattern(f"bsst:targets:{user_id}:*")
+
     response.headers["X-Request-ID"] = get_request_id()
     return result

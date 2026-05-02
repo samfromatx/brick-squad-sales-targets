@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str = ""
     supabase_db_url: str = ""
 
+    redis_url: str = ""
+
     port: int = 8000
     allowed_origins: str = "http://localhost:5173"
 

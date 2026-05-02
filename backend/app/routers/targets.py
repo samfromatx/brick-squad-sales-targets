@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 
 from app.core.auth import get_current_user_id
-from app.core.cache import make_etag
+from app.core.cache import cache_get, cache_set, make_etag
 from app.core.logging import get_request_id
 from app.services.targets import get_target, get_targets
 
 router = APIRouter(prefix="/targets", tags=["targets"])
+
+_TTL = 86400  # 24 hours — data only changes on import
 
 
 @router.get("")
@@ -16,8 +18,14 @@ async def list_targets(
     category: str | None = Query(None),
     user_id: str = Depends(get_current_user_id),
 ):
-    targets = get_targets(user_id, sport=sport, category=category)
-    data = [t.model_dump(mode="json") for t in targets]
+    cache_key = f"bsst:targets:{user_id}:{sport or ''}:{category or ''}"
+
+    data = cache_get(cache_key)
+    if data is None:
+        targets = get_targets(user_id, sport=sport, category=category)
+        data = [t.model_dump(mode="json") for t in targets]
+        cache_set(cache_key, data, ttl=_TTL)
+
     etag = make_etag(data)
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers={"ETag": etag, "X-Request-ID": get_request_id()})
