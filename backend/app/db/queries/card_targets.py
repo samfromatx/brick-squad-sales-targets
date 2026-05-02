@@ -107,7 +107,7 @@ def bulk_load_card_market_data(sport: str) -> dict[str, list[CardMarketRow]]:
                min_sale, max_sale, volume_change_pct, total_sales_dollar
         FROM card_market_data
         WHERE sport = %s
-          AND card NOT LIKE '%/%'
+          AND card NOT LIKE '%%/%%'
         ORDER BY card, window_days, grade
     """
     with db_cursor() as cur:
