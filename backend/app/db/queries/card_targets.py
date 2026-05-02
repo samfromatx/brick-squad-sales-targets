@@ -9,69 +9,75 @@ from app.models.domain import CardMarketRow
 
 
 def load_card_candidates(sport: str) -> list[dict]:
+    # CTE replaces the 3 correlated last_sale subqueries (which did N*3 round-trips).
+    # Multi-player cards (card name contains "/") are excluded at source.
     sql = """
+    with last_sales as (
+        select distinct on (card, sport, grade)
+            card, sport, grade, last_sale
+        from public.card_market_data
+        where sport = %s
+          and card not like '%%/%%'
+        order by card, sport, grade, last_sale_date desc nulls last
+    ),
+    last_sales_pivoted as (
+        select
+            card, sport,
+            max(last_sale) filter (where grade = 'Raw')    as raw_last_sale,
+            max(last_sale) filter (where grade = 'PSA 9')  as psa9_last_sale,
+            max(last_sale) filter (where grade = 'PSA 10') as psa10_last_sale
+        from last_sales
+        group by card, sport
+    )
     select
-      sport,
-      card,
-      max(player_name) as player_name,
+      cmd.sport,
+      cmd.card,
+      max(cmd.player_name) as player_name,
 
-      max(avg) filter (where grade = 'Raw' and window_days = 7)   as raw_avg_7d,
-      max(avg) filter (where grade = 'Raw' and window_days = 14)  as raw_avg_14d,
-      max(avg) filter (where grade = 'Raw' and window_days = 30)  as raw_avg_30d,
-      max(avg) filter (where grade = 'Raw' and window_days = 90)  as raw_avg_90d,
-      max(avg) filter (where grade = 'Raw' and window_days = 180) as raw_avg_180d,
+      max(cmd.avg) filter (where cmd.grade = 'Raw' and cmd.window_days = 7)   as raw_avg_7d,
+      max(cmd.avg) filter (where cmd.grade = 'Raw' and cmd.window_days = 14)  as raw_avg_14d,
+      max(cmd.avg) filter (where cmd.grade = 'Raw' and cmd.window_days = 30)  as raw_avg_30d,
+      max(cmd.avg) filter (where cmd.grade = 'Raw' and cmd.window_days = 90)  as raw_avg_90d,
+      max(cmd.avg) filter (where cmd.grade = 'Raw' and cmd.window_days = 180) as raw_avg_180d,
 
-      max(num_sales) filter (where grade = 'Raw' and window_days = 7)  as raw_sales_7d,
-      max(num_sales) filter (where grade = 'Raw' and window_days = 14) as raw_sales_14d,
-      max(num_sales) filter (where grade = 'Raw' and window_days = 30) as raw_sales_30d,
+      max(cmd.num_sales) filter (where cmd.grade = 'Raw' and cmd.window_days = 7)  as raw_sales_7d,
+      max(cmd.num_sales) filter (where cmd.grade = 'Raw' and cmd.window_days = 14) as raw_sales_14d,
+      max(cmd.num_sales) filter (where cmd.grade = 'Raw' and cmd.window_days = 30) as raw_sales_30d,
+      lsp.raw_last_sale,
 
-      (
-        select last_sale from public.card_market_data sub
-        where sub.card = cmd.card and sub.sport = cmd.sport and sub.grade = 'Raw'
-        order by sub.last_sale_date desc nulls last limit 1
-      ) as raw_last_sale,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 7)   as psa9_avg_7d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 14)  as psa9_avg_14d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 30)  as psa9_avg_30d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 90)  as psa9_avg_90d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 180) as psa9_avg_180d,
 
-      max(avg) filter (where grade = 'PSA 9' and window_days = 7)   as psa9_avg_7d,
-      max(avg) filter (where grade = 'PSA 9' and window_days = 14)  as psa9_avg_14d,
-      max(avg) filter (where grade = 'PSA 9' and window_days = 30)  as psa9_avg_30d,
-      max(avg) filter (where grade = 'PSA 9' and window_days = 90)  as psa9_avg_90d,
-      max(avg) filter (where grade = 'PSA 9' and window_days = 180) as psa9_avg_180d,
+      max(cmd.num_sales) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 7)  as psa9_sales_7d,
+      max(cmd.num_sales) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 14) as psa9_sales_14d,
+      max(cmd.num_sales) filter (where cmd.grade = 'PSA 9' and cmd.window_days = 30) as psa9_sales_30d,
+      lsp.psa9_last_sale,
 
-      max(num_sales) filter (where grade = 'PSA 9' and window_days = 7)  as psa9_sales_7d,
-      max(num_sales) filter (where grade = 'PSA 9' and window_days = 14) as psa9_sales_14d,
-      max(num_sales) filter (where grade = 'PSA 9' and window_days = 30) as psa9_sales_30d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 7)   as psa10_avg_7d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 14)  as psa10_avg_14d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 30)  as psa10_avg_30d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 90)  as psa10_avg_90d,
+      max(cmd.avg) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 180) as psa10_avg_180d,
 
-      (
-        select last_sale from public.card_market_data sub
-        where sub.card = cmd.card and sub.sport = cmd.sport and sub.grade = 'PSA 9'
-        order by sub.last_sale_date desc nulls last limit 1
-      ) as psa9_last_sale,
+      max(cmd.num_sales) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 7)  as psa10_sales_7d,
+      max(cmd.num_sales) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 14) as psa10_sales_14d,
+      max(cmd.num_sales) filter (where cmd.grade = 'PSA 10' and cmd.window_days = 30) as psa10_sales_30d,
+      lsp.psa10_last_sale,
 
-      max(avg) filter (where grade = 'PSA 10' and window_days = 7)   as psa10_avg_7d,
-      max(avg) filter (where grade = 'PSA 10' and window_days = 14)  as psa10_avg_14d,
-      max(avg) filter (where grade = 'PSA 10' and window_days = 30)  as psa10_avg_30d,
-      max(avg) filter (where grade = 'PSA 10' and window_days = 90)  as psa10_avg_90d,
-      max(avg) filter (where grade = 'PSA 10' and window_days = 180) as psa10_avg_180d,
-
-      max(num_sales) filter (where grade = 'PSA 10' and window_days = 7)  as psa10_sales_7d,
-      max(num_sales) filter (where grade = 'PSA 10' and window_days = 14) as psa10_sales_14d,
-      max(num_sales) filter (where grade = 'PSA 10' and window_days = 30) as psa10_sales_30d,
-
-      (
-        select last_sale from public.card_market_data sub
-        where sub.card = cmd.card and sub.sport = cmd.sport and sub.grade = 'PSA 10'
-        order by sub.last_sale_date desc nulls last limit 1
-      ) as psa10_last_sale,
-
-      coalesce(sum(num_sales) filter (where window_days = 90), 0) as total_90d_sales,
-      coalesce(sum(num_sales) filter (where window_days = 30), 0) as total_30d_sales
+      coalesce(sum(cmd.num_sales) filter (where cmd.window_days = 90), 0) as total_90d_sales,
+      coalesce(sum(cmd.num_sales) filter (where cmd.window_days = 30), 0) as total_30d_sales
 
     from public.card_market_data cmd
-    where sport = %s
-    group by sport, card
+    left join last_sales_pivoted lsp on lsp.card = cmd.card and lsp.sport = cmd.sport
+    where cmd.sport = %s
+      and cmd.card not like '%%/%%'
+    group by cmd.sport, cmd.card, lsp.raw_last_sale, lsp.psa9_last_sale, lsp.psa10_last_sale
     """
     with db_cursor() as cur:
-        cur.execute(sql, (sport,))
+        cur.execute(sql, (sport, sport))
         return cur.fetchall()
 
 
@@ -101,6 +107,7 @@ def bulk_load_card_market_data(sport: str) -> dict[str, list[CardMarketRow]]:
                min_sale, max_sale, volume_change_pct, total_sales_dollar
         FROM card_market_data
         WHERE sport = %s
+          AND card NOT LIKE '%/%'
         ORDER BY card, window_days, grade
     """
     with db_cursor() as cur:

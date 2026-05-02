@@ -542,6 +542,8 @@ def sync_player_metadata_for_sports(sports: list[str]) -> None:
     from public.card_market_data
     where nullif(trim(player_name), '') is not null
       and sport = any(%s)
+      and card not like '%%/%%'
+      and player_name not like '%%/%%'
     """
     with db_cursor() as cur:
         cur.execute(sql, (sports,))
