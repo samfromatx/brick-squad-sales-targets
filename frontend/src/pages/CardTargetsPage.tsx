@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import type {
   CardTargetResult,
@@ -244,15 +244,12 @@ function DetailPanel({ row, onClose }: { row: CardTargetResult; onClose: () => v
 type ViewTab = 'buy' | 'watchlist' | 'overheated'
 
 export function CardTargetsPage() {
-  const qc = useQueryClient()
   const [sport, setSport]       = useState<SupportedTargetSport>('football')
   const [view, setView]         = useState<ViewTab>('buy')
   const [search, setSearch]     = useState('')
   const [minPrice, setMinPrice] = useState<string>('10')
   const [maxPrice, setMaxPrice] = useState<string>('200')
   const [selected, setSelected] = useState<CardTargetResult | null>(null)
-  const [isPolling, setIsPolling] = useState(false)
-
   const debouncedSearch = useDebounce(search, 300)
 
   const { data, isLoading, isError } = useQuery({
@@ -267,49 +264,6 @@ export function CardTargetsPage() {
     }),
   })
 
-  const { data: statusData } = useQuery({
-    queryKey: ['recalculate-status'],
-    queryFn: () => api.getRecalculateStatus(),
-    enabled: isPolling,
-    refetchInterval: (query) => {
-      const sportStatus = query.state.data?.sports[sport]
-      return sportStatus?.status === 'running' ? 1500 : false
-    },
-  })
-
-  const sportStatus = statusData?.sports[sport]
-
-  useEffect(() => {
-    if (!isPolling) return
-    if (sportStatus?.status === 'done' || sportStatus?.status === 'error') {
-      setIsPolling(false)
-      if (sportStatus.status === 'done') {
-        qc.invalidateQueries({ queryKey: ['card-targets'] })
-      }
-    }
-  }, [sportStatus, isPolling, qc])
-
-  const recalcMutation = useMutation({
-    mutationFn: () => api.recalculateCardTargets([sport]),
-    onSuccess: () => {
-      setIsPolling(true)
-      qc.invalidateQueries({ queryKey: ['recalculate-status'] })
-    },
-  })
-
-  const isRunning = recalcMutation.isPending || sportStatus?.status === 'running'
-
-  function recalcBannerContent(): string | null {
-    if (recalcMutation.isError) return 'Failed to start recalculation.'
-    if (sportStatus?.status === 'running') return `Recalculating ${sport} targets…`
-    if (sportStatus?.status === 'done' && isPolling === false && sportStatus.count != null)
-      return `Done — ${sportStatus.count} ${sport} targets calculated.`
-    if (sportStatus?.status === 'error') return `Recalculation error: ${sportStatus.error ?? 'unknown'}`
-    return null
-  }
-
-  const recalcMsg = recalcBannerContent()
-
   const rows = data?.data ?? []
   const total = data?.total ?? 0
 
@@ -323,28 +277,15 @@ export function CardTargetsPage() {
             Top buy opportunities ranked by risk-adjusted score
           </p>
         </div>
-        <button
-          onClick={() => recalcMutation.mutate()}
-          disabled={isRunning}
+        <a
+          href="https://github.com/samfromatx/brick-squad-sales-targets/actions/workflows/recalculate-card-targets.yml"
+          target="_blank"
+          rel="noopener noreferrer"
           style={recalcBtn}
         >
-          {isRunning
-            ? <><span style={inlineSpinner} /> Recalculating…</>
-            : '⟳ Recalculate'
-          }
-        </button>
+          ⟳ Recalculate
+        </a>
       </div>
-
-      {recalcMsg && (
-        <div style={{
-          ...recalcBanner,
-          borderColor: sportStatus?.status === 'error' ? '#fecaca' : '#bbf7d0',
-          background: sportStatus?.status === 'error' ? '#fef2f2' : '#f0fdf4',
-          color: sportStatus?.status === 'error' ? '#991b1b' : '#166534',
-        }}>
-          {recalcMsg}
-        </div>
-      )}
 
       {/* Sport tabs */}
       <div style={tabRow}>
@@ -530,26 +471,6 @@ const recalcBtn: React.CSSProperties = {
   gap: 6,
 }
 
-const inlineSpinner: React.CSSProperties = {
-  width: 12,
-  height: 12,
-  border: '2px solid rgba(255,255,255,0.4)',
-  borderTopColor: '#fff',
-  borderRadius: '50%',
-  animation: 'spin 0.8s linear infinite',
-  display: 'inline-block',
-  flexShrink: 0,
-}
-
-const recalcBanner: React.CSSProperties = {
-  margin: '0 20px 8px',
-  padding: '8px 12px',
-  background: '#f0fdf4',
-  border: '1px solid #bbf7d0',
-  borderRadius: 6,
-  fontSize: 13,
-  color: '#166534',
-}
 
 const tabRow: React.CSSProperties = {
   display: 'flex',

@@ -225,10 +225,6 @@ class MarketDataBatchResponse(BaseModel):
 
 # --- Card Targets models ---
 
-class CardTargetsRecalculateRequest(BaseModel):
-    sports: list[Literal["football", "basketball"]]
-
-
 class CardTargetScoresResponse(BaseModel):
     market_score: float
     value_score: float
@@ -283,34 +279,6 @@ class CardTargetResponse(BaseModel):
 class CardTargetsListResponse(BaseModel):
     data: list[CardTargetResponse]
     total: int
-
-
-class RecalculateResult(BaseModel):
-    sport: str
-    count: int
-    calculated_at: str
-
-
-class CardTargetsRecalculateResponse(BaseModel):
-    success: bool
-    results: list[RecalculateResult]
-
-
-class CardTargetsRecalculateAcceptedResponse(BaseModel):
-    accepted: bool
-    sports: list[str]
-
-
-class RecalculateStatusEntry(BaseModel):
-    status: Literal["idle", "running", "done", "error"]
-    count: int | None = None
-    started_at: str | None = None
-    finished_at: str | None = None
-    error: str | None = None
-
-
-class CardTargetsRecalculateStatusResponse(BaseModel):
-    sports: dict[str, RecalculateStatusEntry]
 
 
 class PlayerMetadataResponse(BaseModel):

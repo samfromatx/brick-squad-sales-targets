@@ -352,33 +352,6 @@ export interface CardTargetsListResponse {
   total: number
 }
 
-export interface RecalculateResult {
-  sport: string
-  count: number
-  calculated_at: string
-}
-
-export interface CardTargetsRecalculateResponse {
-  success: boolean
-  results: RecalculateResult[]
-}
-
-export interface CardTargetsRecalculateAcceptedResponse {
-  accepted: boolean
-  sports: string[]
-}
-
-export interface RecalculateStatusEntry {
-  status: 'idle' | 'running' | 'done' | 'error'
-  count: number | null
-  started_at: string | null
-  finished_at: string | null
-  error: string | null
-}
-
-export interface CardTargetsRecalculateStatusResponse {
-  sports: Record<string, RecalculateStatusEntry>
-}
 
 export interface PlayerMetadata {
   id: number
