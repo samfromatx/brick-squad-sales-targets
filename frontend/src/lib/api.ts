@@ -1,6 +1,5 @@
 import { getAccessToken, refreshAccessToken } from './auth'
 import type {
-  CardTargetResult,
   CardTargetsListResponse,
   CardTargetsRecalculateResponse,
   EbaySearch,

@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import type {
   CardTargetResult,
-  RecommendationStrength,
   SupportedTargetSport,
 } from '../lib/types'
 
