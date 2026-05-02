@@ -34,27 +34,9 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
-      - name: Resolve DB hostname to IPv4
-        # GitHub Actions resolves Supabase hostnames to IPv6, which is not routable.
-        # Replace the hostname in SUPABASE_DB_URL with its IPv4 address before connecting.
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          python3 - <<'PYEOF'
-          import os, socket
-          from urllib.parse import urlparse
-          url = os.environ['SUPABASE_DB_URL']
-          parsed = urlparse(url)
-          results = socket.getaddrinfo(parsed.hostname, None, socket.AF_INET)
-          ipv4 = results[0][4][0]
-          new_url = url.replace(f'@{parsed.hostname}', f'@{ipv4}', 1)
-          with open(os.environ['GITHUB_ENV'], 'a') as f:
-              f.write(f'SUPABASE_DB_URL={new_url}\n')
-          print(f'Resolved {parsed.hostname} -> {ipv4}')
-          PYEOF
-
       - name: Run recalculation
         env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
