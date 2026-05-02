@@ -54,8 +54,7 @@ test.describe('JSON import', () => {
     await page.locator('input[type="file"]').setInputFiles(tmpFile)
     await expect(page.getByRole('button', { name: /^import$/i })).toBeEnabled({ timeout: 2000 })
     await page.getByRole('button', { name: /^import$/i }).click()
-    await expect(page.getByText(/imported/i)).toBeVisible({ timeout: 5000 })
-    await expect(page.getByText('football_graded')).toBeVisible()
+    await expect(page.getByText(/✓ Imported.*football_graded/i)).toBeVisible({ timeout: 5000 })
   })
 
   test('failed import shows error message', async ({ page }) => {

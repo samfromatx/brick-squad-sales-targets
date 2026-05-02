@@ -154,12 +154,13 @@ export async function mockAuth(page: Page) {
 export async function mockApi(page: Page, overrides: Record<string, unknown> = {}) {
   const routes: Record<string, unknown> = {
     '**/api/v1/bootstrap': MOCK_BOOTSTRAP,
-    '**/api/v1/targets': { data: MOCK_BOOTSTRAP.data.targets },
-    '**/api/v1/portfolios': MOCK_PORTFOLIOS,
-    '**/api/v1/portfolio-entries': MOCK_ENTRIES,
-    '**/api/v1/ebay-searches': MOCK_EBAY,
+    '**/api/v1/targets**': { data: MOCK_BOOTSTRAP.data.targets },
+    '**/api/v1/portfolios**': MOCK_PORTFOLIOS,
+    '**/api/v1/portfolio-entries**': MOCK_ENTRIES,
+    '**/api/v1/ebay-searches**': MOCK_EBAY,
     '**/api/v1/trends/search**': { data: [{ card: 'Mahomes 2017 Prizm', sport: 'football' }] },
     '**/api/v1/trends/detail**': { card: 'Mahomes 2017 Prizm', sport: 'football', windows: [] },
+    '**/api/v1/market-data/batch': { results: [] },
     ...overrides,
   }
 
