@@ -279,9 +279,7 @@ export function CardTargetsPage() {
         </div>
         <a
           href="https://github.com/samfromatx/brick-squad-sales-targets/actions/workflows/recalculate-card-targets.yml"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={recalcBtn}
+          style={{ ...recalcBtn, textDecoration: 'none' }}
         >
           ⟳ Recalculate
         </a>
