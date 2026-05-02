@@ -15,9 +15,15 @@ class Settings(BaseSettings):
     port: int = 8000
     allowed_origins: str = "http://localhost:5173"
 
+    admin_emails: str = ""
+
     @property
     def allowed_origins_list(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+
+    @property
+    def admin_emails_set(self) -> set[str]:
+        return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
 
 
 settings = Settings()

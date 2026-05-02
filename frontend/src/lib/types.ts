@@ -273,3 +273,132 @@ export interface TrendAnalysisResponse {
   bounce_back: BounceBackSignals | null
   window_prices: WindowRow[]
 }
+
+// ── Card Targets types ─────────────────────────────────────────────────────
+
+export type SupportedTargetSport = 'football' | 'basketball'
+
+export type CardGrade = 'Raw' | 'PSA 9' | 'PSA 10'
+
+export type MarketConfidence = 'Low' | 'Medium' | 'High'
+
+export type RecommendationStrength =
+  | 'Strong Buy Target'
+  | 'Buy Target'
+  | 'Value Target'
+  | 'Watchlist Target'
+  | 'Avoid / Overheated'
+
+export type StrategyType =
+  | 'Grade Target'
+  | 'Slab Target'
+  | 'Momentum Target'
+  | 'Bounce-back Target'
+  | null
+
+export interface CardTargetWarning {
+  code: string
+  message: string
+}
+
+export interface CardTargetScores {
+  market_score: number
+  value_score: number
+  timing_score: number
+  player_score: number
+  risk_penalty: number
+  target_score: number
+}
+
+export interface CardTargetResult {
+  sport: SupportedTargetSport
+  card: string
+  player_name: string
+  player_key: string
+  recommended_grade: CardGrade
+  recommendation_strength: RecommendationStrength
+  strategy_type: StrategyType
+  recommendation: string
+  rank: number
+
+  target_buy_price: number | null
+  current_price: number | null
+
+  avg_7d: number | null
+  avg_14d: number | null
+  avg_30d: number | null
+  avg_90d: number | null
+  avg_180d: number | null
+
+  raw_avg_30d: number | null
+  psa9_avg_30d: number | null
+  psa10_avg_30d: number | null
+
+  market_confidence: MarketConfidence
+  liquidity_label: string | null
+  total_90d_sales: number | null
+  trend_label: string | null
+  volume_signal: string | null
+  volatility_label: string | null
+
+  scores: CardTargetScores
+  justification: string[]
+  warnings: CardTargetWarning[]
+  full_analysis: Record<string, unknown>
+}
+
+export interface CardTargetsListResponse {
+  data: CardTargetResult[]
+  total: number
+}
+
+export interface RecalculateResult {
+  sport: string
+  count: number
+  calculated_at: string
+}
+
+export interface CardTargetsRecalculateResponse {
+  success: boolean
+  results: RecalculateResult[]
+}
+
+export interface PlayerMetadata {
+  id: number
+  player_name: string
+  player_key: string
+  sport: SupportedTargetSport
+  team?: string | null
+  position?: string | null
+  rookie_year?: number | null
+  active?: boolean | null
+  hobby_tier: number
+  upside_score: number
+  current_relevance_score: number
+  manual_catalyst_score: number
+  risk_score: number
+  manual_catalyst?: string | null
+  notes?: string | null
+  needs_review: boolean
+  last_seen_at: string
+}
+
+export interface PlayerMetadataListResponse {
+  data: PlayerMetadata[]
+  total: number
+}
+
+export interface PlayerMetadataUpdatePayload {
+  team?: string | null
+  position?: string | null
+  rookie_year?: number | null
+  active?: boolean | null
+  hobby_tier?: number
+  upside_score?: number
+  current_relevance_score?: number
+  manual_catalyst_score?: number
+  risk_score?: number
+  manual_catalyst?: string | null
+  notes?: string | null
+  needs_review?: boolean
+}

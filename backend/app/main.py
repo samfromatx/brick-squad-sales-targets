@@ -7,6 +7,7 @@ from app.core.logging import RequestIDMiddleware, configure_logging, get_request
 from app.routers import (
     admin,
     bootstrap,
+    card_targets,
     ebay,
     exports,
     health,
@@ -58,3 +59,4 @@ app.include_router(ebay.router, prefix=API_PREFIX)
 app.include_router(imports.router, prefix=API_PREFIX)
 app.include_router(exports.router, prefix=API_PREFIX)
 app.include_router(market_data.router, prefix=API_PREFIX)
+app.include_router(card_targets.router, prefix=API_PREFIX)

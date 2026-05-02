@@ -1,13 +1,20 @@
 import { getAccessToken, refreshAccessToken } from './auth'
 import type {
+  CardTargetResult,
+  CardTargetsListResponse,
+  CardTargetsRecalculateResponse,
   EbaySearch,
   ExportSnapshot,
   MarketDataBatchResponse,
   PaginatedResponse,
+  PlayerMetadata,
+  PlayerMetadataListResponse,
+  PlayerMetadataUpdatePayload,
   PortfolioAllocation,
   PortfolioEntry,
   PortfolioEntryCreate,
   PortfolioEntryUpdate,
+  SupportedTargetSport,
   Target,
   TrendAnalysisResponse,
   TrendSearchResult,
@@ -154,6 +161,56 @@ class ApiClient {
   importTargets(payload: Record<string, unknown>): Promise<{ imported: string[]; last_updated: string }> {
     return this.request<{ imported: string[]; last_updated: string }>('/api/v1/imports/targets', {
       method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  }
+
+  // ── Card Targets ───────────────────────────────────────────────────────────
+
+  getCardTargets(params: {
+    sport: SupportedTargetSport
+    view?: 'buy' | 'watchlist' | 'overheated' | 'all'
+    min_price?: number
+    max_price?: number
+    q?: string
+    limit?: number
+    offset?: number
+  }): Promise<CardTargetsListResponse> {
+    const qs = new URLSearchParams()
+    qs.set('sport', params.sport)
+    if (params.view)      qs.set('view', params.view)
+    if (params.min_price != null) qs.set('min_price', String(params.min_price))
+    if (params.max_price != null) qs.set('max_price', String(params.max_price))
+    if (params.q)         qs.set('q', params.q)
+    if (params.limit != null)  qs.set('limit', String(params.limit))
+    if (params.offset != null) qs.set('offset', String(params.offset))
+    return this.request<CardTargetsListResponse>(`/api/v1/card-targets?${qs.toString()}`)
+  }
+
+  recalculateCardTargets(sports: SupportedTargetSport[]): Promise<CardTargetsRecalculateResponse> {
+    return this.request<CardTargetsRecalculateResponse>('/api/v1/card-targets/recalculate', {
+      method: 'POST',
+      body: JSON.stringify({ sports }),
+    })
+  }
+
+  getPlayerMetadata(params: {
+    sport?: SupportedTargetSport
+    needs_review?: boolean
+    limit?: number
+    offset?: number
+  }): Promise<PlayerMetadataListResponse> {
+    const qs = new URLSearchParams()
+    if (params.sport)     qs.set('sport', params.sport)
+    if (params.needs_review != null) qs.set('needs_review', String(params.needs_review))
+    if (params.limit != null)  qs.set('limit', String(params.limit))
+    if (params.offset != null) qs.set('offset', String(params.offset))
+    return this.request<PlayerMetadataListResponse>(`/api/v1/player-metadata?${qs.toString()}`)
+  }
+
+  updatePlayerMetadata(id: number, payload: Partial<PlayerMetadataUpdatePayload>): Promise<PlayerMetadata> {
+    return this.request<PlayerMetadata>(`/api/v1/player-metadata/${id}`, {
+      method: 'PATCH',
       body: JSON.stringify(payload),
     })
   }

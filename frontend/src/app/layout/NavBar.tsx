@@ -4,10 +4,11 @@ import { supabase, signOut } from '../../lib/auth'
 import { TrendBar } from './TrendBar'
 
 const TAB_LINKS = [
-  { to: '/overview',   label: 'Overview' },
-  { to: '/dashboard',  label: '🏈 Targets' },
-  { to: '/tools',      label: '🔧 Tools' },
-  { to: '/ebay',       label: '🛒 eBay' },
+  { to: '/overview',      label: 'Overview' },
+  { to: '/dashboard',     label: '🏈 Targets' },
+  { to: '/card-targets',  label: '🎯 Card Targets' },
+  { to: '/tools',         label: '🔧 Tools' },
+  { to: '/ebay',          label: '🛒 eBay' },
 ]
 
 export function NavBar() {

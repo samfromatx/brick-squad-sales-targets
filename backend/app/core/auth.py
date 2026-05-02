@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -64,3 +66,61 @@ async def get_current_user_id(
 
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+
+@dataclass
+class AuthUser:
+    user_id: str
+    email: str
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+) -> AuthUser:
+    token = credentials.credentials
+    try:
+        header = jwt.get_unverified_header(token)
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    alg = header.get("alg", "HS256")
+
+    try:
+        if alg == "HS256":
+            payload = jwt.decode(
+                token,
+                settings.supabase_jwt_secret,
+                algorithms=["HS256"],
+                options={"verify_aud": False},
+            )
+        else:
+            keys = await _get_public_keys()
+            kid = header.get("kid")
+            key_data = next((k for k in keys if k.get("kid") == kid), None)
+            if key_data is None:
+                key_data = keys[0] if keys else None
+            if key_data is None:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No matching key")
+            public_key = jwk.construct(key_data)
+            payload = jwt.decode(
+                token,
+                public_key,
+                algorithms=[alg],
+                options={"verify_aud": False},
+            )
+
+        user_id: str | None = payload.get("sub")
+        email: str = payload.get("email", "")
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        return AuthUser(user_id=user_id, email=email)
+
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+
+async def require_admin(current_user: AuthUser = Depends(get_current_user)) -> AuthUser:
+    allowed = settings.admin_emails_set
+    if not allowed or current_user.email.lower() not in allowed:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user

@@ -8,6 +8,7 @@ import { TrendPage } from '../pages/TrendPage'
 import { OverviewPage } from '../pages/OverviewPage'
 import { ToolsPage } from '../pages/ToolsPage'
 import { EbayPage } from '../pages/EbayPage'
+import { CardTargetsPage } from '../pages/CardTargetsPage'
 
 export function AppRouter() {
   return (
@@ -22,6 +23,7 @@ export function AppRouter() {
         <Route path="/portfolio" element={<PortfolioPage />} />
         <Route path="/trends" element={<TrendPage />} />
         <Route path="/import" element={<ImportPage />} />
+        <Route path="/card-targets" element={<CardTargetsPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
       </Routes>
     </BrowserRouter>

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -221,3 +221,116 @@ class CardMarketDataResult(BaseModel):
 
 class MarketDataBatchResponse(BaseModel):
     results: list[CardMarketDataResult]
+
+
+# --- Card Targets models ---
+
+class CardTargetsRecalculateRequest(BaseModel):
+    sports: list[Literal["football", "basketball"]]
+
+
+class CardTargetScoresResponse(BaseModel):
+    market_score: float
+    value_score: float
+    timing_score: float
+    player_score: float
+    risk_penalty: float
+    target_score: float
+
+
+class CardTargetWarningResponse(BaseModel):
+    code: str
+    message: str
+
+
+class CardTargetResponse(BaseModel):
+    sport: Literal["football", "basketball"]
+    card: str
+    player_name: str
+    player_key: str
+    recommended_grade: Literal["Raw", "PSA 9", "PSA 10"]
+    recommendation_strength: str
+    strategy_type: str | None = None
+    recommendation: str
+    rank: int
+
+    target_buy_price: float | None = None
+    current_price: float | None = None
+
+    avg_7d: float | None = None
+    avg_14d: float | None = None
+    avg_30d: float | None = None
+    avg_90d: float | None = None
+    avg_180d: float | None = None
+
+    raw_avg_30d: float | None = None
+    psa9_avg_30d: float | None = None
+    psa10_avg_30d: float | None = None
+
+    market_confidence: Literal["Low", "Medium", "High"]
+    liquidity_label: str | None = None
+    total_90d_sales: int | None = None
+    trend_label: str | None = None
+    volume_signal: str | None = None
+    volatility_label: str | None = None
+
+    scores: CardTargetScoresResponse
+    justification: list[str]
+    warnings: list[CardTargetWarningResponse]
+    full_analysis: dict[str, Any]
+
+
+class CardTargetsListResponse(BaseModel):
+    data: list[CardTargetResponse]
+    total: int
+
+
+class RecalculateResult(BaseModel):
+    sport: str
+    count: int
+    calculated_at: str
+
+
+class CardTargetsRecalculateResponse(BaseModel):
+    success: bool
+    results: list[RecalculateResult]
+
+
+class PlayerMetadataResponse(BaseModel):
+    id: int
+    player_name: str
+    player_key: str
+    sport: str
+    team: str | None = None
+    position: str | None = None
+    rookie_year: int | None = None
+    active: bool | None = None
+    hobby_tier: int
+    upside_score: int
+    current_relevance_score: int
+    manual_catalyst_score: int
+    risk_score: int
+    manual_catalyst: str | None = None
+    notes: str | None = None
+    needs_review: bool
+    last_seen_at: str
+
+
+class PlayerMetadataListResponse(BaseModel):
+    data: list[PlayerMetadataResponse]
+    total: int
+
+
+class PlayerMetadataUpdateRequest(BaseModel):
+    team: str | None = None
+    position: str | None = None
+    rookie_year: int | None = None
+    active: bool | None = None
+    hobby_tier: int | None = None
+    upside_score: int | None = None
+    current_relevance_score: int | None = None
+    manual_catalyst_score: int | None = None
+    risk_score: int | None = None
+    manual_catalyst: str | None = None
+    notes: str | None = None
+    needs_review: bool | None = None
