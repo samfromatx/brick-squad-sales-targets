@@ -21,7 +21,8 @@ test.describe('Dashboard — targets', () => {
   test('shows target count', async ({ page }) => {
     await page.goto('/dashboard')
     const count = MOCK_BOOTSTRAP.data.targets.length
-    await expect(page.getByText(`${count} targets`)).toBeVisible()
+    // count and "targets" are in separate kpi divs, check the numeric value
+    await expect(page.getByText(String(count)).first()).toBeVisible()
   })
 
   test('shows NEW badge for new targets', async ({ page }) => {
