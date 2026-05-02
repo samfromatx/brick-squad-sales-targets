@@ -251,7 +251,7 @@ export function CardTargetsPage() {
   const [minPrice, setMinPrice] = useState<string>('10')
   const [maxPrice, setMaxPrice] = useState<string>('200')
   const [selected, setSelected] = useState<CardTargetResult | null>(null)
-  const [recalcMsg, setRecalcMsg] = useState<string | null>(null)
+  const [isPolling, setIsPolling] = useState(false)
 
   const debouncedSearch = useDebounce(search, 300)
 
@@ -267,19 +267,48 @@ export function CardTargetsPage() {
     }),
   })
 
-  const recalcMutation = useMutation({
-    mutationFn: () => api.recalculateCardTargets([sport]),
-    onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['card-targets'] })
-      const r = res.results[0]
-      setRecalcMsg(`Recalculated ${r?.count ?? 0} ${sport} targets.`)
-      setTimeout(() => setRecalcMsg(null), 5000)
-    },
-    onError: () => {
-      setRecalcMsg('Recalculation failed.')
-      setTimeout(() => setRecalcMsg(null), 5000)
+  const { data: statusData } = useQuery({
+    queryKey: ['recalculate-status'],
+    queryFn: () => api.getRecalculateStatus(),
+    enabled: isPolling,
+    refetchInterval: (query) => {
+      const sportStatus = query.state.data?.sports[sport]
+      return sportStatus?.status === 'running' ? 1500 : false
     },
   })
+
+  const sportStatus = statusData?.sports[sport]
+
+  useEffect(() => {
+    if (!isPolling) return
+    if (sportStatus?.status === 'done' || sportStatus?.status === 'error') {
+      setIsPolling(false)
+      if (sportStatus.status === 'done') {
+        qc.invalidateQueries({ queryKey: ['card-targets'] })
+      }
+    }
+  }, [sportStatus, isPolling, qc])
+
+  const recalcMutation = useMutation({
+    mutationFn: () => api.recalculateCardTargets([sport]),
+    onSuccess: () => {
+      setIsPolling(true)
+      qc.invalidateQueries({ queryKey: ['recalculate-status'] })
+    },
+  })
+
+  const isRunning = recalcMutation.isPending || sportStatus?.status === 'running'
+
+  function recalcBannerContent(): string | null {
+    if (recalcMutation.isError) return 'Failed to start recalculation.'
+    if (sportStatus?.status === 'running') return `Recalculating ${sport} targets…`
+    if (sportStatus?.status === 'done' && isPolling === false && sportStatus.count != null)
+      return `Done — ${sportStatus.count} ${sport} targets calculated.`
+    if (sportStatus?.status === 'error') return `Recalculation error: ${sportStatus.error ?? 'unknown'}`
+    return null
+  }
+
+  const recalcMsg = recalcBannerContent()
 
   const rows = data?.data ?? []
   const total = data?.total ?? 0
@@ -296,14 +325,26 @@ export function CardTargetsPage() {
         </div>
         <button
           onClick={() => recalcMutation.mutate()}
-          disabled={recalcMutation.isPending}
+          disabled={isRunning}
           style={recalcBtn}
         >
-          {recalcMutation.isPending ? 'Recalculating…' : '⟳ Recalculate'}
+          {isRunning
+            ? <><span style={inlineSpinner} /> Recalculating…</>
+            : '⟳ Recalculate'
+          }
         </button>
       </div>
 
-      {recalcMsg && <div style={recalcBanner}>{recalcMsg}</div>}
+      {recalcMsg && (
+        <div style={{
+          ...recalcBanner,
+          borderColor: sportStatus?.status === 'error' ? '#fecaca' : '#bbf7d0',
+          background: sportStatus?.status === 'error' ? '#fef2f2' : '#f0fdf4',
+          color: sportStatus?.status === 'error' ? '#991b1b' : '#166534',
+        }}>
+          {recalcMsg}
+        </div>
+      )}
 
       {/* Sport tabs */}
       <div style={tabRow}>
@@ -484,6 +525,20 @@ const recalcBtn: React.CSSProperties = {
   borderRadius: 6,
   padding: '7px 14px',
   cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+}
+
+const inlineSpinner: React.CSSProperties = {
+  width: 12,
+  height: 12,
+  border: '2px solid rgba(255,255,255,0.4)',
+  borderTopColor: '#fff',
+  borderRadius: '50%',
+  animation: 'spin 0.8s linear infinite',
+  display: 'inline-block',
+  flexShrink: 0,
 }
 
 const recalcBanner: React.CSSProperties = {

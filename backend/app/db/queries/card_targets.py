@@ -5,6 +5,7 @@ import json
 import psycopg
 
 from app.db.connection import db_cursor, get_connection
+from app.models.domain import CardMarketRow
 
 
 def load_card_candidates(sport: str) -> list[dict]:
@@ -87,6 +88,57 @@ def load_player_metadata_map(sport: str) -> dict[str, dict]:
         cur.execute(sql, (sport,))
         rows = cur.fetchall()
     return {r["player_key"]: r for r in rows}
+
+
+def bulk_load_card_market_data(sport: str) -> dict[str, list[CardMarketRow]]:
+    """Load all card_market_data rows for a sport in one query, grouped by card."""
+    sql = """
+        SELECT sport, window_days, card, grade,
+               avg, num_sales, price_change_pct, price_change_dollar,
+               starting_price, last_sale,
+               CASE WHEN last_sale_date IS NOT NULL AND last_sale_date != ''
+                    THEN TO_DATE(last_sale_date, 'MM/DD/YYYY') END AS last_sale_date,
+               min_sale, max_sale, volume_change_pct, total_sales_dollar
+        FROM card_market_data
+        WHERE sport = %s
+        ORDER BY card, window_days, grade
+    """
+    with db_cursor() as cur:
+        cur.execute(sql, [sport])
+        rows = cur.fetchall()
+
+    result: dict[str, list[CardMarketRow]] = {}
+    for r in rows:
+        card = r["card"]
+        if card not in result:
+            result[card] = []
+        result[card].append(CardMarketRow(
+            sport=r["sport"],
+            window_days=r["window_days"],
+            card=r["card"],
+            grade=r["grade"],
+            avg=r["avg"],
+            num_sales=r["num_sales"],
+            price_change_pct=r["price_change_pct"],
+            price_change_dollar=r["price_change_dollar"],
+            starting_price=r["starting_price"],
+            last_sale=r["last_sale"],
+            last_sale_date=r["last_sale_date"],
+            min_sale=r["min_sale"],
+            max_sale=r["max_sale"],
+            volume_change_pct=r["volume_change_pct"],
+            total_sales_dollar=r["total_sales_dollar"],
+        ))
+    return result
+
+
+def bulk_load_gem_rates(sport: str) -> dict[str, float]:
+    """Load all gem rates for a sport in one query, keyed by card name."""
+    sql = "SELECT card, gem_rate FROM gem_rates WHERE sport = %s"
+    with db_cursor() as cur:
+        cur.execute(sql, [sport])
+        rows = cur.fetchall()
+    return {r["card"]: float(r["gem_rate"]) for r in rows}
 
 
 def upsert_player_metadata(rows: list[dict]) -> None:

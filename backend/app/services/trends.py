@@ -383,9 +383,11 @@ def _raw_viability_ratio(
 # ── Step 11 ────────────────────────────────────────────────────────────────
 
 def _gem_rate_lookup(
-    card: str, sport: str, warnings: list[AnalysisWarning]
+    card: str, sport: str, warnings: list[AnalysisWarning],
+    prefetched_rate: float | None = None,
+    use_prefetched: bool = False,
 ) -> tuple[float, str]:
-    rate = get_gem_rate(card, sport)
+    rate = prefetched_rate if use_prefetched else get_gem_rate(card, sport)
     if rate is not None:
         return rate, "card_specific"
 
@@ -721,9 +723,13 @@ def _primary_reason(
 # ── Main entry point ───────────────────────────────────────────────────────
 
 def run_trend_analysis(
-    card: str, sport: str
+    card: str,
+    sport: str,
+    prefetched_rows: list[CardMarketRow] | None = None,
+    prefetched_gem_rate: float | None = None,
+    has_prefetched_gem_rate: bool = False,
 ) -> Optional[TrendAnalysisResponse]:
-    rows = get_card_market_data(card, sport)
+    rows = prefetched_rows if prefetched_rows is not None else get_card_market_data(card, sport)
     if not rows:
         return None
 
@@ -804,7 +810,11 @@ def run_trend_analysis(
         ))
 
     # Step 11: gem rate — always looked up; needed for verdict even when EV is blocked
-    gem_rate, gem_rate_source = _gem_rate_lookup(card, sport, warnings)
+    gem_rate, gem_rate_source = _gem_rate_lookup(
+        card, sport, warnings,
+        prefetched_rate=prefetched_gem_rate,
+        use_prefetched=has_prefetched_gem_rate,
+    )
 
     if not raw_blocked and not strong_downtrend:
         # Step 12: run EV model if all anchors present and ratio viable

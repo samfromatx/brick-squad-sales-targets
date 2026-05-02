@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from app.core.auth import get_current_user_id
 from app.db.queries.card_targets import (
@@ -16,12 +16,15 @@ from app.models.api import (
     CardTargetScoresResponse,
     CardTargetWarningResponse,
     CardTargetsListResponse,
+    CardTargetsRecalculateAcceptedResponse,
     CardTargetsRecalculateRequest,
     CardTargetsRecalculateResponse,
+    CardTargetsRecalculateStatusResponse,
     PlayerMetadataListResponse,
     PlayerMetadataResponse,
     PlayerMetadataUpdateRequest,
     RecalculateResult,
+    RecalculateStatusEntry,
 )
 from app.services.card_targets import (
     SUPPORTED_SPORTS,
@@ -31,6 +34,28 @@ from app.services.card_targets import (
 )
 
 router = APIRouter(tags=["card-targets"])
+
+# In-memory recalculation status, keyed by sport
+_recalc_status: dict[str, dict] = {}
+
+
+def _run_recalculate_background(sports: list[str]) -> None:
+    for sport in sports:
+        try:
+            results = calculate_card_targets_for_sport(sport)
+            count = persist_card_targets(sport, results)
+            _recalc_status[sport].update({
+                "status": "done",
+                "count": count,
+                "finished_at": datetime.now(timezone.utc).isoformat(),
+                "error": None,
+            })
+        except Exception as exc:
+            _recalc_status[sport].update({
+                "status": "error",
+                "finished_at": datetime.now(timezone.utc).isoformat(),
+                "error": str(exc),
+            })
 
 
 def _row_to_card_target_response(row: dict) -> CardTargetResponse:
@@ -108,29 +133,56 @@ def _row_to_player_metadata_response(row: dict) -> PlayerMetadataResponse:
 
 
 # ---------------------------------------------------------------------------
-# POST /card-targets/recalculate  (admin only)
+# POST /card-targets/recalculate  (admin only) — starts a background job
 # ---------------------------------------------------------------------------
 
-@router.post("/card-targets/recalculate", response_model=CardTargetsRecalculateResponse)
+@router.post("/card-targets/recalculate", response_model=CardTargetsRecalculateAcceptedResponse)
 def recalculate_card_targets(
     body: CardTargetsRecalculateRequest,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user_id),
-) -> CardTargetsRecalculateResponse:
+) -> CardTargetsRecalculateAcceptedResponse:
     invalid = [s for s in body.sports if s not in SUPPORTED_SPORTS]
     if invalid:
         raise HTTPException(status_code=400, detail=f"Unsupported sports: {invalid}")
 
+    for sport in body.sports:
+        if _recalc_status.get(sport, {}).get("status") == "running":
+            raise HTTPException(status_code=409, detail=f"Recalculation already running for {sport}")
+
+    now = datetime.now(timezone.utc).isoformat()
     sync_player_metadata_for_sports(body.sports)
 
-    recalc_results: list[RecalculateResult] = []
-    now = datetime.now(timezone.utc).isoformat()
-
     for sport in body.sports:
-        results = calculate_card_targets_for_sport(sport)
-        count   = persist_card_targets(sport, results)
-        recalc_results.append(RecalculateResult(sport=sport, count=count, calculated_at=now))
+        _recalc_status[sport] = {
+            "status": "running",
+            "count": None,
+            "started_at": now,
+            "finished_at": None,
+            "error": None,
+        }
 
-    return CardTargetsRecalculateResponse(success=True, results=recalc_results)
+    background_tasks.add_task(_run_recalculate_background, body.sports)
+
+    return CardTargetsRecalculateAcceptedResponse(accepted=True, sports=body.sports)
+
+
+# ---------------------------------------------------------------------------
+# GET /card-targets/recalculate/status
+# ---------------------------------------------------------------------------
+
+@router.get("/card-targets/recalculate/status", response_model=CardTargetsRecalculateStatusResponse)
+def get_recalculate_status(
+    user_id: str = Depends(get_current_user_id),
+) -> CardTargetsRecalculateStatusResponse:
+    sports_status: dict[str, RecalculateStatusEntry] = {}
+    for sport in SUPPORTED_SPORTS:
+        entry = _recalc_status.get(sport)
+        if entry:
+            sports_status[sport] = RecalculateStatusEntry(**entry)
+        else:
+            sports_status[sport] = RecalculateStatusEntry(status="idle")
+    return CardTargetsRecalculateStatusResponse(sports=sports_status)
 
 
 # ---------------------------------------------------------------------------

@@ -296,6 +296,23 @@ class CardTargetsRecalculateResponse(BaseModel):
     results: list[RecalculateResult]
 
 
+class CardTargetsRecalculateAcceptedResponse(BaseModel):
+    accepted: bool
+    sports: list[str]
+
+
+class RecalculateStatusEntry(BaseModel):
+    status: Literal["idle", "running", "done", "error"]
+    count: int | None = None
+    started_at: str | None = None
+    finished_at: str | None = None
+    error: str | None = None
+
+
+class CardTargetsRecalculateStatusResponse(BaseModel):
+    sports: dict[str, RecalculateStatusEntry]
+
+
 class PlayerMetadataResponse(BaseModel):
     id: int
     player_name: str

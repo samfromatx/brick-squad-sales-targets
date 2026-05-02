@@ -1,7 +1,9 @@
 import { getAccessToken, refreshAccessToken } from './auth'
 import type {
   CardTargetsListResponse,
+  CardTargetsRecalculateAcceptedResponse,
   CardTargetsRecalculateResponse,
+  CardTargetsRecalculateStatusResponse,
   EbaySearch,
   ExportSnapshot,
   MarketDataBatchResponse,
@@ -186,11 +188,15 @@ class ApiClient {
     return this.request<CardTargetsListResponse>(`/api/v1/card-targets?${qs.toString()}`)
   }
 
-  recalculateCardTargets(sports: SupportedTargetSport[]): Promise<CardTargetsRecalculateResponse> {
-    return this.request<CardTargetsRecalculateResponse>('/api/v1/card-targets/recalculate', {
+  recalculateCardTargets(sports: SupportedTargetSport[]): Promise<CardTargetsRecalculateAcceptedResponse> {
+    return this.request<CardTargetsRecalculateAcceptedResponse>('/api/v1/card-targets/recalculate', {
       method: 'POST',
       body: JSON.stringify({ sports }),
     })
+  }
+
+  getRecalculateStatus(): Promise<CardTargetsRecalculateStatusResponse> {
+    return this.request<CardTargetsRecalculateStatusResponse>('/api/v1/card-targets/recalculate/status')
   }
 
   getPlayerMetadata(params: {

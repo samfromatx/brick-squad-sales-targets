@@ -567,13 +567,20 @@ def sync_player_metadata_for_sports(sports: list[str]) -> None:
 # ---------------------------------------------------------------------------
 
 def calculate_card_targets_for_sport(sport: str) -> list[dict]:
-    candidates = ct_db.load_card_candidates(sport)
-    players    = ct_db.load_player_metadata_map(sport)
-    results    = []
+    candidates       = ct_db.load_card_candidates(sport)
+    players          = ct_db.load_player_metadata_map(sport)
+    all_market_data  = ct_db.bulk_load_card_market_data(sport)
+    all_gem_rates    = ct_db.bulk_load_gem_rates(sport)
+    results          = []
 
     for candidate in candidates:
+        card = candidate["card"]
         analysis: Optional[TrendAnalysisResponse] = run_trend_analysis(
-            card=candidate["card"], sport=sport
+            card=card,
+            sport=sport,
+            prefetched_rows=all_market_data.get(card, []),
+            prefetched_gem_rate=all_gem_rates.get(card),
+            has_prefetched_gem_rate=True,
         )
         if analysis is None:
             continue
