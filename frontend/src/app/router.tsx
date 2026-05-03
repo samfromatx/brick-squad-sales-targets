@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { NavBar } from './layout/NavBar'
+import { AppFooter } from './layout/AppFooter'
 import { DashboardPage } from '../pages/DashboardPage'
 import { ImportPage } from '../pages/ImportPage'
 import { PortfolioPage } from '../pages/PortfolioPage'
@@ -13,19 +14,24 @@ import { CardTargetsPage } from '../pages/CardTargetsPage'
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/overview" element={<OverviewPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/tools/*" element={<ToolsPage />} />
-        <Route path="/ebay" element={<EbayPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-        <Route path="/trends" element={<TrendPage />} />
-        <Route path="/import" element={<ImportPage />} />
-        <Route path="/card-targets" element={<CardTargetsPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
-      </Routes>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <NavBar />
+        <main style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/card-targets" replace />} />
+            <Route path="/overview" element={<OverviewPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/tools/*" element={<ToolsPage />} />
+            <Route path="/ebay" element={<EbayPage />} />
+            <Route path="/portfolio" element={<PortfolioPage />} />
+            <Route path="/trends" element={<TrendPage />} />
+            <Route path="/import" element={<ImportPage />} />
+            <Route path="/card-targets" element={<CardTargetsPage />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+          </Routes>
+        </main>
+        <AppFooter />
+      </div>
     </BrowserRouter>
   )
 }

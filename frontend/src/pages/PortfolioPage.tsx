@@ -10,25 +10,17 @@ import {
 } from '../features/portfolio/usePortfolioEntries'
 import type { PortfolioEntry, PortfolioEntryCreate } from '../lib/types'
 
-type Filter = 'all' | 'above_cost' | 'at_target' | 'hide_pc' | 'pc_only'
+type SoldFilter = 'all' | 'unsold' | 'sold'
+type PcFilter   = 'all' | 'hide_pc' | 'pc_only'
 
-function applyFilter(entries: PortfolioEntry[], filter: Filter): PortfolioEntry[] {
-  switch (filter) {
-    case 'above_cost':
-      return entries.filter(e => {
-        const cost = e.price_paid + e.grading_cost
-        const val = e.target_sell ?? e.actual_sale
-        return val !== null && val > cost
-      })
-    case 'at_target':
-      return entries.filter(e => e.target_sell !== null && e.actual_sale === null)
-    case 'hide_pc':
-      return entries.filter(e => !e.pc)
-    case 'pc_only':
-      return entries.filter(e => e.pc)
-    default:
-      return entries
-  }
+function applyFilters(entries: PortfolioEntry[], soldFilter: SoldFilter, pcFilter: PcFilter): PortfolioEntry[] {
+  return entries.filter(e => {
+    if (soldFilter === 'unsold' && e.actual_sale !== null) return false
+    if (soldFilter === 'sold'   && e.actual_sale === null) return false
+    if (pcFilter   === 'hide_pc'  && e.pc)  return false
+    if (pcFilter   === 'pc_only'  && !e.pc) return false
+    return true
+  })
 }
 
 export function PortfolioPage() {
@@ -39,10 +31,11 @@ export function PortfolioPage() {
 
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<PortfolioEntry | null>(null)
-  const [filter, setFilter] = useState<Filter>('all')
+  const [soldFilter, setSoldFilter] = useState<SoldFilter>('all')
+  const [pcFilter,   setPcFilter]   = useState<PcFilter>('all')
 
   const allEntries = entriesData?.data ?? []
-  const entries = applyFilter(allEntries, filter)
+  const entries = applyFilters(allEntries, soldFilter, pcFilter)
   const { marketDataMap, isLoading: marketDataLoading } = useMarketData(allEntries)
 
   function openAdd() { setEditing(null); setShowForm(true) }
@@ -98,14 +91,6 @@ export function PortfolioPage() {
       color: actualProfit >= 0 ? '#22c55e' : '#ef4444', valueColor: actualProfit >= 0 ? '#3b6d11' : '#a32d2d' },
   ]
 
-  const FILTERS: { key: Filter; label: string }[] = [
-    { key: 'all',        label: 'All' },
-    { key: 'above_cost', label: 'Above Cost' },
-    { key: 'at_target',  label: 'At Target' },
-    { key: 'hide_pc',    label: 'Hide PC' },
-    { key: 'pc_only',    label: '🎴 PC Only' },
-  ]
-
   return (
     <div style={page}>
       {showForm && (
@@ -120,8 +105,8 @@ export function PortfolioPage() {
 
       {/* Page header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: '1.45rem', letterSpacing: '-0.3px', color: '#1a1a18', marginBottom: 4 }}>🏀🏈 My Portfolio</h1>
-        <p style={{ fontSize: 13, color: '#888780' }}>Track purchases, cost basis, and target returns · Data synced to the cloud</p>
+        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.5px' }}>My Portfolio</h1>
+        <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--ink-3)' }}>Track purchases, cost basis, and target returns</p>
       </div>
 
       {/* KPI strip */}
@@ -137,38 +122,43 @@ export function PortfolioPage() {
         ))}
       </div>
 
-      {/* Add button + filters row */}
+      {/* Add button + segmented filter controls */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
         <button onClick={openAdd} className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           + Add Purchase
         </button>
-        {FILTERS.map(f => (
-          <button
-            key={f.key}
-            className={`pill-btn${filter === f.key ? ' active' : ''}`}
-            onClick={() => setFilter(f.key)}
-          >
-            {f.label}
-          </button>
-        ))}
+
+        {/* Sold status segmented control */}
+        <div style={segmentedWrap}>
+          {([['all', 'All'], ['unsold', 'Unsold'], ['sold', 'Sold']] as [SoldFilter, string][]).map(([key, label]) => (
+            <button key={key} onClick={() => setSoldFilter(key)} style={segmentedBtn(soldFilter === key, false)}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* PC toggle segmented control */}
+        <div style={segmentedWrap}>
+          {([['all', 'All'], ['hide_pc', 'Hide PC'], ['pc_only', 'PC Only']] as [PcFilter, string][]).map(([key, label]) => (
+            <button key={key} onClick={() => setPcFilter(key)} style={segmentedBtn(pcFilter === key, key === 'pc_only' && pcFilter === 'pc_only')}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          <button className="btn-secondary" style={{ fontSize: '.78rem', padding: '5px 12px' }}>↓ Export CSV</button>
+        </div>
       </div>
 
       {/* Table header row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div style={{ marginBottom: 12 }}>
         <h2 className="section-title" style={{ marginBottom: 0 }}>
           Purchase Log
-          <span style={{ fontSize: '.78rem', fontWeight: 400, color: '#888780' }}>
-            {entries.length}{filter !== 'all' ? ` of ${allEntries.length}` : ''} entries
+          <span style={{ fontSize: '.78rem', fontWeight: 400, color: 'var(--ink-3)' }}>
+            {entries.length}{(soldFilter !== 'all' || pcFilter !== 'all') ? ` of ${allEntries.length}` : ''} entries
           </span>
         </h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-secondary" style={{ fontSize: '.78rem', padding: '5px 12px' }}>
-            ↑ Import CSV
-          </button>
-          <button className="btn-secondary" style={{ fontSize: '.78rem', padding: '5px 12px' }}>
-            ↓ Export CSV
-          </button>
-        </div>
       </div>
 
       <EntryTable
@@ -178,7 +168,7 @@ export function PortfolioPage() {
         onEdit={openEdit}
         onDelete={handleDelete}
         onMarkSold={openMarkSold}
-        onPcFilterClick={() => setFilter(f => f === 'pc_only' ? 'all' : 'pc_only')}
+        onPcFilterClick={() => setPcFilter(f => f === 'pc_only' ? 'all' : 'pc_only')}
       />
 
       {(createEntry.isError || updateEntry.isError || deleteEntry.isError) && (
@@ -194,4 +184,30 @@ const page: React.CSSProperties = {
   maxWidth: 1200,
   margin: '0 auto',
   padding: '24px 20px',
+}
+
+const segmentedWrap: React.CSSProperties = {
+  display: 'flex',
+  borderRadius: 8,
+  border: '1px solid var(--border)',
+  overflow: 'hidden',
+  background: 'var(--bg-3)',
+  padding: 2,
+  gap: 2,
+}
+
+function segmentedBtn(active: boolean, isPcOnly: boolean): React.CSSProperties {
+  return {
+    padding: '5px 13px',
+    fontSize: 12,
+    fontWeight: active ? 600 : 400,
+    color: active ? 'var(--ink)' : 'var(--ink-3)',
+    background: active ? (isPcOnly ? '#ede9fe' : 'var(--bg)') : 'transparent',
+    border: 'none',
+    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+    cursor: 'pointer',
+    transition: 'all 0.12s',
+    borderRadius: 6,
+    fontFamily: 'inherit',
+  }
 }
