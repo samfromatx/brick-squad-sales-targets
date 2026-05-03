@@ -200,25 +200,53 @@ class TestEbayRouter:
 
 class TestTrendsRouter:
     def test_search_returns_results(self):
-        with patch("app.routers.trends.search_trend_cards", return_value=[{"card": "Mahomes", "sport": "football"}]):
+        from app.models.api import TrendSearchResult
+        results = [TrendSearchResult(card="Mahomes 2017 Prizm", sport="football")]
+        with patch("app.routers.trends.search_trend_cards", return_value=results):
             with authed_client() as client:
-                r = client.get("/api/v1/trends/search?q=mahomes", headers=AUTH_HEADER)
+                r = client.get("/api/v1/trends/search?q=mahomes&sport=football", headers=AUTH_HEADER)
         assert r.status_code == 200
-        assert len(r.json()["data"]) == 1
+        assert len(r.json()) == 1
+        assert r.json()[0]["card"] == "Mahomes 2017 Prizm"
 
     def test_search_has_short_cache_header(self):
         with patch("app.routers.trends.search_trend_cards", return_value=[]):
             with authed_client() as client:
-                r = client.get("/api/v1/trends/search?q=test", headers=AUTH_HEADER)
+                r = client.get("/api/v1/trends/search?q=test&sport=football", headers=AUTH_HEADER)
         assert "max-age=30" in r.headers.get("cache-control", "")
 
-    def test_detail_returns_card_and_windows(self):
-        detail = {"card": "Mahomes Prizm", "sport": "football", "windows": []}
-        with patch("app.routers.trends.get_trend_detail", return_value=detail):
+    def test_detail_returns_analysis_response(self):
+        from app.models.api import (
+            LiquiditySignal, MarketHealth, TrendAnalysisResponse,
+            TrendHealth, VolumeSignal, VolatilitySignal,
+        )
+        mock_result = TrendAnalysisResponse(
+            verdict="Buy PSA 9",
+            market_confidence="Medium",
+            primary_reason="Test reason",
+            buy_target=None,
+            market_health=MarketHealth(
+                trend=TrendHealth(direction="Stable", ratio=None, source_grade=None, source_window=None),
+                volume=VolumeSignal(signal="Stable", change_pct=None),
+                liquidity=LiquiditySignal(label="Thin", total_90d_sales=4),
+                volatility=VolatilitySignal(label="Moderate", ratio=None),
+            ),
+            ev_model=None,
+            break_even_grade=None,
+            warnings=[],
+            bounce_back=None,
+        )
+        with patch("app.routers.trends.run_trend_analysis", return_value=mock_result):
             with authed_client() as client:
-                r = client.get("/api/v1/trends/detail?card=Mahomes+Prizm", headers=AUTH_HEADER)
+                r = client.get("/api/v1/trends/detail?card=Mahomes+Prizm&sport=football", headers=AUTH_HEADER)
         assert r.status_code == 200
-        assert r.json()["card"] == "Mahomes Prizm"
+        assert r.json()["verdict"] == "Buy PSA 9"
+
+    def test_detail_returns_404_when_no_data(self):
+        with patch("app.routers.trends.run_trend_analysis", return_value=None):
+            with authed_client() as client:
+                r = client.get("/api/v1/trends/detail?card=Unknown+Card&sport=football", headers=AUTH_HEADER)
+        assert r.status_code == 404
 
 
 # ── Bootstrap ─────────────────────────────────────────────────────────────────

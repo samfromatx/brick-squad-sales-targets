@@ -35,7 +35,7 @@ export function TrendBar() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const { data: results } = useTrendSearch(debouncedQ, sport)
+  const { data: results, isError: searchError } = useTrendSearch(debouncedQ, sport)
 
   const handleSportChange = useCallback((s: Sport) => {
     setSport(s)
@@ -86,13 +86,16 @@ export function TrendBar() {
         {/* Search */}
         <div ref={wrapRef} style={{ position: 'relative', flex: 1, minWidth: 0 }}>
           <input
-            style={searchInput}
+            style={searchError ? { ...searchInput, borderColor: '#ef4444' } : searchInput}
             placeholder="e.g. Mahomes Prizm 2017, Wembanyama…"
             value={query}
             onChange={handleInputChange}
             onFocus={() => { if (results?.length) setOpen(true) }}
             onKeyDown={handleKeyDown}
           />
+          {searchError && debouncedQ && (
+            <div style={errorHint}>Search unavailable — check connection</div>
+          )}
           {showDropdown && (
             <ul style={dropdown}>
               {results!.map((r, i) => (
@@ -191,6 +194,21 @@ const dropdown: React.CSSProperties = {
   listStyle: 'none',
   maxHeight: 220,
   overflowY: 'auto',
+}
+
+const errorHint: React.CSSProperties = {
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  right: 0,
+  zIndex: 100,
+  background: '#fef2f2',
+  border: '1px solid #fecaca',
+  borderRadius: 6,
+  padding: '6px 12px',
+  fontSize: 12,
+  color: '#dc2626',
+  marginTop: 2,
 }
 
 const dropdownItem: React.CSSProperties = {
