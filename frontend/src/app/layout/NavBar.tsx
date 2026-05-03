@@ -6,7 +6,6 @@ const NAV_TABS = [
   { to: '/card-targets', label: 'Card Targets' },
   { to: '/trends',       label: 'Card Analysis' },
   { to: '/overview',     label: 'Playbook' },
-  { to: '/dashboard',    label: 'Targets' },
   { to: '/portfolio',    label: 'My Portfolio' },
 ]
 
