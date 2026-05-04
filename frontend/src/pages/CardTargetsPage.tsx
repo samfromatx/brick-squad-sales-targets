@@ -237,6 +237,25 @@ function DetailPanel({ row, onClose }: { row: CardTargetResult; onClose: () => v
             </div>
           </div>
 
+          {/* eBay search */}
+          <div style={sectionBox}>
+            <div style={sectionLabel}>Search eBay</div>
+            <a
+              href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(row.card)}&_sacat=0`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '8px 12px', borderRadius: 6, textDecoration: 'none',
+                background: '#fef3c7', border: '1px solid #fcd34d', color: '#92400e',
+                fontSize: 12, fontWeight: 600,
+              }}
+            >
+              <span>Search "{row.card}" on eBay</span>
+              <span style={{ fontSize: 14 }}>↗</span>
+            </a>
+          </div>
+
           {/* Why this card */}
           {row.justification.length > 0 && (
             <div style={sectionBox}>
