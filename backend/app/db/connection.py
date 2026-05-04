@@ -28,6 +28,12 @@ def _get_pool() -> ConnectionPool:
 
 
 @contextmanager
+def get_connection() -> Generator[psycopg.Connection, None, None]:
+    with _get_pool().connection() as conn:
+        yield conn
+
+
+@contextmanager
 def db_cursor() -> Generator[psycopg.Cursor, None, None]:
     with _get_pool().connection() as conn:
         with conn.cursor() as cur:
