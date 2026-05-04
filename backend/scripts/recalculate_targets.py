@@ -13,6 +13,7 @@ Or via GitHub Actions (workflow_dispatch).
 import os
 import sys
 import time
+import urllib.request
 from datetime import datetime, timezone
 
 # Ensure the backend package is importable when run as a script
@@ -58,6 +59,23 @@ def main() -> None:
         print(f"[{ts()}] Wrote {count} rows ({time.time() - t2:.1f}s)")
 
     print(f"\n[{ts()}] All done.")
+
+    api_url = os.getenv("API_BASE_URL", "").rstrip("/")
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    if api_url and service_key:
+        print(f"[{ts()}] Busting cache...")
+        req = urllib.request.Request(
+            f"{api_url}/api/v1/admin/cache-bust",
+            method="POST",
+            headers={"Authorization": f"Bearer {service_key}"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                print(f"[{ts()}] Cache bust: HTTP {resp.status}")
+        except Exception as e:
+            print(f"[{ts()}] Cache bust failed (non-fatal): {e}")
+    else:
+        print(f"[{ts()}] Skipping cache bust: API_BASE_URL or SUPABASE_SERVICE_ROLE_KEY not set")
 
 
 if __name__ == "__main__":

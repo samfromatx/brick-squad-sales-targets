@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from app.core.auth import get_current_user_id
@@ -32,6 +34,10 @@ async def import_targets(
     # Invalidate cached responses so next page load reflects imported data
     cache_delete(f"bsst:bootstrap:{user_id}")
     cache_delete_pattern(f"bsst:targets:{user_id}:*")
+
+    # Rebuild card name index in the background so new cards appear in search immediately
+    from app.db.queries.card_index import reload_index
+    asyncio.get_event_loop().run_in_executor(None, reload_index)
 
     response.headers["X-Request-ID"] = get_request_id()
     return result

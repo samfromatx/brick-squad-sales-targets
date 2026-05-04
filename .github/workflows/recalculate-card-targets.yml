@@ -42,4 +42,5 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
           ALLOWED_ORIGINS: 'https://brick-squad-sales-targets.vercel.app'
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: python scripts/recalculate_targets.py ${{ github.event.inputs.sports }}

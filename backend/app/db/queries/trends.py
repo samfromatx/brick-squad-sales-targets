@@ -3,10 +3,14 @@ from app.models.domain import CardMarketRow
 
 
 def search_cards(q: str, sport: str, limit: int = 25) -> list[str]:
+    from app.db.queries.card_index import _loaded, search_index
+    if _loaded:
+        return search_index(q, sport, limit)
+
+    # Fallback: index hasn't loaded yet (brief window after cold start)
     tokens = q.strip().split()
     if not tokens:
         return []
-
     token_conditions = " AND ".join(["card ILIKE %s"] * len(tokens))
     sql = f"""
         SELECT card,
@@ -18,12 +22,10 @@ def search_cards(q: str, sport: str, limit: int = 25) -> list[str]:
         ORDER BY prefix_rank, top_sales DESC, card
         LIMIT %s
     """
-    # prefix_rank uses first token; each token matched as substring
     params = [f"{tokens[0]}%", sport] + [f"%{t}%" for t in tokens] + [limit]
     with db_cursor() as cur:
         cur.execute(sql, params)
-        rows = cur.fetchall()
-        return [r["card"] for r in rows]
+        return [r["card"] for r in cur.fetchall()]
 
 
 def get_card_market_data(card: str, sport: str) -> list[CardMarketRow]:

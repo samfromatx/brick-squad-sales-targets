@@ -1,3 +1,6 @@
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -21,7 +24,16 @@ from app.routers import (
 
 configure_logging()
 
-app = FastAPI(title="Brick Squad Sales Targets API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from app.db.queries.card_index import load_index
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, load_index)  # fire-and-forget; doesn't block startup
+    yield
+
+
+app = FastAPI(title="Brick Squad Sales Targets API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
