@@ -5,6 +5,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.core.auth import get_current_user_id
+from app.core.cache import cache_get, cache_set
 from app.db.queries.card_targets import (
     fetch_card_targets,
     fetch_player_metadata_list,
@@ -21,6 +22,8 @@ from app.models.api import (
 )
 
 router = APIRouter(tags=["card-targets"])
+
+_TTL = 864000  # 10 days — card targets only change on recalculation
 
 
 def _row_to_card_target_response(row: dict) -> CardTargetResponse:
@@ -113,6 +116,11 @@ def list_card_targets(
     user_id: str = Depends(get_current_user_id),
 ) -> CardTargetsListResponse:
     resolved_view = view if view != "all" else None
+    cache_key = f"bsst:card-targets:{sport}:{resolved_view}:{min_price}:{max_price}:{q}:{limit}:{offset}"
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return CardTargetsListResponse(**cached)
+
     rows, total = fetch_card_targets(
         sport=sport,
         view=resolved_view,
@@ -122,10 +130,12 @@ def list_card_targets(
         limit=limit,
         offset=offset,
     )
-    return CardTargetsListResponse(
+    result = CardTargetsListResponse(
         data=[_row_to_card_target_response(r) for r in rows],
         total=total,
     )
+    cache_set(cache_key, result.model_dump(mode="json"), ttl=_TTL)
+    return result
 
 
 # ---------------------------------------------------------------------------

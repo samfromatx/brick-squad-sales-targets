@@ -7,7 +7,7 @@ from app.services.targets import get_target, get_targets
 
 router = APIRouter(prefix="/targets", tags=["targets"])
 
-_TTL = 86400  # 24 hours — data only changes on import
+_TTL = 864000  # 10 days — data only changes on import
 
 
 @router.get("")

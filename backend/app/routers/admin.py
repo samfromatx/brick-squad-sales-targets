@@ -16,4 +16,6 @@ def _require_service_key(authorization: str = Header(...)):
 def cache_bust(authorization: str = Header(...)):
     _require_service_key(authorization)
     cache_delete_pattern("bsst:mktdata:*")
-    return {"cleared": "bsst:mktdata:*"}
+    cache_delete_pattern("bsst:card-targets:*")
+    cache_delete_pattern("bsst:trends:*")
+    return {"cleared": ["bsst:mktdata:*", "bsst:card-targets:*", "bsst:trends:*"]}

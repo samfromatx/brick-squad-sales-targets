@@ -7,7 +7,7 @@ from app.services.exports import build_snapshot
 
 router = APIRouter(prefix="/bootstrap", tags=["bootstrap"])
 
-_TTL = 86400  # 24 hours — data only changes on import
+_TTL = 864000  # 10 days — data only changes on import
 
 
 @router.get("")

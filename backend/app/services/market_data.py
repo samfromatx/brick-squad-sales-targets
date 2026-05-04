@@ -6,7 +6,7 @@ from app.core.cache import cache_get, cache_set
 from app.db.queries.market_data import batch_market_data as db_batch
 from app.models.api import CardMarketDataResult, MarketDataBatchRequest, MarketDataBatchResponse
 
-_CACHE_TTL = 24 * 60 * 60  # 24 hours — market data updates weekly
+_CACHE_TTL = 10 * 24 * 60 * 60  # 10 days — market data updates weekly
 
 # Local in-process fallback used when Redis is unavailable
 _local_cache: dict[str, tuple[float, list[dict]]] = {}

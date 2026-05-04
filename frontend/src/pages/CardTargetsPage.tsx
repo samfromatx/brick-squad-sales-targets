@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import type { CardTargetResult, SupportedTargetSport } from '../lib/types'
 
@@ -363,7 +363,7 @@ export function CardTargetsPage() {
     else { setSortKey(key); setSortDir('asc') }
   }
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isFetching, isError } = useQuery({
     queryKey: ['card-targets', sport, view, debouncedSearch],
     queryFn: () => api.getCardTargets({
       sport,
@@ -371,6 +371,8 @@ export function CardTargetsPage() {
       q: debouncedSearch || undefined,
       limit: 100,
     }),
+    placeholderData: keepPreviousData,
+    staleTime: 60 * 60 * 1000,
   })
 
   const rawRows = data?.data ?? []
@@ -467,6 +469,7 @@ export function CardTargetsPage() {
         <div style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 10 }}>
           {total} result{total !== 1 ? 's' : ''}
           <span style={{ marginLeft: 8, fontSize: 11 }}>· click row to open detail panel</span>
+          {isFetching && <span style={{ marginLeft: 10, fontSize: 11, color: 'var(--brand)', opacity: 0.7 }}>Searching…</span>}
         </div>
       )}
 
