@@ -30,7 +30,8 @@ async def search_trends(
         return [TrendSearchResult(**r) for r in cached]
 
     results = search_trend_cards(q, sport=sport, limit=limit)
-    cache_set(cache_key, [r.model_dump() for r in results], ttl=_SEARCH_TTL)
+    if results:  # never cache empty results — index may still be loading
+        cache_set(cache_key, [r.model_dump() for r in results], ttl=_SEARCH_TTL)
     response.headers["Cache-Control"] = "private, max-age=30"
     response.headers["X-Request-ID"] = get_request_id()
     return results

@@ -27,6 +27,11 @@ configure_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Clear cached trend search results on every deploy so stale/empty results
+    # from before the card index was introduced don't persist in Redis.
+    from app.core.cache import cache_delete_pattern
+    cache_delete_pattern("bsst:trends:search:*")
+
     from app.db.queries.card_index import load_index
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, load_index)  # fire-and-forget; doesn't block startup
