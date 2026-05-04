@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { supabase, signOut } from '../../lib/auth'
+import { signOut } from '../../lib/auth'
+import { useAuth } from '../../lib/authContext'
 
 const NAV_TABS = [
   { to: '/card-targets', label: 'Card Targets' },
@@ -10,19 +11,10 @@ const NAV_TABS = [
 ]
 
 export function NavBar() {
-  const [email, setEmail] = useState<string | null>(null)
+  const { session } = useAuth()
+  const email = session?.user.email ?? null
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setEmail(data.session?.user.email ?? null)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setEmail(session?.user.email ?? null)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
 
   async function handleSignOut() {
     await signOut()

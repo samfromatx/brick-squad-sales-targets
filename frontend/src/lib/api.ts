@@ -40,7 +40,7 @@ class ApiClient {
     if (response.status === 401 && retry) {
       const newToken = await refreshAccessToken()
       if (!newToken) {
-        window.location.href = '/sign-in'
+        window.dispatchEvent(new CustomEvent('auth:redirect'))
         throw new Error('Session expired')
       }
       return this.request<T>(path, {
