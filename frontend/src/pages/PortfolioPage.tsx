@@ -80,9 +80,8 @@ export function PortfolioPage() {
   if (isError)   return <div style={page}><p style={{ color: '#a32d2d' }}>Failed to load portfolio.</p></div>
 
   const nonPc = allEntries.filter(e => !e.pc)
+  const pcCards = allEntries.filter(e => e.pc)
   const totalInvested = nonPc.reduce((s, e) => s + e.price_paid + e.grading_cost, 0)
-  const targetValue = nonPc.reduce((s, e) => s + (e.target_sell ?? 0), 0)
-  const targetProfit = targetValue - totalInvested
   const sold = allEntries.filter(e => e.actual_sale !== null)
   const actualProfit = sold.reduce((s, e) => {
     const cost = e.price_paid + e.grading_cost
@@ -95,12 +94,9 @@ export function PortfolioPage() {
   const sign = (v: number) => v >= 0 ? '+' : '-'
 
   const kpis = [
-    { label: 'Total Cards',    value: allEntries.length.toString(), sub: 'Across all entries',   color: '#85b7eb' },
-    { label: 'Total Invested', value: fmtMoney(totalInvested),      sub: 'Cost + grading fees',  color: '#d0cec6' },
-    { label: 'Target Value',   value: fmtMoney(targetValue),        sub: 'At target sell price', color: '#f59e0b' },
-    { label: 'Target Profit',  value: `${sign(targetProfit)}${fmtMoney(targetProfit)}`,
-      sub: totalInvested > 0 ? `${((targetProfit / totalInvested) * 100).toFixed(1)}% ROI` : '',
-      color: targetProfit >= 0 ? '#22c55e' : '#ef4444', valueColor: targetProfit >= 0 ? '#3b6d11' : '#a32d2d' },
+    { label: 'Total Cards',    value: allEntries.length.toString(), sub: 'Across all entries',  color: '#85b7eb' },
+    { label: 'PC Cards',       value: pcCards.length.toString(),    sub: 'Personal collection', color: '#c4b5fd' },
+    { label: 'Total Invested', value: fmtMoney(totalInvested),      sub: 'Cost + grading fees', color: '#d0cec6' },
     { label: 'Actual Profit',  value: `${sign(actualProfit)}${fmtMoney(actualProfit)}`,
       sub: `${sold.length} cards sold`,
       color: actualProfit >= 0 ? '#22c55e' : '#ef4444', valueColor: actualProfit >= 0 ? '#3b6d11' : '#a32d2d' },

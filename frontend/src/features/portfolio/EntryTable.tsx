@@ -165,7 +165,7 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
             const avg7dMint = !marketDataLoading && md?.avg_7d != null && md.avg_7d > e.price_paid
             const avg30dMint = !marketDataLoading && md?.avg_30d != null && md.avg_30d > e.price_paid
             return (
-              <tr key={e.id} style={{ opacity: e.pc ? 0.75 : 1 }}>
+              <tr key={e.id}>
                 <td className="col-sticky" style={{ fontWeight: 500, minWidth: 180, color: '#1a1a18' }}>
                   {e.card_name}
                   {sold && <span className="pill" style={{ marginLeft: 6, background: '#eaf3de', color: '#3b6d11', borderColor: '#97c459', fontSize: 10 }}>SOLD</span>}
@@ -193,8 +193,8 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
                     </span>
                   )}
                 </td>
-                <td style={{ color: '#52524e', backgroundColor: avg7dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_7d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
-                <td style={{ color: '#52524e', backgroundColor: avg30dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_30d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)}</td>
+                <td style={{ color: '#52524e', backgroundColor: avg7dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_7d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0))}</td>
+                <td style={{ color: '#52524e', backgroundColor: avg30dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_30d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0))}</td>
                 <td>{fmt(e.target_sell, { decimals: 2 })}</td>
                 <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
                 <td style={{ color: '#52524e' }}>{e.sale_venue ?? '—'}</td>
