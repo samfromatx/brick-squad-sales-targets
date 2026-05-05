@@ -3,7 +3,7 @@ import { api } from '../../lib/api'
 import type { CardMarketDataResult, PortfolioEntry } from '../../lib/types'
 
 export function useMarketData(entries: PortfolioEntry[]) {
-  const eligible = entries.filter(e => !(e.actual_sale !== null && e.actual_sale > 0) && !e.pc)
+  const eligible = entries.filter(e => !(e.actual_sale !== null && e.actual_sale > 0))
   const ids = eligible.map(e => e.id)
   const sortedKey = [...ids].sort().join(',')
 
