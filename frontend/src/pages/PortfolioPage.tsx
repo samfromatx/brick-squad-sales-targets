@@ -82,7 +82,7 @@ export function PortfolioPage() {
   const nonPc = allEntries.filter(e => !e.pc)
   const pcCards = allEntries.filter(e => e.pc)
   const totalInvested = nonPc.reduce((s, e) => s + e.price_paid + e.grading_cost, 0)
-  const sold = allEntries.filter(e => e.actual_sale !== null)
+  const sold = allEntries.filter(e => e.actual_sale !== null && e.actual_sale > 0)
   const actualProfit = sold.reduce((s, e) => {
     const cost = e.price_paid + e.grading_cost
     const ebay = e.sale_venue?.toLowerCase().includes('ebay')
