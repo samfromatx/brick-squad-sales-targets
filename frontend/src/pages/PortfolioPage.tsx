@@ -8,17 +8,30 @@ import {
   usePortfolioEntries,
   useUpdateEntry,
 } from '../features/portfolio/usePortfolioEntries'
-import type { PortfolioEntry, PortfolioEntryCreate } from '../lib/types'
+import type { CardMarketDataResult, PortfolioEntry, PortfolioEntryCreate } from '../lib/types'
 
 type SoldFilter = 'all' | 'unsold' | 'sold'
 type PcFilter   = 'all' | 'hide_pc' | 'pc_only'
 
-function applyFilters(entries: PortfolioEntry[], soldFilter: SoldFilter, pcFilter: PcFilter): PortfolioEntry[] {
+function applyFilters(
+  entries: PortfolioEntry[],
+  soldFilter: SoldFilter,
+  pcFilter: PcFilter,
+  avg7dFilter: boolean,
+  avg30dFilter: boolean,
+  marketDataMap: Map<string, CardMarketDataResult> | undefined,
+  marketDataLoading: boolean,
+): PortfolioEntry[] {
   return entries.filter(e => {
     if (soldFilter === 'unsold' && e.actual_sale !== null) return false
     if (soldFilter === 'sold'   && e.actual_sale === null) return false
     if (pcFilter   === 'hide_pc'  && e.pc)  return false
     if (pcFilter   === 'pc_only'  && !e.pc) return false
+    if (!marketDataLoading) {
+      const md = marketDataMap?.get(e.id)
+      if (avg7dFilter  && !(md?.avg_7d  != null && md.avg_7d  > e.price_paid)) return false
+      if (avg30dFilter && !(md?.avg_30d != null && md.avg_30d > e.price_paid)) return false
+    }
     return true
   })
 }
@@ -33,10 +46,12 @@ export function PortfolioPage() {
   const [editing, setEditing] = useState<PortfolioEntry | null>(null)
   const [soldFilter, setSoldFilter] = useState<SoldFilter>('all')
   const [pcFilter,   setPcFilter]   = useState<PcFilter>('all')
+  const [avg7dFilter,  setAvg7dFilter]  = useState(false)
+  const [avg30dFilter, setAvg30dFilter] = useState(false)
 
   const allEntries = entriesData?.data ?? []
-  const entries = applyFilters(allEntries, soldFilter, pcFilter)
   const { marketDataMap, isLoading: marketDataLoading } = useMarketData(allEntries)
+  const entries = applyFilters(allEntries, soldFilter, pcFilter, avg7dFilter, avg30dFilter, marketDataMap, marketDataLoading)
 
   function openAdd() { setEditing(null); setShowForm(true) }
   function openEdit(e: PortfolioEntry) { setEditing(e); setShowForm(true) }
@@ -146,6 +161,14 @@ export function PortfolioPage() {
           ))}
         </div>
 
+        {/* Under-average filters */}
+        <button onClick={() => setAvg7dFilter(v => !v)} style={avgToggleBtn(avg7dFilter)}>
+          Under 7D Avg
+        </button>
+        <button onClick={() => setAvg30dFilter(v => !v)} style={avgToggleBtn(avg30dFilter)}>
+          Under 30D Avg
+        </button>
+
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button className="btn-secondary" style={{ fontSize: '.78rem', padding: '5px 12px' }}>↓ Export CSV</button>
         </div>
@@ -156,7 +179,7 @@ export function PortfolioPage() {
         <h2 className="section-title" style={{ marginBottom: 0 }}>
           Purchase Log
           <span style={{ fontSize: '.78rem', fontWeight: 400, color: 'var(--ink-3)' }}>
-            {entries.length}{(soldFilter !== 'all' || pcFilter !== 'all') ? ` of ${allEntries.length}` : ''} entries
+            {entries.length}{(soldFilter !== 'all' || pcFilter !== 'all' || avg7dFilter || avg30dFilter) ? ` of ${allEntries.length}` : ''} entries
           </span>
         </h2>
       </div>
@@ -208,6 +231,22 @@ function segmentedBtn(active: boolean, isPcOnly: boolean): React.CSSProperties {
     cursor: 'pointer',
     transition: 'all 0.12s',
     borderRadius: 6,
+    fontFamily: 'inherit',
+  }
+}
+
+function avgToggleBtn(active: boolean): React.CSSProperties {
+  return {
+    padding: '5px 13px',
+    fontSize: 12,
+    fontWeight: active ? 600 : 400,
+    color: active ? '#1a4d2e' : 'var(--ink-3)',
+    background: active ? '#e6faf2' : 'var(--bg-3)',
+    border: `1px solid ${active ? '#a3d9b8' : 'var(--border)'}`,
+    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+    cursor: 'pointer',
+    transition: 'all 0.12s',
+    borderRadius: 8,
     fontFamily: 'inherit',
   }
 }
