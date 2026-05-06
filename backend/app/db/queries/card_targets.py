@@ -260,7 +260,7 @@ def fetch_card_targets(
       avg_7d, avg_14d, avg_30d, avg_90d, avg_180d,
       raw_avg_30d, psa9_avg_30d, psa10_avg_30d,
       liquidity_label, total_90d_sales, trend_label, volume_signal, volatility_label,
-      justification, warnings, full_analysis, calculated_at
+      justification, warnings, calculated_at
     from public.card_targets
     where {where}
     order by target_score desc, rank asc
