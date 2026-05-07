@@ -12,7 +12,7 @@ interface Props {
   data: TrendAnalysisResponse
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fmt(v: number | null | undefined, prefix = '$'): string {
   if (v == null) return '—'
@@ -22,11 +22,6 @@ function fmt(v: number | null | undefined, prefix = '$'): string {
 function fmtDec(v: number | null | undefined, decimals = 2): string {
   if (v == null) return '—'
   return Number(v).toFixed(decimals)
-}
-
-function fmtPct(v: number | null | undefined): string {
-  if (v == null) return '—'
-  return `${(Number(v) * 100).toFixed(1)}%`
 }
 
 function trendColor(direction: string): string {
@@ -54,58 +49,148 @@ function severityStyle(severity: AnalysisWarning['severity']): React.CSSProperti
   return { background: 'var(--bg-2)', border: '1px solid var(--border)', color: 'var(--ink-2)', borderLeft: '4px solid #d1d5db' }
 }
 
-// ── Sub-components ───────────────────────────────────────────────────────────
+// ── Shared styles ─────────────────────────────────────────────────────────────
 
-function SignalStrip({ data }: { data: TrendAnalysisResponse }) {
-  const { market_health: mh, buy_target } = data
-  const isBuy = data.verdict.startsWith('Buy')
-
-  return (
-    <div style={stripWrap}>
-      <StatCell label="Trend" value={mh.trend.direction} color={trendColor(mh.trend.direction)} />
-      <StatCell label="Volume" value={mh.volume.signal} />
-      <StatCell label="Liquidity" value={mh.liquidity.label} />
-      <StatCell label="90d Sales" value={String(mh.liquidity.total_90d_sales)} />
-      {buy_target && <StatCell label="Buy Target" value={fmt(buy_target.price)} color="#15803d" />}
-      <div style={{ ...stripCell, alignItems: 'center', justifyContent: 'center' }}>
-        <span style={isBuy ? chipBuy : chipWatch}>{isBuy ? 'Buy' : 'Watch'}</span>
-      </div>
-    </div>
-  )
+const cardWrap: React.CSSProperties = {
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
+  borderRadius: 10,
+  overflow: 'hidden',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
 }
 
-function StatCell({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <div style={stripCell}>
-      <div style={stripLbl}>{label}</div>
-      <div style={{ ...stripVal, color: color ?? 'var(--ink)' }}>{value}</div>
-    </div>
-  )
+const cardHeaderBar: React.CSSProperties = {
+  padding: '12px 16px',
+  borderBottom: '1px solid var(--border)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
 }
 
-function VerdictBlock({ data }: { data: TrendAnalysisResponse }) {
-  const { verdict, market_confidence, primary_reason, buy_target } = data
+const tbl: React.CSSProperties = {
+  width: '100%',
+  borderCollapse: 'collapse',
+  fontSize: 13,
+}
+
+const th: React.CSSProperties = {
+  background: 'var(--bg-2)',
+  padding: '9px 14px',
+  textAlign: 'left',
+  fontWeight: 600,
+  color: 'var(--ink-3)',
+  fontSize: 11,
+  textTransform: 'uppercase',
+  letterSpacing: '0.4px',
+  whiteSpace: 'nowrap',
+  borderBottom: '1px solid var(--border)',
+}
+
+const td: React.CSSProperties = {
+  padding: '10px 12px',
+  color: 'var(--ink-2)',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+}
+
+const anchorChip: React.CSSProperties = {
+  display: 'inline-block',
+  marginLeft: 6,
+  fontSize: 10,
+  fontWeight: 600,
+  padding: '1px 6px',
+  borderRadius: 99,
+  background: '#fde68a',
+  color: '#92400e',
+  border: '1px solid #fbbf24',
+  verticalAlign: 'middle',
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function HeaderCard({ card, sport, data }: { card: string; sport: string; data: TrendAnalysisResponse }) {
+  const { verdict, market_confidence, primary_reason, buy_target, market_health: mh } = data
+
   return (
-    <div style={verdictWrap}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
-        <span style={{ ...verdictBadge, background: verdictBg(verdict) }}>{verdict}</span>
-        <span style={{ ...confBadge, background: confidenceBg(market_confidence) }}>
-          {market_confidence} confidence
-        </span>
-      </div>
-      <p style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.6, marginBottom: buy_target ? 10 : 0 }}>
-        {primary_reason}
-      </p>
-      {buy_target && (
-        <div style={suggestedBuy}>
-          <span style={{ fontWeight: 700, color: '#15803d', fontSize: 13 }}>
-            {buy_target.grade}: {fmt(buy_target.price)}
-          </span>
-          <span style={{ color: '#166534', fontSize: 12, marginLeft: 8 }}>
-            {buy_target.basis}
-          </span>
+    <div style={cardWrap}>
+      {/* Top: name + verdict badge */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        gap: 12, padding: '16px 18px', flexWrap: 'wrap',
+      }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px' }}>
+            {card}
+          </h2>
+          <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 3, textTransform: 'capitalize' }}>
+            {sport}
+          </div>
         </div>
-      )}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{
+            fontSize: 13, fontWeight: 700, padding: '5px 14px', borderRadius: 20, color: '#fff',
+            background: verdictBg(verdict),
+          }}>{verdict}</span>
+          <span style={{
+            fontSize: 11, fontWeight: 600, padding: '4px 11px', borderRadius: 20, color: '#fff',
+            background: confidenceBg(market_confidence),
+          }}>{market_confidence} confidence</span>
+        </div>
+      </div>
+
+      {/* Rationale + buy target */}
+      <div style={{ padding: '0 18px 14px', borderBottom: '1px solid var(--border)' }}>
+        <p style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 10px' }}>
+          {primary_reason}
+        </p>
+        {buy_target && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 10,
+            background: '#f0fdf4', border: '1px solid #86efac',
+            borderRadius: 7, padding: '8px 14px',
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Buy target
+            </span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: '#15803d', letterSpacing: '-0.5px' }}>
+              {fmt(buy_target.price)}
+            </span>
+            <span style={{ fontSize: 11, color: '#166534' }}>
+              {buy_target.grade} · {buy_target.basis}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Signal strip */}
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {([
+          { label: 'Trend',        value: mh.trend.direction,              color: trendColor(mh.trend.direction) },
+          { label: 'Volume',       value: mh.volume.signal,
+            color: mh.volume.signal === 'Accelerating' ? '#15803d'
+                 : mh.volume.signal === 'Declining'    ? '#dc2626'
+                 : undefined },
+          { label: 'Liquidity',   value: mh.liquidity.label },
+          { label: '90d Sales',   value: String(mh.liquidity.total_90d_sales) },
+          { label: 'Volatility',  value: mh.volatility.label },
+          { label: 'Ratio source', value: mh.trend.source_grade
+              ? `${mh.trend.source_grade} ${mh.trend.source_window ?? ''}`.trim()
+              : '—' },
+        ] as { label: string; value: string; color?: string }[]).map(({ label, value, color }, i, arr) => (
+          <div key={label} style={{
+            flex: '1 1 100px', padding: '10px 14px', textAlign: 'center',
+            borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+            borderTop: '1px solid var(--border)',
+          }}>
+            <div style={{ fontSize: 10, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 3 }}>
+              {label}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: color ?? 'var(--ink)' }}>
+              {value}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -116,9 +201,11 @@ function MarketTable({ data }: { data: TrendAnalysisResponse }) {
   const sourceGrade = trend.source_grade
 
   return (
-    <div style={sectionWrap}>
-      <SectionTitle>Market Signals</SectionTitle>
-      <div style={tblWrap}>
+    <div style={cardWrap}>
+      <div style={cardHeaderBar}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Market Signals</div>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
         <table style={tbl}>
           <thead>
             <tr>
@@ -160,129 +247,159 @@ function DataRow({ label, value, detail, valueColor }: { label: string; value: s
 }
 
 function EvSection({ ev }: { ev: EvModel }) {
-  const o = ev.estimated_outcomes
+  const items: { label: string; value: string; bold?: boolean; valueColor?: string }[] = [
+    { label: 'Raw anchor price',             value: fmt(ev.raw_anchor) },
+    { label: 'Grading cost',                 value: fmt(ev.grading_cost) },
+    { label: 'Total cost basis',             value: fmt(ev.total_cost),              bold: true },
+    { label: 'Gem rate',                     value: `${(ev.gem_rate * 100).toFixed(0)}%` },
+    { label: 'PSA 9 anchor',                 value: fmt(ev.psa9_anchor) },
+    { label: 'PSA 10 anchor',                value: fmt(ev.psa10_anchor) },
+    { label: 'Expected resale (after fees)', value: fmt(ev.expected_resale_after_fees) },
+    {
+      label: 'Expected profit', bold: true,
+      value: fmt(ev.expected_profit),
+      valueColor: ev.expected_profit >= ev.profit_floor ? '#15803d' : '#dc2626',
+    },
+  ]
+
   return (
-    <div style={sectionWrap}>
-      <SectionTitle>EV Model</SectionTitle>
-      <div style={tblWrap}>
-        <table style={tbl}>
-          <tbody>
-            <EvRow label="Raw anchor" value={fmt(ev.raw_anchor)} />
-            <EvRow label="Grading cost" value={fmt(ev.grading_cost)} />
-            <EvRow label="Total cost basis" value={fmt(ev.total_cost)} bold />
-            <EvRow label="PSA 9 anchor" value={fmt(ev.psa9_anchor)} />
-            <EvRow label="PSA 10 anchor" value={fmt(ev.psa10_anchor)} />
-            <EvRow
-              label={
-                <>
-                  Gem rate
-                  {ev.gem_rate_source === 'sport_fallback' && (
-                    <span style={{ marginLeft: 6, fontSize: 11, color: '#b45309', fontWeight: 400 }}>(!) sport fallback</span>
-                  )}
-                </>
-              }
-              value={`${(ev.gem_rate * 100).toFixed(0)}%`}
-            />
-            <EvRow label={`PSA 10 (${fmtPct(o.psa10)}) · PSA 9 (${fmtPct(o.psa9)}) · lower (${fmtPct(o.psa8_or_lower)})`} value="" />
-            <EvRow label="Expected resale after fees" value={fmt(ev.expected_resale_after_fees)} />
-            <EvRow
-              label="Expected profit"
-              value={fmt(ev.expected_profit)}
-              bold
-              color={ev.expected_profit >= ev.profit_floor ? '#16a34a' : '#dc2626'}
-            />
-          </tbody>
-        </table>
+    <div style={cardWrap}>
+      <div style={cardHeaderBar}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>EV Model</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>Expected value of buying raw and grading</div>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+        {items.map(({ label, value, bold, valueColor }, i) => (
+          <div key={label} style={{
+            padding: '11px 16px', fontSize: 13,
+            borderTop: i >= 2 ? '1px solid var(--border)' : 'none',
+            borderRight: i % 2 === 0 ? '1px solid var(--border)' : 'none',
+            background: bold ? 'var(--bg-2)' : 'transparent',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <span style={{ color: 'var(--ink-3)', fontSize: 12 }}>{label}</span>
+            <span style={{ fontWeight: bold ? 700 : 500, color: valueColor ?? 'var(--ink)' }}>{value}</span>
+          </div>
+        ))}
       </div>
     </div>
-  )
-}
-
-function EvRow({ label, value, bold, color }: { label: React.ReactNode; value: string; bold?: boolean; color?: string }) {
-  return (
-    <tr style={{ borderTop: '1px solid var(--border)' }}>
-      <td style={{ ...td, color: 'var(--ink-2)', fontSize: 12 }}>{label}</td>
-      <td style={{ ...td, fontWeight: bold ? 700 : 400, color: color ?? 'var(--ink)', textAlign: 'right' }}>{value}</td>
-    </tr>
   )
 }
 
 function BounceBackSection({ bb }: { bb: BounceBackSignals }) {
-  const signals: { key: keyof BounceBackSignals; label: string; rule: string }[] = [
-    { key: 'b1_cheap',              label: 'B1 — Pullback vs norm',          rule: '30d avg ≥ 15% below 180d avg' },
-    { key: 'b2_recent_liquidity',   label: 'B2 — Recent liquidity',          rule: '30d sales ≥ 2' },
-    { key: 'b3_stabilizing',        label: 'B3 — Stabilizing',               rule: '14d avg ≥ 97% of 30d avg' },
-    { key: 'b4_recovery_not_priced',label: 'B4 — Recovery not priced in',    rule: '7d avg < 90% of 180d avg' },
-    { key: 'b5_market_active',      label: 'B5 — Market still active',       rule: '30d sales ≥ expected run rate' },
-    { key: 'b6_no_spike',           label: 'B6 — No spike distortion',       rule: '180d max < 3× 180d avg' },
+  const signals: { key: keyof BounceBackSignals; label: string; name: string; rule: string }[] = [
+    { key: 'b1_cheap',               label: 'B1', name: 'Cheap vs norm',          rule: '30d avg ≥15% below 180d avg' },
+    { key: 'b2_recent_liquidity',    label: 'B2', name: 'Recent liquidity',        rule: '30d sales ≥ 2' },
+    { key: 'b3_stabilizing',         label: 'B3', name: 'Stabilizing',             rule: '14d avg ≥ 97% of 30d avg' },
+    { key: 'b4_recovery_not_priced', label: 'B4', name: 'Recovery not priced in',  rule: '7d avg < 90% of 180d avg' },
+    { key: 'b5_market_active',       label: 'B5', name: 'Market still active',     rule: '30d sales ≥ expected run rate' },
+    { key: 'b6_no_spike',            label: 'B6', name: 'No spike distortion',     rule: '180d max < 3× 180d avg' },
   ]
 
+  const scoreBg    = bb.score >= 4 ? '#f0fdf4' : bb.score >= 3 ? '#fef9c3' : '#fee2e2'
+  const scoreColor = bb.score >= 4 ? '#15803d' : bb.score >= 3 ? '#854d0e' : '#991b1b'
+  const scoreBorder = bb.score >= 4 ? '#86efac' : bb.score >= 3 ? '#fde047' : '#fca5a5'
+
   return (
-    <div style={sectionWrap}>
-      <SectionTitle>
-        Bounce Back Score — {bb.score}/6
-        {bb.qualifies && <span style={{ ...chipBuy, marginLeft: 8 }}>Qualifies</span>}
-      </SectionTitle>
-      <div style={tblWrap}>
-        <table style={tbl}>
-          <thead>
-            <tr>
-              {['Signal', 'Rule', 'Result'].map(h => <th key={h} style={th}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {signals.map(({ key, label, rule }) => {
-              const pass = bb[key] as boolean
-              return (
-                <tr key={key} style={{ borderTop: '1px solid var(--border)' }}>
-                  <td style={{ ...td, fontWeight: 500 }}>{label}</td>
-                  <td style={{ ...td, color: 'var(--ink-3)', fontSize: 12 }}>{rule}</td>
-                  <td style={{ ...td, fontWeight: 600, color: pass ? '#16a34a' : '#dc2626' }}>
-                    {pass ? '✓ Pass' : '✗ Fail'}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+    <div style={cardWrap}>
+      <div style={{ ...cardHeaderBar, gap: 10 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Bounce-Back Score</div>
+        <span style={{
+          fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
+          background: scoreBg, color: scoreColor, border: `1px solid ${scoreBorder}`,
+        }}>
+          {bb.score}/6{bb.qualifies ? ' · Qualifies' : ''}
+        </span>
+      </div>
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {signals.map(({ key, label, name, rule }) => {
+          const pass = bb[key] as boolean
+          return (
+            <div key={key} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 10px', borderRadius: 6,
+              background: pass ? '#f0fdf4' : 'var(--bg-2)',
+              border: `1px solid ${pass ? '#86efac' : 'var(--border)'}`,
+            }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, width: 24, textAlign: 'center',
+                flexShrink: 0, color: pass ? '#15803d' : 'var(--ink-3)',
+              }}>{label}</span>
+              <span style={{
+                fontSize: 13, fontWeight: 600,
+                color: pass ? '#15803d' : 'var(--ink-3)',
+                flex: '0 0 160px',
+              }}>{name}</span>
+              <span style={{ fontSize: 12, color: 'var(--ink-3)', flex: 1 }}>{rule}</span>
+              <span style={{
+                fontSize: 13, fontWeight: 700,
+                color: pass ? '#15803d' : '#dc2626', flexShrink: 0,
+              }}>
+                {pass ? '✓' : '✗'}
+              </span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-function WindowPricesTable({ rows }: { rows: WindowRow[] }) {
+function WindowPricesTable({ rows, recGrade }: { rows: WindowRow[]; recGrade?: string }) {
   if (!rows.length) return null
   return (
-    <div style={sectionWrap}>
-      <SectionTitle>Price Ranges by Window</SectionTitle>
-      <div style={tblWrap}>
+    <div style={cardWrap}>
+      <div style={cardHeaderBar}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Price History</div>
+        <div style={{ fontSize: 11, color: 'var(--ink-3)' }}>Raw · PSA 9 · PSA 10 across time windows</div>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
         <table style={tbl}>
           <thead>
             <tr>
-              {['Window', 'Raw Avg', 'PSA 9 Avg', 'PSA 10 Avg', 'Raw / PSA 9', 'PSA 10 / PSA 9'].map(h => (
+              {['Window', 'Raw', 'PSA 9', 'PSA 10', 'Raw/9 ratio', '10/9 ratio'].map(h => (
                 <th key={h} style={th}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map(row => {
+            {rows.map((row, i) => {
               const anchor = row.is_anchor
-              const rowStyle: React.CSSProperties = anchor
-                ? { borderTop: '1px solid var(--border)', background: '#fdf8f0' }
-                : { borderTop: '1px solid var(--border)' }
               return (
-                <tr key={row.window_days} style={rowStyle}>
-                  <td style={td}>
-                    <span style={{ fontWeight: anchor ? 700 : 400 }}>{row.window_days}d</span>
-                    {anchor && (
-                      <span style={anchorChip}>anchor</span>
-                    )}
+                <tr key={row.window_days} style={{
+                  borderTop: '1px solid var(--border)',
+                  background: anchor ? '#fdf8f0' : i % 2 === 0 ? 'transparent' : 'var(--bg-2)',
+                }}>
+                  <td style={{
+                    padding: '10px 14px', fontWeight: anchor ? 700 : 500,
+                    color: 'var(--ink)', whiteSpace: 'nowrap',
+                  }}>
+                    {row.window_days}d
+                    {anchor && <span style={anchorChip}>anchor</span>}
                   </td>
-                  <td style={td}>{fmtAvg(row.raw_avg)}</td>
-                  <td style={td}>{fmtAvg(row.psa9_avg)}</td>
-                  <td style={td}>{fmtAvg(row.psa10_avg)}</td>
-                  <td style={td}>{fmtRatio(row.raw_psa9_ratio)}</td>
-                  <td style={td}>{fmtRatio(row.psa10_psa9_ratio)}</td>
+                  <td style={{
+                    padding: '10px 14px', color: 'var(--ink-2)',
+                    background: recGrade === 'Raw' ? '#f0fdf4' : undefined,
+                    fontWeight: recGrade === 'Raw' ? 600 : 400,
+                  }}>{fmtAvg(row.raw_avg)}</td>
+                  <td style={{
+                    padding: '10px 14px', color: 'var(--ink-2)',
+                    background: recGrade === 'PSA 9' ? '#f0fdf4' : undefined,
+                    fontWeight: recGrade === 'PSA 9' ? 600 : 400,
+                  }}>{fmtAvg(row.psa9_avg)}</td>
+                  <td style={{
+                    padding: '10px 14px', color: 'var(--ink-2)',
+                    background: recGrade === 'PSA 10' ? '#f0fdf4' : undefined,
+                    fontWeight: recGrade === 'PSA 10' ? 600 : 400,
+                  }}>{fmtAvg(row.psa10_avg)}</td>
+                  <td style={{ padding: '10px 14px', color: 'var(--ink-3)', fontSize: 12 }}>
+                    {fmtRatio(row.raw_psa9_ratio)}
+                  </td>
+                  <td style={{ padding: '10px 14px', color: 'var(--ink-3)', fontSize: 12 }}>
+                    {fmtRatio(row.psa10_psa9_ratio)}
+                  </td>
                 </tr>
               )
             })}
@@ -306,27 +423,17 @@ function fmtRatio(v: number | null): string {
 function WarningsList({ warnings }: { warnings: AnalysisWarning[] }) {
   if (warnings.length === 0) return null
   return (
-    <div style={sectionWrap}>
-      <SectionTitle>Warnings</SectionTitle>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {warnings.map((w, i) => (
-          <div key={i} style={{ ...severityStyle(w.severity), borderRadius: 6, padding: '8px 12px', fontSize: 12, lineHeight: 1.6 }}>
-            <span style={{ fontWeight: 600 }}>{w.code}</span> — {w.message}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{
-      fontSize: 13, fontWeight: 600, color: 'var(--ink)',
-      borderLeft: '3px solid var(--brand)', paddingLeft: 10,
-      marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8,
-    }}>
-      {children}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {warnings.map((w, i) => (
+        <div key={i} style={{
+          fontSize: 12, lineHeight: 1.6, padding: '9px 14px', borderRadius: 7,
+          ...severityStyle(w.severity),
+          display: 'flex', gap: 8, alignItems: 'baseline',
+        }}>
+          <strong style={{ flexShrink: 0 }}>{w.code}</strong>
+          <span>{w.message}</span>
+        </div>
+      ))}
     </div>
   )
 }
@@ -335,183 +442,21 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export function TrendAnalysisResult({ card, sport, data }: Props) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Card header */}
-      <div>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', marginBottom: 2 }}>{card}</h2>
-        <span style={{ fontSize: 12, color: 'var(--ink-3)', textTransform: 'capitalize' }}>{sport}</span>
-      </div>
-
-      {/* Signal strip */}
-      <SignalStrip data={data} />
-
-      {/* Verdict */}
-      <VerdictBlock data={data} />
-
-      {/* Market signals table */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <HeaderCard card={card} sport={sport} data={data} />
       <MarketTable data={data} />
-
-      {/* Window price ranges table */}
-      <WindowPricesTable rows={data.window_prices} />
-
-      {/* EV model */}
+      <WindowPricesTable rows={data.window_prices} recGrade={data.buy_target?.grade} />
       {data.ev_model && <EvSection ev={data.ev_model} />}
-
-      {/* Break-even */}
       {data.break_even_grade && (
-        <div style={{ fontSize: 13, color: 'var(--ink-2)', padding: '8px 12px', background: 'var(--bg-2)', borderRadius: 6, border: '1px solid var(--border)' }}>
+        <div style={{
+          fontSize: 13, color: 'var(--ink-2)', padding: '8px 12px',
+          background: 'var(--bg-2)', borderRadius: 6, border: '1px solid var(--border)',
+        }}>
           <span style={{ fontWeight: 600 }}>Break-even grade: </span>{data.break_even_grade}
         </div>
       )}
-
-      {/* Bounce back */}
-      {data.bounce_back && (
-        <BounceBackSection bb={data.bounce_back} />
-      )}
-
-      {/* Warnings */}
+      {data.bounce_back && <BounceBackSection bb={data.bounce_back} />}
       <WarningsList warnings={data.warnings} />
     </div>
   )
-}
-
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const stripWrap: React.CSSProperties = {
-  display: 'flex',
-  background: '#fff',
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  overflow: 'hidden',
-}
-
-const stripCell: React.CSSProperties = {
-  flex: 1,
-  textAlign: 'center',
-  padding: '8px 6px',
-  borderRight: '1px solid var(--border)',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 2,
-}
-
-const stripLbl: React.CSSProperties = {
-  fontSize: 10,
-  color: 'var(--ink-3)',
-  textTransform: 'uppercase',
-  letterSpacing: '0.4px',
-}
-
-const stripVal: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: 'var(--ink)',
-}
-
-const chipBuy: React.CSSProperties = {
-  display: 'inline-block',
-  fontSize: 10,
-  fontWeight: 600,
-  padding: '2px 7px',
-  borderRadius: 99,
-  border: '1px solid var(--green-border)',
-  background: 'var(--green-bg)',
-  color: 'var(--green-text)',
-}
-
-const chipWatch: React.CSSProperties = {
-  display: 'inline-block',
-  fontSize: 10,
-  fontWeight: 600,
-  padding: '2px 7px',
-  borderRadius: 99,
-  border: '1px solid var(--amber-border)',
-  background: 'var(--amber-bg)',
-  color: 'var(--amber-text)',
-}
-
-const verdictWrap: React.CSSProperties = {
-  background: '#fff',
-  border: '1px solid var(--border)',
-  borderLeft: '4px solid var(--brand)',
-  borderRadius: 8,
-  padding: '14px 16px',
-}
-
-const verdictBadge: React.CSSProperties = {
-  display: 'inline-block',
-  color: '#fff',
-  fontSize: 13,
-  fontWeight: 700,
-  padding: '4px 12px',
-  borderRadius: 20,
-  letterSpacing: '0.3px',
-}
-
-const confBadge: React.CSSProperties = {
-  display: 'inline-block',
-  color: '#fff',
-  fontSize: 11,
-  fontWeight: 600,
-  padding: '3px 10px',
-  borderRadius: 20,
-}
-
-const suggestedBuy: React.CSSProperties = {
-  background: '#f0fdf4',
-  border: '1px solid #86efac',
-  borderRadius: 6,
-  padding: '8px 12px',
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: 4,
-  flexWrap: 'wrap',
-}
-
-const sectionWrap: React.CSSProperties = {}
-
-const tblWrap: React.CSSProperties = {
-  overflowX: 'auto',
-  borderRadius: 8,
-  border: '1px solid var(--border)',
-  background: '#fff',
-  boxShadow: '0 1px 3px rgba(0,0,0,.06)',
-}
-
-const tbl: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: 13,
-}
-
-const th: React.CSSProperties = {
-  background: 'var(--bg-2)',
-  padding: '8px 12px',
-  textAlign: 'left',
-  fontWeight: 600,
-  color: 'var(--ink-3)',
-  fontSize: 11,
-  textTransform: 'uppercase',
-  letterSpacing: '0.4px',
-  whiteSpace: 'nowrap',
-}
-
-const td: React.CSSProperties = {
-  padding: '10px 12px',
-  color: 'var(--ink-2)',
-  verticalAlign: 'middle',
-  whiteSpace: 'nowrap',
-}
-
-const anchorChip: React.CSSProperties = {
-  display: 'inline-block',
-  marginLeft: 6,
-  fontSize: 10,
-  fontWeight: 600,
-  padding: '1px 6px',
-  borderRadius: 99,
-  background: '#fde68a',
-  color: '#92400e',
-  border: '1px solid #fbbf24',
-  verticalAlign: 'middle',
 }
