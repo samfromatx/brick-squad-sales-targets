@@ -327,14 +327,14 @@ from app.models.domain import PortfolioEntry  # noqa: E402
 MOCK_ENTRY = PortfolioEntry(
     id="e1", user_id="u1", card_name="Mahomes Prizm", sport="football",
     grade="PSA 10", price_paid=250.0, grading_cost=0.0,
-    target_sell=350.0, actual_sale=None, sale_venue=None,
+    actual_sale=None, sale_venue=None,
     purchase_date="2026-01-15", notes=None, pc=False,
 )
 
 OTHER_ENTRY = PortfolioEntry(
     id="e2", user_id="other-user", card_name="LeBron Prizm", sport="basketball",
     grade="PSA 9", price_paid=100.0, grading_cost=0.0,
-    target_sell=None, actual_sale=None, sale_venue=None,
+    actual_sale=None, sale_venue=None,
     purchase_date=None, notes=None, pc=False,
 )
 

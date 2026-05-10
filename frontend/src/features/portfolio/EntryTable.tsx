@@ -25,47 +25,56 @@ function fmt(val: number | null, opts?: { decimals?: number; prefix?: string }):
   return `${p}${val.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d })}`
 }
 
-function calcProfit(entry: PortfolioEntry): { label: string; positive: boolean | null } {
-  const cost = entry.price_paid + entry.grading_cost
+function calcProfit(
+  entry: PortfolioEntry,
+  avg30d?: number | null,
+): { label: string; positive: boolean | null } {
   if (isSold(entry)) {
     const ebay = entry.sale_venue?.toLowerCase().includes('ebay')
     const net = ebay ? (entry.actual_sale ?? 0) * (1 - 0.1325) : (entry.actual_sale ?? 0)
-    const p = net - cost
+    const p = net - entry.price_paid
     return { label: `${p >= 0 ? '+' : ''}${fmt(p, { decimals: 2 })}`, positive: p >= 0 }
   }
-  if (entry.target_sell !== null) {
-    const est = entry.target_sell - cost
-    return { label: `~${fmt(est, { decimals: 0 })}`, positive: est >= 0 }
+  if (avg30d != null) {
+    const est = avg30d * 0.87 - entry.price_paid
+    return { label: `~${est >= 0 ? '+' : ''}${fmt(est, { decimals: 2 })}`, positive: est >= 0 }
   }
   return { label: '—', positive: null }
 }
 
-function getSortValue(e: PortfolioEntry, key: string): string | number {
-  const cost = e.price_paid + e.grading_cost
+function getSortValue(
+  e: PortfolioEntry,
+  key: string,
+  marketDataMap?: Map<string, CardMarketDataResult>,
+): string | number {
   switch (key) {
     case 'card_name':    return e.card_name.toLowerCase()
     case 'sport':        return e.sport
     case 'grade':        return e.grade.toLowerCase()
     case 'price_paid':   return e.price_paid
-    case 'target_sell':  return e.target_sell ?? -Infinity
     case 'actual_sale':  return isSold(e) ? (e.actual_sale ?? 0) : -Infinity
     case 'profit': {
       if (isSold(e)) {
         const ebay = e.sale_venue?.toLowerCase().includes('ebay')
         const net = ebay ? (e.actual_sale ?? 0) * (1 - 0.1325) : (e.actual_sale ?? 0)
-        return net - cost
+        return net - e.price_paid
       }
-      return e.target_sell !== null ? e.target_sell - cost : -Infinity
+      const avg30d = marketDataMap?.get(e.id)?.avg_30d
+      return avg30d != null ? avg30d * 0.87 - e.price_paid : -Infinity
     }
     case 'purchase_date': return e.purchase_date ?? ''
     default: return ''
   }
 }
 
-function sortEntries(entries: PortfolioEntry[], sort: SortState): PortfolioEntry[] {
+function sortEntries(
+  entries: PortfolioEntry[],
+  sort: SortState,
+  marketDataMap?: Map<string, CardMarketDataResult>,
+): PortfolioEntry[] {
   return [...entries].sort((a, b) => {
-    const av = getSortValue(a, sort.key)
-    const bv = getSortValue(b, sort.key)
+    const av = getSortValue(a, sort.key, marketDataMap)
+    const bv = getSortValue(b, sort.key, marketDataMap)
     const cmp = (typeof av === 'number' && typeof bv === 'number') ? av - bv : String(av).localeCompare(String(bv))
     return sort.dir === 'asc' ? cmp : -cmp
   })
@@ -121,7 +130,7 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
     )
   }
 
-  const sorted = sortEntries(entries, sort)
+  const sorted = sortEntries(entries, sort, marketDataMap)
 
   return (
     <div className="tbl-wrap" style={{ overflow: 'auto', maxHeight: '75vh' }}>
@@ -146,7 +155,6 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
             </th>
             <th>7D AVG</th>
             <th>30D AVG</th>
-            {th('target_sell', 'TARGET SELL')}
             {th('actual_sale', 'ACTUAL SALE')}
             <th>SALE VENUE</th>
             {th('profit', 'PROFIT')}
@@ -158,7 +166,7 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
         <tbody>
           {sorted.map(e => {
             const sold = isSold(e)
-            const { label: pl, positive } = calcProfit(e)
+            const { label: pl, positive } = calcProfit(e, md?.avg_30d)
             const sp = SPORT_BADGE[e.sport] ?? SPORT_BADGE['football']
             const gp = gradePill(e.grade)
             const md = marketDataMap?.get(e.id)
@@ -195,7 +203,6 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
                 </td>
                 <td style={{ color: '#52524e', backgroundColor: avg7dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_7d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0))}</td>
                 <td style={{ color: '#52524e', backgroundColor: avg30dMint ? '#e6faf2' : undefined }}>{fmtAvg(md?.avg_30d, marketDataLoading && !(e.actual_sale !== null && e.actual_sale > 0))}</td>
-                <td>{fmt(e.target_sell, { decimals: 2 })}</td>
                 <td>{sold ? fmt(e.actual_sale, { decimals: 2 }) : '—'}</td>
                 <td style={{ color: '#52524e' }}>{e.sale_venue ?? '—'}</td>
                 <td style={{

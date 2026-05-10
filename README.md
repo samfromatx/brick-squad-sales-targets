@@ -196,7 +196,6 @@ User's personal card holdings.
 | grade | text | Grade or "Raw" |
 | price | numeric | Purchase price |
 | grading_cost | numeric | PSA grading cost if applicable |
-| target_sell | numeric | Desired sell price |
 | actual_sale | numeric | Actual sale price (null if unsold) |
 | sale_venue | text | e.g. "eBay" |
 | date | date | Purchase date |
@@ -366,7 +365,6 @@ interface PortfolioEntry {
   grade: string;
   price: number | null;
   grading_cost: number | null;
-  target_sell: number | null;
   actual_sale: number | null;
   sale_venue: string | null;
   date: string | null;

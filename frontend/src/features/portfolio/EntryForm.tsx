@@ -14,7 +14,6 @@ const BLANK: PortfolioEntryCreate = {
   grade: 'PSA 10',
   price_paid: 0,
   grading_cost: 0,
-  target_sell: null,
   actual_sale: null,
   sale_venue: null,
   purchase_date: null,
@@ -31,7 +30,6 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
           grade: initial.grade,
           price_paid: initial.price_paid,
           grading_cost: initial.grading_cost,
-          target_sell: initial.target_sell,
           actual_sale: initial.actual_sale,
           sale_venue: initial.sale_venue,
           purchase_date: initial.purchase_date,
@@ -83,11 +81,6 @@ export function EntryForm({ initial, onSubmit, onCancel, loading }: Props) {
             <input style={input} type="number" step="0.01" min="0"
               value={form.grading_cost === 0 ? '0' : (form.grading_cost ?? 0)}
               onChange={e => set('grading_cost', e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)} />
-          </Row>
-          <Row label="Target sell">
-            <input style={input} type="number" step="0.01"
-              value={form.target_sell ?? ''}
-              onChange={e => set('target_sell', e.target.value ? parseFloat(e.target.value) : null)} />
           </Row>
           <Row label="Actual sale">
             <input style={input} type="number" step="0.01"

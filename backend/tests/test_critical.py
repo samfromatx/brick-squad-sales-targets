@@ -313,7 +313,7 @@ class TestPortfolioDerivedValues:
         return PortfolioEntry(
             id="e1", user_id="u1", card_name="Test", sport="football",
             grade="PSA 10", price_paid=price, grading_cost=grading,
-            target_sell=None, actual_sale=actual_sale,
+            actual_sale=actual_sale,
             sale_venue="eBay" if actual_sale else None,
             purchase_date=None, notes=None, pc=False,
         )
@@ -334,7 +334,7 @@ class TestPortfolioDerivedValues:
         returned = PortfolioEntry(
             id="e1", user_id="u1", card_name="Test", sport="football",
             grade="PSA 10", price_paid=200.0, grading_cost=25.0,
-            target_sell=None, actual_sale=None, sale_venue=None,
+            actual_sale=None, sale_venue=None,
             purchase_date=None, notes=None, pc=False,
         )
         with patch("app.routers.portfolio_entries.create_portfolio_entry", return_value=returned):
@@ -350,7 +350,7 @@ class TestPortfolioDerivedValues:
         returned = PortfolioEntry(
             id="e2", user_id="u1", card_name="PC Card", sport="football",
             grade="Raw", price_paid=50.0, grading_cost=0.0,
-            target_sell=None, actual_sale=None, sale_venue=None,
+            actual_sale=None, sale_venue=None,
             purchase_date=None, notes=None, pc=True,
         )
         with patch("app.routers.portfolio_entries.create_portfolio_entry", return_value=returned):
@@ -362,7 +362,7 @@ class TestPortfolioDerivedValues:
         existing = PortfolioEntry(
             id="e1", user_id="u1", card_name="Test", sport="football",
             grade="PSA 10", price_paid=200.0, grading_cost=25.0,
-            target_sell=350.0, actual_sale=None, sale_venue=None,
+            actual_sale=None, sale_venue=None,
             purchase_date=None, notes=None, pc=False,
         )
         sold = existing.model_copy(update={"actual_sale": 320.0, "sale_venue": "eBay"})
@@ -383,7 +383,7 @@ class TestPortfolioDerivedValues:
         other = PortfolioEntry(
             id="e1", user_id="other-user", card_name="Test", sport="football",
             grade="PSA 10", price_paid=200.0, grading_cost=0.0,
-            target_sell=None, actual_sale=None, sale_venue=None,
+            actual_sale=None, sale_venue=None,
             purchase_date=None, notes=None, pc=False,
         )
         with patch("app.routers.portfolio_entries.get_portfolio_entry", return_value=other):
@@ -396,7 +396,7 @@ class TestPortfolioDerivedValues:
         other = PortfolioEntry(
             id="e1", user_id="other-user", card_name="Test", sport="football",
             grade="PSA 10", price_paid=200.0, grading_cost=0.0,
-            target_sell=None, actual_sale=None, sale_venue=None,
+            actual_sale=None, sale_venue=None,
             purchase_date=None, notes=None, pc=False,
         )
         with patch("app.routers.portfolio_entries.get_portfolio_entry", return_value=other):

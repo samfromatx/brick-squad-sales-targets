@@ -18,7 +18,6 @@ def _row_to_entry(row: dict) -> PortfolioEntry:
         grade=row["grade"],
         price_paid=float(row["price_paid"]),
         grading_cost=float(row.get("grading_cost") or 0),
-        target_sell=float(row["target_sell"]) if row.get("target_sell") is not None else None,
         actual_sale=float(row["actual_sale"]) if row.get("actual_sale") is not None else None,
         sale_venue=row.get("sale_venue"),
         purchase_date=str(row["purchase_date"]) if row.get("purchase_date") else None,

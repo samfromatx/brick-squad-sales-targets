@@ -19,7 +19,6 @@ class PortfolioEntryCreate(BaseModel):
     grade: str
     price_paid: float
     grading_cost: float = 0.0
-    target_sell: float | None = None
     actual_sale: float | None = None
     sale_venue: str | None = None
     purchase_date: str | None = None
@@ -33,7 +32,6 @@ class PortfolioEntryUpdate(BaseModel):
     grade: str | None = None
     price_paid: float | None = None
     grading_cost: float | None = None
-    target_sell: float | None = None
     actual_sale: float | None = None
     sale_venue: str | None = None
     purchase_date: str | None = None

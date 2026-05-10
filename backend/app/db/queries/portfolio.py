@@ -41,7 +41,7 @@ def fetch_portfolio_entries(user_id: str, cursor_id: str | None = None, limit: i
 
     sql = f"""
         SELECT id, user_id, card AS card_name, sport, grade,
-               price AS price_paid, grading_cost, target_sell,
+               price AS price_paid, grading_cost,
                actual_sale, sale_venue, date AS purchase_date, notes, pc, created_at
         FROM portfolio_entries
         WHERE user_id = %s {cursor_clause}
@@ -57,7 +57,7 @@ def fetch_portfolio_entries(user_id: str, cursor_id: str | None = None, limit: i
 def fetch_portfolio_entry(user_id: str, entry_id: str) -> dict | None:
     sql = """
         SELECT id, user_id, card AS card_name, sport, grade,
-               price AS price_paid, grading_cost, target_sell,
+               price AS price_paid, grading_cost,
                actual_sale, sale_venue, date AS purchase_date, notes, pc, created_at
         FROM portfolio_entries
         WHERE user_id = %s AND id = %s
@@ -71,12 +71,12 @@ def insert_portfolio_entry(user_id: str, data: dict) -> dict:
     sql = """
         INSERT INTO portfolio_entries
             (user_id, card, sport, grade, price, grading_cost,
-             target_sell, actual_sale, sale_venue, date, notes, pc)
+             actual_sale, sale_venue, date, notes, pc)
         VALUES
             (%(user_id)s, %(card)s, %(sport)s, %(grade)s, %(price)s, %(grading_cost)s,
-             %(target_sell)s, %(actual_sale)s, %(sale_venue)s, %(date)s, %(notes)s, %(pc)s)
+             %(actual_sale)s, %(sale_venue)s, %(date)s, %(notes)s, %(pc)s)
         RETURNING id, user_id, card AS card_name, sport, grade,
-                  price AS price_paid, grading_cost, target_sell,
+                  price AS price_paid, grading_cost,
                   actual_sale, sale_venue, date AS purchase_date, notes, pc, created_at
     """
     row = {
@@ -86,7 +86,6 @@ def insert_portfolio_entry(user_id: str, data: dict) -> dict:
         "grade": data["grade"],
         "price": data["price_paid"],
         "grading_cost": data.get("grading_cost", 0.0),
-        "target_sell": data.get("target_sell"),
         "actual_sale": data.get("actual_sale"),
         "sale_venue": data.get("sale_venue"),
         "date": data.get("purchase_date"),
@@ -120,7 +119,7 @@ def update_portfolio_entry(entry_id: str, updates: dict) -> dict | None:
         SET {', '.join(set_clauses)}
         WHERE id = %s
         RETURNING id, user_id, card AS card_name, sport, grade,
-                  price AS price_paid, grading_cost, target_sell,
+                  price AS price_paid, grading_cost,
                   actual_sale, sale_venue, date AS purchase_date, notes, pc, created_at
     """
     with db_cursor() as cur:

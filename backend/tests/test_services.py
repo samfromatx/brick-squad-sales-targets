@@ -42,7 +42,6 @@ ENTRY_ROW = {
     "grade": "PSA 10",
     "price_paid": 250.0,
     "grading_cost": 0.0,
-    "target_sell": 350.0,
     "actual_sale": None,
     "sale_venue": None,
     "purchase_date": "2026-01-15",

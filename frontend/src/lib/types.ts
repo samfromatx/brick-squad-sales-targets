@@ -72,7 +72,6 @@ export interface PortfolioEntry {
   grade: string
   price_paid: number
   grading_cost: number
-  target_sell: number | null
   actual_sale: number | null
   sale_venue: string | null
   purchase_date: string | null
@@ -86,7 +85,6 @@ export interface PortfolioEntryCreate {
   grade: string
   price_paid: number
   grading_cost?: number
-  target_sell?: number | null
   actual_sale?: number | null
   sale_venue?: string | null
   purchase_date?: string | null
@@ -100,7 +98,6 @@ export interface PortfolioEntryUpdate {
   grade?: string
   price_paid?: number
   grading_cost?: number
-  target_sell?: number | null
   actual_sale?: number | null
   sale_venue?: string | null
   purchase_date?: string | null

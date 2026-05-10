@@ -9,7 +9,6 @@ const NEW_ENTRY = {
   grade: 'PSA 9',
   price_paid: 120,
   grading_cost: 25,
-  target_sell: 200,
   actual_sale: null,
   sale_venue: null,
   purchase_date: '2026-04-20',

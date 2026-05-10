@@ -100,7 +100,6 @@ export const MOCK_ENTRIES = {
       grade: 'PSA 10',
       price_paid: 250,
       grading_cost: 0,
-      target_sell: 350,
       actual_sale: null,
       sale_venue: null,
       purchase_date: '2026-01-15',
