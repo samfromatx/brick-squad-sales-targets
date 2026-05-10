@@ -166,10 +166,10 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
         <tbody>
           {sorted.map(e => {
             const sold = isSold(e)
+            const md = marketDataMap?.get(e.id)
             const { label: pl, positive } = calcProfit(e, md?.avg_30d)
             const sp = SPORT_BADGE[e.sport] ?? SPORT_BADGE['football']
             const gp = gradePill(e.grade)
-            const md = marketDataMap?.get(e.id)
             const avg7dMint = !marketDataLoading && md?.avg_7d != null && md.avg_7d > e.price_paid
             const avg30dMint = !marketDataLoading && md?.avg_30d != null && md.avg_30d > e.price_paid
             return (
