@@ -7,7 +7,6 @@ interface Props {
   marketDataLoading?: boolean
   onEdit: (entry: PortfolioEntry) => void
   onDelete: (id: string) => void
-  onMarkSold: (entry: PortfolioEntry) => void
   onPcFilterClick?: () => void
 }
 
@@ -103,7 +102,7 @@ function fmtAvg(val: number | null | undefined, loading: boolean): string {
   return `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export function EntryTable({ entries, marketDataMap, marketDataLoading = false, onEdit, onDelete, onMarkSold, onPcFilterClick }: Props) {
+export function EntryTable({ entries, marketDataMap, marketDataLoading = false, onEdit, onDelete, onPcFilterClick }: Props) {
   const [sort, setSort] = useState<SortState>({ key: 'card_name', dir: 'asc' })
 
   if (entries.length === 0) {

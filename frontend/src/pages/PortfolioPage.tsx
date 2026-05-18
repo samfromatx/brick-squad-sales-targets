@@ -210,7 +210,6 @@ export function PortfolioPage() {
         marketDataLoading={marketDataLoading}
         onEdit={openEdit}
         onDelete={handleDelete}
-        onMarkSold={openMarkSold}
         onPcFilterClick={() => setPcFilter(f => f === 'pc_only' ? 'all' : 'pc_only')}
       />
 
