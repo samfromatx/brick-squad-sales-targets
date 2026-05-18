@@ -21,12 +21,16 @@ function applyFilters(
   avg30dFilter: boolean,
   marketDataMap: Map<string, CardMarketDataResult> | undefined,
   marketDataLoading: boolean,
+  gradeFilter: string,
+  sportFilter: string,
 ): PortfolioEntry[] {
   return entries.filter(e => {
     if (soldFilter === 'unsold' && e.actual_sale !== null) return false
     if (soldFilter === 'sold'   && e.actual_sale === null) return false
     if (pcFilter   === 'hide_pc'  && e.pc)  return false
     if (pcFilter   === 'pc_only'  && !e.pc) return false
+    if (gradeFilter !== 'all' && e.grade !== gradeFilter) return false
+    if (sportFilter !== 'all' && e.sport !== sportFilter) return false
     if (!marketDataLoading) {
       const md = marketDataMap?.get(e.id)
       if (avg7dFilter  && !(md?.avg_7d  != null && md.avg_7d  > e.price_paid)) return false
@@ -48,10 +52,12 @@ export function PortfolioPage() {
   const [pcFilter,   setPcFilter]   = useState<PcFilter>('all')
   const [avg7dFilter,  setAvg7dFilter]  = useState(false)
   const [avg30dFilter, setAvg30dFilter] = useState(false)
+  const [gradeFilter, setGradeFilter] = useState('all')
+  const [sportFilter, setSportFilter] = useState('all')
 
   const allEntries = entriesData?.data ?? []
   const { marketDataMap, isLoading: marketDataLoading } = useMarketData(allEntries)
-  const entries = applyFilters(allEntries, soldFilter, pcFilter, avg7dFilter, avg30dFilter, marketDataMap, marketDataLoading)
+  const entries = applyFilters(allEntries, soldFilter, pcFilter, avg7dFilter, avg30dFilter, marketDataMap, marketDataLoading, gradeFilter, sportFilter)
 
   function openAdd() { setEditing(null); setShowForm(true) }
   function openEdit(e: PortfolioEntry) { setEditing(e); setShowForm(true) }
@@ -157,6 +163,24 @@ export function PortfolioPage() {
           ))}
         </div>
 
+        {/* Sport filter */}
+        <div style={segmentedWrap}>
+          {([['all', 'All'], ['football', '🏈 FB'], ['basketball', '🏀 BB']] as [string, string][]).map(([key, label]) => (
+            <button key={key} onClick={() => setSportFilter(key)} style={segmentedBtn(sportFilter === key, false)}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Grade filter */}
+        <div style={segmentedWrap}>
+          {(['all', 'Raw', 'PSA 9', 'PSA 10'] as string[]).map(g => (
+            <button key={g} onClick={() => setGradeFilter(g)} style={segmentedBtn(gradeFilter === g, false)}>
+              {g === 'all' ? 'All' : g}
+            </button>
+          ))}
+        </div>
+
         {/* Under-average filters */}
         <button onClick={() => setAvg7dFilter(v => !v)} style={avgToggleBtn(avg7dFilter)}>
           Under 7D Avg
@@ -175,7 +199,7 @@ export function PortfolioPage() {
         <h2 className="section-title" style={{ marginBottom: 0 }}>
           Purchase Log
           <span style={{ fontSize: '.78rem', fontWeight: 400, color: 'var(--ink-3)' }}>
-            {entries.length}{(soldFilter !== 'all' || pcFilter !== 'all' || avg7dFilter || avg30dFilter) ? ` of ${allEntries.length}` : ''} entries
+            {entries.length}{(soldFilter !== 'all' || pcFilter !== 'all' || avg7dFilter || avg30dFilter || gradeFilter !== 'all' || sportFilter !== 'all') ? ` of ${allEntries.length}` : ''} entries
           </span>
         </h2>
       </div>
