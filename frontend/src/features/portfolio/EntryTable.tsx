@@ -214,9 +214,6 @@ export function EntryTable({ entries, marketDataMap, marketDataLoading = false, 
                 <td style={{ color: '#888780', fontSize: 12 }}>{e.purchase_date ?? '—'}</td>
                 <td style={{ color: '#52524e', fontSize: 12, maxWidth: 200, whiteSpace: 'normal' }}>{e.notes ?? '—'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
-                  {!sold && (
-                    <button onClick={() => onMarkSold(e)} className="btn-ghost" style={{ color: '#633806' }}>Sold</button>
-                  )}
                   <button onClick={() => onEdit(e)} className="btn-ghost" style={{ color: '#0c447c' }}>Edit</button>
                   <button onClick={() => onDelete(e.id)} className="btn-ghost" style={{ color: '#a32d2d' }}>Del</button>
                 </td>

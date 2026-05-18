@@ -25,8 +25,8 @@ function applyFilters(
   sportFilter: string,
 ): PortfolioEntry[] {
   return entries.filter(e => {
-    if (soldFilter === 'unsold' && e.actual_sale !== null) return false
-    if (soldFilter === 'sold'   && e.actual_sale === null) return false
+    if (soldFilter === 'unsold' && e.actual_sale !== null && e.actual_sale > 0) return false
+    if (soldFilter === 'sold'   && !(e.actual_sale !== null && e.actual_sale > 0)) return false
     if (pcFilter   === 'hide_pc'  && e.pc)  return false
     if (pcFilter   === 'pc_only'  && !e.pc) return false
     if (gradeFilter !== 'all' && e.grade !== gradeFilter) return false
