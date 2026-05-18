@@ -62,11 +62,6 @@ export function PortfolioPage() {
   function openAdd() { setEditing(null); setShowForm(true) }
   function openEdit(e: PortfolioEntry) { setEditing(e); setShowForm(true) }
 
-  function openMarkSold(entry: PortfolioEntry) {
-    setEditing({ ...entry, actual_sale: entry.actual_sale ?? 0, sale_venue: entry.sale_venue ?? 'eBay' })
-    setShowForm(true)
-  }
-
   async function handleSubmit(data: PortfolioEntryCreate) {
     if (editing) {
       await updateEntry.mutateAsync({ id: editing.id, data })
